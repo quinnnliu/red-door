@@ -10,13 +10,13 @@ import PhotosUI
 
 // TODO: update this with actual fields
 
-struct CreateModelViewV2: View {
+struct CreateItemsViewV2: View {
     // Environment variables
-    @State private var viewModel: CreateModelViewModel
+    @State private var viewModel: CreateItemsViewModel
     @Environment(\.dismiss) var dismiss
     @State private var isEditing: Bool = true
     
-    init(viewModel: CreateModelViewModel = CreateModelViewModel()) {
+    init(viewModel: CreateItemsViewModel = CreateItemsViewModel()) {
         self.viewModel = viewModel
     }
     
