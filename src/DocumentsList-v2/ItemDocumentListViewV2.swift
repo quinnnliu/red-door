@@ -1,5 +1,5 @@
 //
-//  ModelDocumentListView.swift
+//  ItemDocumentListViewV2.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 4/25/26.
@@ -7,13 +7,13 @@
 
 import SwiftUI
 
-struct ModelDocumentListView: View {
-    @State private var viewModel: DocumentListViewModelV2<ModelV2>
+struct ItemDocumentListViewV2: View {
+    @State private var viewModel: DocumentListViewModelV2<ItemV2>
     @Binding var path: NavigationPath
     let itemRepo: ItemRepository
     
     init(
-        viewModel: DocumentListViewModelV2<ModelV2> = DocumentListViewModelV2<ModelV2>(),
+        viewModel: DocumentListViewModelV2<ItemV2> = DocumentListViewModelV2<ItemV2>(),
         path: Binding<NavigationPath>,
         itemRepo: ItemRepository
     ) {
@@ -36,7 +36,7 @@ struct ModelDocumentListView: View {
     
     @State private var showCreateModelCover: Bool = false
     @State private var showScannerSheet: Bool = false
-    @State private var scannedItemId: String? = nil
+    @State var scannedItemId: String? = nil
     
     var body: some View {
         NavigationStack(path: $path) {
@@ -72,9 +72,17 @@ struct ModelDocumentListView: View {
             .rootNavigationDestinationsV2(path: $path)
         }
     }
+    
+    func handleScannedItemId(_ id: String) {
+        Task {
+            let item = try await itemRepo.get(id: id)
+            path.append(item)
+        }
+        scannedItemId = nil
+    }
 }
 
-extension ModelDocumentListView {
+extension ItemDocumentListViewV2 {
     // MARK: Top Bar
     
     @ViewBuilder
@@ -162,15 +170,5 @@ extension ModelDocumentListView {
                 }
             }
         }
-    }
-}
-
-extension ModelDocumentListView {
-    private func handleScannedItemId(_ id: String) {
-        Task {
-            let item = try await itemRepo.get(id: id)
-            path.append(item)
-        }
-        scannedItemId = nil
     }
 }

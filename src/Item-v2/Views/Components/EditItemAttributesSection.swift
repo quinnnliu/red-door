@@ -7,11 +7,11 @@
 
 import SwiftUI
 
-struct EditModelAttributesSection: View {
+struct EditItemAttributesSection: View {
     @Binding var description: String
-    @Binding var color: ModelColor
-    @Binding var material: ModelMaterial
-    @Binding var type: ModelTypeV2
+    @Binding var color: ItemColor
+    @Binding var material: ItemMaterial
+    @Binding var type: ItemType
     @Binding var isEssential: Bool
     @Binding var value: Double?
     @Binding var brand: String?
@@ -31,11 +31,10 @@ struct EditModelAttributesSection: View {
             // MARK: Description
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Description:")
-                    .foregroundColor(.red)
-                    .bold()
+                SectionTitle("Description:")
 
-                TextField("Type here", text: $description)
+                TextField("Add a brief description about these items...", text: $description, axis: .vertical)
+                    .lineLimit(2...5)
                     .focused($focusDescription)
                     .submitLabel(.done)
                     .onSubmit { focusDescription = false }
@@ -52,9 +51,7 @@ struct EditModelAttributesSection: View {
             // MARK: Details
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Details:")
-                    .foregroundColor(.red)
-                    .bold()
+                SectionTitle("Details:")
 
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(alignment: .center, spacing: 0) {
@@ -62,7 +59,7 @@ struct EditModelAttributesSection: View {
                             Text("Type:")
 
                             Picker("", selection: $type) {
-                                ForEach(ModelTypeV2.allCases, id: \.self) { option in
+                                ForEach(ItemType.allCases, id: \.self) { option in
                                     Text(option.rawValue)
                                         .tag(option)
                                 }
@@ -91,9 +88,7 @@ struct EditModelAttributesSection: View {
             // MARK: Purchase Info
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Purchase Info:")
-                    .foregroundColor(.red)
-                    .bold()
+                SectionTitle("Purchase Info:")
 
                 VStack(alignment: .leading, spacing: 8) {
                     HStack {
@@ -124,11 +119,8 @@ struct EditModelAttributesSection: View {
                     HStack {
                         Text("Date:")
                             .frame(width: 110, alignment: .leading)
-                        TextField("MM/DD/YYYY", text: Binding(
-                            get: { datePurchased ?? "" },
-                            set: { datePurchased = $0.isEmpty ? nil : $0 }
-                        ))
-                        .keyboardType(.numbersAndPunctuation)
+                        TextField("MM/DD/YYYY", text: datePurchasedBinding)
+                        .keyboardType(.numberPad)
                     }
                 }
                 .padding(8)
@@ -140,172 +132,126 @@ struct EditModelAttributesSection: View {
 
     // MARK: ColorMaterialRow
     private var ColorMaterialRow: some View {
-        HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Color:")
-                    .foregroundColor(.red)
-                    .bold()
-
+        HStack(alignment: .center, spacing: 8) {
+            if !isMaterialPickerActive {
                 VStack(alignment: .leading, spacing: 4) {
                     ColorPickerToggleV2(
                         isActive: $isColorPickerActive,
-                        title: "Color:",
                         selectedColor: color
                     )
-
+                    
                     if isColorPickerActive {
                         EnumGridPicker(
                             selectedItem: $color,
                             isActive: $isColorPickerActive,
-                            items: ModelColor.allCases,
+                            items: ItemColor.allCases,
                             label: { $0.title },
                             color: { $0.color }
                         )
+                        .padding(8)
+                        .background(Color(.systemGray5))
+                        .cornerRadius(8)
                     }
                 }
-                .padding(8)
-                .background(Color(.systemGray5))
-                .cornerRadius(8)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Material:")
-                    .foregroundColor(.red)
-                    .bold()
-
+            
+            if !isColorPickerActive {
                 VStack(alignment: .leading, spacing: 4) {
                     MaterialPickerToggleV2(
                         isActive: $isMaterialPickerActive,
-                        title: "Material:",
                         selectedMaterial: material
                     )
-
+                    
                     if isMaterialPickerActive {
                         EnumGridPicker(
                             selectedItem: $material,
                             isActive: $isMaterialPickerActive,
-                            items: ModelMaterial.allCases,
+                            items: ItemMaterial.allCases,
                             label: { $0.title },
                             color: { _ in nil }
                         )
+                        .padding(8)
+                        .background(Color(.systemGray5))
+                        .cornerRadius(8)
+                        
                     }
                 }
-                .padding(8)
-                .background(Color(.systemGray5))
-                .cornerRadius(8)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
         }
     }
-}
-
-// MARK: EnumGridPicker
-
-private struct EnumGridPicker<T: Hashable>: View {
-    @Binding var selectedItem: T
-    @Binding var isActive: Bool
-    let items: [T]
-    let label: (T) -> String
-    let color: (T) -> Color?
-
-    private let columns = Array(repeating: GridItem(.flexible()), count: 6)
-
-    var body: some View {
-        LazyVGrid(columns: columns, spacing: 6) {
-            ForEach(items, id: \.self) { item in
-                Button {
-                    selectedItem = item
-                    withAnimation(.spring(response: 0.3)) {
-                        isActive = false
-                    }
-                } label: {
-                    VStack(spacing: 2) {
-                        if let itemColor = color(item) {
-                            Image(systemName: SFSymbols.circleFill)
-                                .font(.system(size: 16))
-                                .foregroundStyle(itemColor)
-                                .overlay(
-                                    Circle()
-                                        .stroke(Color.gray.opacity(0.5), lineWidth: 1)
-                                        .padding(2)
-                                )
-                        }
-
-                        Text(label(item))
-                            .font(.system(size: 10))
-                            .foregroundColor(.primary)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.7)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 6)
-                    .background(
-                        RoundedRectangle(cornerRadius: 6)
-                            .fill(selectedItem == item ? Color.blue.opacity(0.1) : Color.clear)
-                    )
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(8)
-        .transition(.opacity.combined(with: .move(edge: .top)))
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color(.systemGray5), lineWidth: 2)
-        )
+    
+    // MARK: Section Title
+    func SectionTitle(_ title: String) -> some View {
+        Text(title)
+            .font(.title3)
+            .foregroundStyle(.red)
+            .bold()
     }
-}
-
-// MARK: MaterialPickerToggle
-
-struct MaterialPickerToggleV2: View {
-    @Binding var isActive: Bool
-    var title: String
-    var selectedMaterial: ModelMaterial
-
-    var body: some View {
-        Button(action: {
+        // MARK: MaterialPickerToggle
+    
+    @ViewBuilder
+    func MaterialPickerToggleV2(
+        isActive: Binding<Bool>,
+        selectedMaterial: ItemMaterial
+    ) -> some View {
+        Button {
             withAnimation(.spring(response: 0.3)) {
-                isActive.toggle()
+                isActive.wrappedValue.toggle()
             }
-        }) {
+        } label: {
             HStack(spacing: 6) {
-                Text(title)
-                    .foregroundColor(.primary)
-
+                SectionTitle("Material:")
+                
                 Text(selectedMaterial.title)
-                    .font(.caption2)
                     .foregroundColor(.blue)
                     .padding(8)
-                    .background(isActive ? Color.clear : Color(.systemGray4))
+                    .background(isActive.wrappedValue ? Color.clear : Color(.systemGray4))
                     .cornerRadius(6)
             }
         }
     }
-}
 
-// MARK: ColorPickerToggle
-
-struct ColorPickerToggleV2: View {
-    @Binding var isActive: Bool
-    var title: String
-    var selectedColor: ModelColor
-
-    var body: some View {
-        Button(action: {
+    // MARK: ColorPickerToggle
+    
+    @ViewBuilder
+    func ColorPickerToggleV2(
+        isActive: Binding<Bool>,
+        selectedColor: ItemColor
+    ) -> some View {
+        Button {
             withAnimation(.spring(response: 0.3)) {
-                isActive.toggle()
+                isActive.wrappedValue.toggle()
             }
-        }) {
+        } label: {
             HStack(spacing: 6) {
-                Text(title)
-                    .foregroundColor(.primary)
-
+                SectionTitle("Color:")
+                
                 Image(systemName: SFSymbols.circleFill)
                     .foregroundStyle(selectedColor.color)
                     .padding(8)
-                    .background(isActive ? Color.clear : Color(.systemGray4))
+                    .background(isActive.wrappedValue ? Color.clear : Color(.systemGray4))
                     .cornerRadius(6)
             }
         }
+    }
+    
+    // MARK: Date Purchased Binding
+    
+    private var datePurchasedBinding: Binding<String> {
+        Binding(
+            get: { datePurchased ?? "" },
+            set: { newValue in
+                let digits = newValue.filter { $0.isNumber }
+                let limited = String(digits.prefix(8))
+                var formatted = ""
+                for (i, char) in limited.enumerated() {
+                    if i == 2 || i == 4 { formatted += "/" }
+                    formatted.append(char)
+                }
+                datePurchased = formatted.isEmpty ? nil : formatted
+            }
+        )
     }
 }

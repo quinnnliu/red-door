@@ -1,5 +1,5 @@
 //
-//  ModelImagesV2.swift
+//  ItemImageV2.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 4/27/26.
@@ -10,9 +10,9 @@ import CachedAsyncImage
 import PhotosUI
 import SwiftUI
 
-// MARK: - ModelImageView
+// MARK: - ItemImageView
 
-struct ModelImageView: View {
+struct ItemImageView: View {
     let image: RDImage
     @Binding var selectedImage: RDImage?
     @Binding var isImageSelected: Bool
@@ -27,7 +27,7 @@ struct ModelImageView: View {
             }
             isImageSelected = true
         } label: {
-            ModelImageContent(image: image, showUploadIcon: false)
+            ItemImageContent(image: image, showUploadIcon: false)
         }
         .frame(width: Constants.screenWidthPadding / 2, height: Constants.screenWidthPadding / 2)
         .contentShape(Rectangle())
@@ -35,9 +35,9 @@ struct ModelImageView: View {
     }
 }
 
-// MARK: - ModelImageEditor
+// MARK: - ItemImageEditor
 
-struct ModelImageEditor: View {
+struct ItemImageEditor: View {
     @Binding var image: RDImage
 
     @State private var showEditAlert = false
@@ -47,7 +47,7 @@ struct ModelImageEditor: View {
         Button {
             showEditAlert = true
         } label: {
-            ModelImageContent(image: image, showUploadIcon: true)
+            ItemImageContent(image: image, showUploadIcon: true)
         }
         .alert(
             image.imageExists ? "Update Image" : "Upload Image",
@@ -71,9 +71,9 @@ struct ModelImageEditor: View {
     }
 }
 
-// MARK: - ModelImageContent (shared rendering)
+// MARK: - ItemImageContent (shared rendering)
 
-private struct ModelImageContent: View {
+private struct ItemImageContent: View {
     let image: RDImage
     let showUploadIcon: Bool
 

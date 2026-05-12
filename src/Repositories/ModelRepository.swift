@@ -1,20 +1,20 @@
+////
+////  ModelRepository.swift
+////  RedDoor
+////
+////  Created by Quinn Liu on 4/25/26.
+////
 //
-//  ModelRepository.swift
-//  RedDoor
+//final class ModelRepository: GenericRepository<ModelV2> {
+//    
+//}
 //
-//  Created by Quinn Liu on 4/25/26.
+//    // MARK: - Batch
+//extension ModelRepository {
+//    
+//}
 //
-
-final class ModelRepository: GenericRepository<ModelV2> {
-    
-}
-
-    // MARK: - Batch
-extension ModelRepository {
-    
-}
-
-    // MARK: - Transaction
-extension ModelRepository {
-    
-}
+//    // MARK: - Transaction
+//extension ModelRepository {
+//    
+//}

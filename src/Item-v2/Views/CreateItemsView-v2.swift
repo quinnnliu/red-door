@@ -27,29 +27,36 @@ struct CreateItemsViewV2: View {
                 VStack(spacing: 12) {
                     TopBar()
                     
-                    ModelImageView(
-                        image: viewModel.modelState.image,
+                    ItemImageView(
+                        image: viewModel.itemState.primaryImage,
                         selectedImage: $viewModel.selectedRDImage,
                         isImageSelected: $viewModel.isImageSelected
                     )
                     
-                    EditModelAttributesSection(
-                        description: $viewModel.modelState.description,
-                        color: $viewModel.modelState.color,
-                        material: $viewModel.modelState.material,
-                        type: $viewModel.modelState.type,
-                        isEssential: $viewModel.modelState.isEssential,
-                        value: $viewModel.modelState.value,
-                        brand: $viewModel.modelState.brand,
-                        purchaseLocation: $viewModel.modelState.purchaseLocation,
-                        datePurchased: $viewModel.modelState.datePurchased
+                    EditItemAttributesSection(
+                        description: $viewModel.itemState.description,
+                        color: $viewModel.itemState.color,
+                        material: $viewModel.itemState.material,
+                        type: $viewModel.itemState.type,
+                        isEssential: $viewModel.itemState.isEssential,
+                        value: $viewModel.itemState.value,
+                        brand: $viewModel.itemState.brand,
+                        purchaseLocation: $viewModel.itemState.purchaseLocation,
+                        datePurchased: $viewModel.itemState.datePurchased
                     )
+                    
+                    ItemCountPicker
                     
                     Spacer()
                     
-                    RDButton(variant: .default, size: .default, leadingIcon: "plus", text: "Add Model to Inventory") {
+                    RDButton(
+                        variant: .default,
+                        size: .default,
+                        leadingIcon: "plus",
+                        text: "Create Items Inventory"
+                    ) {
                         Task {
-                            await viewModel.createModel()
+                            await viewModel.createItems()
                             dismiss()
                         }
                     }
@@ -92,19 +99,28 @@ struct CreateItemsViewV2: View {
         )
     }
     
-        // MARK: Model Name Entry
+    // MARK: Model Name Entry
     
     @ViewBuilder
     private func ModelNameEntry() -> some View {
-        TextField("Model Name", text: $viewModel.modelState.name)
+        TextField("Model Name", text: $viewModel.itemState.name)
             .padding(6)
             .background(viewModel.isImageSelected ? Color.clear : Color(.systemGray5))
             .cornerRadius(8)
             .multilineTextAlignment(.center)
     }
+    
+    // MARK: Item Count Picker
+    
+    private var ItemCountPicker: some View {
+        Stepper("Number of Items: \(viewModel.itemCount)",
+            value: $viewModel.itemCount,
+            in: 1...1000
+        )
+    }
 }
 
 #Preview {
-    CreateModelViewV2()
+    CreateItemsViewV2()
 }
 

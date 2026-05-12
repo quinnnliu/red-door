@@ -12,6 +12,8 @@ struct ItemV2: AnyRDDocument {
 
     var id: String
     var modelId: String
+    var groupId: String?
+    
     var name: String
     var nameLowercased: String // for search
     var primaryImage: RDImage
@@ -33,6 +35,7 @@ struct ItemV2: AnyRDDocument {
     init(
         id: String,
         modelId: String,
+        groupId: String? = nil,
         name: String,
         primaryImage: RDImage,
         secondaryImages: [RDImage]? = nil,
@@ -53,6 +56,7 @@ struct ItemV2: AnyRDDocument {
     ) {
         self.id = id
         self.modelId = modelId
+        self.groupId = groupId
         self.name = name
         self.nameLowercased = name.lowercased()
         self.primaryImage = primaryImage
@@ -75,6 +79,7 @@ struct ItemV2: AnyRDDocument {
     init(item: ItemV2) {
         self.id = UUID().uuidString
         self.modelId = item.modelId
+        self.groupId = item.groupId
         self.name = item.name
         self.nameLowercased = item.nameLowercased
         self.primaryImage = item.primaryImage
