@@ -13,7 +13,21 @@ final class CreateItemsViewModel {
     
     // MARK: itemState
     var itemState: ItemV2
-    private let modelId: String
+    private let modelUUID: String
+
+    private var modelId: String {
+        let parts = [
+            itemState.name,
+            itemState.type.rawValue,
+            itemState.color.rawValue,
+            itemState.material.rawValue,
+            "model",
+            modelUUID
+        ]
+        return parts
+            .map { $0.lowercased().replacingOccurrences(of: " ", with: "-") }
+            .joined(separator: "-")
+    }
     
     // MARK: ViewState
     
@@ -25,10 +39,10 @@ final class CreateItemsViewModel {
     var isImageSelected: Bool
     
     init() {
-        self.modelId = "model-\(UUID().uuidString)"
+        self.modelUUID = UUID().uuidString
         self.itemState = ItemV2(
             id: UUID().uuidString,
-            modelId: self.modelId,
+            modelId: "",
             name: "",
             primaryImage: RDImage(),
             type: .misc,
@@ -39,32 +53,50 @@ final class CreateItemsViewModel {
             isEssential: false,
             isAvailable: true
         )
-        self.itemCount = 0
+        self.itemCount = 1
         self.selectedRDImage = nil
         self.isImageSelected = false
         self.isLoading = false
     }
     
     func createItems() async {
+        let resolvedModelId = modelId
         var items: [ItemV2] = []
-        var itemIds: [String] = []
         for _ in (0..<itemCount) {
-            let newItem = ItemV2(item: itemState)
+            var newItem = ItemV2(item: itemState)
+            newItem.modelId = resolvedModelId
+            newItem.primaryImage.objectId = newItem.id
             items.append(newItem)
-            itemIds.append(newItem.id)
         }
-        
+
         isLoading = true
         defer { isLoading = false }
-        
+
         do {
-            var batch = itemRepo.db.batch()
-            for item in items {
+            let updatedItems: [ItemV2] = try await withThrowingTaskGroup(of: ItemV2.self) { group in
+                for item in items {
+                    group.addTask {
+                        var updated = item
+                        if let uploadedImage = try await FirebaseImageManager.shared.updateImage(
+                            item.primaryImage,
+                            resultImageType: .item
+                        ) {
+                            updated.primaryImage = uploadedImage
+                        }
+                        return updated
+                    }
+                }
+                var results: [ItemV2] = []
+                for try await item in group { results.append(item) }
+                return results
+            }
+
+            let batch = itemRepo.db.batch()
+            for item in updatedItems {
                 try itemRepo.set(item, id: item.id, inBatch: batch)
             }
-            
             try await batch.commit()
-            // TODO: need to set the images
+
         } catch {
             print("error creating items for: \(itemState.name)")
         }

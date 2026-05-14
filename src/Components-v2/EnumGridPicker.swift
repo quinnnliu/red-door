@@ -53,7 +53,10 @@ struct EnumGridPicker<T: Hashable>: View {
             }
         }
         .padding(8)
-        .transition(.opacity.combined(with: .move(edge: .top)))
+        .transition(.asymmetric(
+            insertion: .opacity.combined(with: .move(edge: .trailing)),
+            removal: .opacity.combined(with: .move(edge: .leading))
+        ))
         .overlay(
             RoundedRectangle(cornerRadius: 8)
                 .stroke(Color(.systemGray5), lineWidth: 2)

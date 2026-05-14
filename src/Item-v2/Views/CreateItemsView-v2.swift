@@ -12,27 +12,29 @@ import PhotosUI
 
 struct CreateItemsViewV2: View {
     // Environment variables
-    @State private var viewModel: CreateItemsViewModel
+    @State private var viewModel: CreateItemsViewModel = CreateItemsViewModel()
     @Environment(\.dismiss) var dismiss
     @State private var isEditing: Bool = true
-    
-    init(viewModel: CreateItemsViewModel = CreateItemsViewModel()) {
-        self.viewModel = viewModel
-    }
     
     // MARK: - Body
     var body: some View {
         ZStack {
-            ScrollView {
-                VStack(spacing: 12) {
-                    TopBar()
-                    
-                    ItemImageView(
-                        image: viewModel.itemState.primaryImage,
-                        selectedImage: $viewModel.selectedRDImage,
-                        isImageSelected: $viewModel.isImageSelected
+            if viewModel.isLoading {
+                Color.black.opacity(0.3).ignoresSafeArea()
+                ProgressView("Saving Model...")
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
+                    .shadow(radius: 10)
+            }
+            
+            VStack(spacing: 12) {
+                TopBar()
+                
+                ScrollView {
+                    ItemImageEditor(
+                        image: $viewModel.itemState.primaryImage
                     )
-                    
+
                     EditItemAttributesSection(
                         description: $viewModel.itemState.description,
                         color: $viewModel.itemState.color,
@@ -46,32 +48,24 @@ struct CreateItemsViewV2: View {
                     )
                     
                     ItemCountPicker
-                    
-                    Spacer()
-                    
-                    RDButton(
-                        variant: .default,
-                        size: .default,
-                        leadingIcon: "plus",
-                        text: "Create Items Inventory"
-                    ) {
-                        Task {
-                            await viewModel.createItems()
-                            dismiss()
-                        }
+                }
+                
+                RDButton(
+                    variant: .default,
+                    size: .default,
+                    leadingIcon: "plus",
+                    text: "Add Items to Inventory"
+                ) {
+                    Task {
+                        await viewModel.createItems()
+                        dismiss()
                     }
                 }
-                .toolbar(.hidden)
-                .frameTop()
-                .frameHorizontalPadding()
+                .frame(alignment: .bottom)
             }
-            if viewModel.isLoading {
-                Color.black.opacity(0.3).ignoresSafeArea()
-                ProgressView("Saving Model...")
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
-                    .shadow(radius: 10)
-            }
+            .toolbar(.hidden)
+            .frameTop()
+            .frameHorizontalPadding()
         }
         .overlay(
             ModelRDImageOverlay(selectedRDImage: viewModel.selectedRDImage, isImageSelected: $viewModel.isImageSelected)
@@ -103,7 +97,7 @@ struct CreateItemsViewV2: View {
     
     @ViewBuilder
     private func ModelNameEntry() -> some View {
-        TextField("Model Name", text: $viewModel.itemState.name)
+        TextField("Items Name", text: $viewModel.itemState.name)
             .padding(6)
             .background(viewModel.isImageSelected ? Color.clear : Color(.systemGray5))
             .cornerRadius(8)
