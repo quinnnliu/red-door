@@ -121,6 +121,8 @@ enum ItemType: String, Codable, CaseIterable {
     case lamp = "Lamp"
     case accessories = "Accessories"
     case misc = "Miscellaneous"
+    
+    var title: String { rawValue }
 }
 
 enum ItemColor: String, Codable, CaseIterable {

@@ -14,13 +14,15 @@ class NavigationCoordinator {
         case pullList = 0
         case installedList = 1
         case inventory = 2
-        case options = 3
+        case itemInventory = 3
+        case options = 4
     }
 
     var selectedTab: Tab = .pullList
     var inventoryPath: NavigationPath = NavigationPath()
     var pullListPath: NavigationPath = NavigationPath()
     var installedListPath: NavigationPath = NavigationPath()
+    var itemInventoryPath: NavigationPath = NavigationPath()
     var optionsPath: NavigationPath = NavigationPath()
 
     var selectedPath: NavigationPath {
@@ -31,6 +33,8 @@ class NavigationCoordinator {
             return installedListPath
         case .inventory:
             return inventoryPath
+        case .itemInventory:
+            return itemInventoryPath
         case .options:
             return optionsPath
         }
@@ -48,6 +52,8 @@ class NavigationCoordinator {
             installedListPath.append(item)
         case .inventory:
             inventoryPath.append(item)
+        case .itemInventory:
+            itemInventoryPath.append(item)
         case .options:
             optionsPath.append(item)
         }
@@ -61,6 +67,8 @@ class NavigationCoordinator {
             installedListPath = NavigationPath()
         case .inventory:
             inventoryPath = NavigationPath()
+        case .itemInventory:
+            itemInventoryPath = NavigationPath()
         case .options:
             optionsPath = NavigationPath()
         }

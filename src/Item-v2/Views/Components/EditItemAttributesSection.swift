@@ -94,14 +94,14 @@ struct EditItemAttributesSection: View {
                     HStack {
                         Text("Value ($):")
                             .frame(width: 110, alignment: .leading)
-                        TextField("0.00", value: $value, format: .number)
+                        TextField("0.00 (optional)", value: $value, format: .number)
                             .keyboardType(.decimalPad)
                     }
 
                     HStack {
                         Text("Brand:")
                             .frame(width: 110, alignment: .leading)
-                        TextField("Brand", text: Binding(
+                        TextField("Brand (optional)", text: Binding(
                             get: { brand ?? "" },
                             set: { brand = $0.isEmpty ? nil : $0 }
                         ))
@@ -110,7 +110,7 @@ struct EditItemAttributesSection: View {
                     HStack {
                         Text("Purchased At:")
                             .frame(width: 110, alignment: .leading)
-                        TextField("Store or URL", text: Binding(
+                        TextField("Store or URL (optional)", text: Binding(
                             get: { purchaseLocation ?? "" },
                             set: { purchaseLocation = $0.isEmpty ? nil : $0 }
                         ))
@@ -119,7 +119,7 @@ struct EditItemAttributesSection: View {
                     HStack {
                         Text("Date:")
                             .frame(width: 110, alignment: .leading)
-                        TextField("MM/DD/YYYY", text: datePurchasedBinding)
+                        TextField("MM/DD/YYYY (optional)", text: datePurchasedBinding)
                         .keyboardType(.numberPad)
                     }
                 }
@@ -205,9 +205,11 @@ struct EditItemAttributesSection: View {
                 SectionTitle("Material:")
                 
                 Text(selectedMaterial.title)
+                    .frame(maxWidth: .infinity)
+                    .font(.caption2)
                     .foregroundColor(.blue)
                     .padding(8)
-                    .background(isActive.wrappedValue ? Color.clear : Color(.systemGray4))
+                    .background(Color(.systemGray4))
                     .cornerRadius(6)
             }
         }
@@ -228,10 +230,12 @@ struct EditItemAttributesSection: View {
             HStack(spacing: 6) {
                 SectionTitle("Color:")
                 
-                Image(systemName: SFSymbols.circleFill)
-                    .foregroundStyle(selectedColor.color)
+                Text(selectedColor.title)
+                    .frame(maxWidth: .infinity)
+                    .font(.caption2)
+                    .foregroundColor(selectedColor.color == .white || selectedColor.color == .clear ? .black : .white)
                     .padding(8)
-                    .background(isActive.wrappedValue ? Color.clear : Color(.systemGray4))
+                    .background(selectedColor.color)
                     .cornerRadius(6)
             }
         }

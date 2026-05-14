@@ -15,28 +15,24 @@ struct ItemDocumentListViewV2: View {
     init(
         viewModel: DocumentListViewModelV2<ItemV2> = DocumentListViewModelV2<ItemV2>(),
         path: Binding<NavigationPath>,
-        itemRepo: ItemRepository
+        itemRepo: ItemRepository = ItemRepository()
     ) {
         self._viewModel = State(initialValue: viewModel)
         self._path = path
         self.itemRepo = itemRepo
     }
     
-    // Filter Variables
-    
     @State private var searchText: String = ""
-    // TODO: implement filter view
-//    @State private var selectedType: ModelTypeV2?
-    
-    // View Modifier Variables
-    
-    @State private var isLoadingModels: Bool = false
     @State private var searchFocused: Bool = false
     @FocusState private var searchTextFocused: Bool
     
     @State private var showCreateModelCover: Bool = false
     @State private var showScannerSheet: Bool = false
-    @State var scannedItemId: String? = nil
+    @State private var scannedItemId: String? = nil
+    
+    private var selectedType: ItemType? {
+        viewModel.activeTypeFilter.flatMap(ItemType.init(rawValue:))
+    }
     
     var body: some View {
         NavigationStack(path: $path) {
@@ -47,6 +43,13 @@ struct ItemDocumentListViewV2: View {
                     TopBar()
                 }
                 
+                ItemInventoryFilterView(
+                    selectedType: selectedType,
+                    onSelect: { type in
+                        Task { await viewModel.applyTypeFilter(type?.rawValue) }
+                    }
+                )
+                
                 InventoryList()
                 
                 Spacer()
@@ -54,13 +57,13 @@ struct ItemDocumentListViewV2: View {
             .frameTop()
             .frameHorizontalPadding()
             .task {
-                await viewModel.loadInitialDocuments()
+                await viewModel.refresh()
             }
             .onChange(of: path) {
                 searchFocused = false
             }
             .fullScreenCover(isPresented: $showCreateModelCover) {
-                CreateModelView()
+                CreateItemsViewV2()
             }
             .sheet(isPresented: $showScannerSheet) {
                 ItemScannerView(scannedItemId: $scannedItemId)
@@ -73,7 +76,7 @@ struct ItemDocumentListViewV2: View {
         }
     }
     
-    func handleScannedItemId(_ id: String) {
+    private func handleScannedItemId(_ id: String) {
         Task {
             let item = try await itemRepo.get(id: id)
             path.append(item)
@@ -98,25 +101,7 @@ extension ItemDocumentListViewV2 {
                 EmptyView()
             },
             trailingIcon: {
-                HStack(spacing: 8) {
-                    Group {
-                        if !searchFocused {
-                            RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", iconBold: true, fullWidth: false) {
-                                searchFocused = true
-                                searchTextFocused = true
-                            }
-                        }
-                        
-                        RDButton(variant: .outline, size: .icon, leadingIcon: "qrcode.viewfinder", iconBold: true, fullWidth: false) {
-                            showScannerSheet = true
-                        }
-                        
-                        RDButton(variant: .outline, size: .icon, leadingIcon: "plus", iconBold: true, fullWidth: false) {
-                            showCreateModelCover = true
-                        }
-                    }
-                    .foregroundColor(.red)
-                }
+                TrailingIconGroup
             }
         ).tint(.red)
     }
@@ -125,49 +110,71 @@ extension ItemDocumentListViewV2 {
     
     @ViewBuilder
     private func SearchBar() -> some View {
-        SearchBarComponent(
+        SearchBarComponent( // TODO: explore how to make this component own the viewstate for this
             searchText: $searchText,
             searchFocused: $searchFocused,
             searchTextFocused: $searchTextFocused,
             onSubmit: {
                 Task {
-                    await viewModel.loadMoreDocuments()
-//                    await fetchModels(initial: true, searchText: searchText, modelType: selectedType)
+                    await viewModel.search(text: searchText)
                 }
             }
         )
     }
     
+    // MARK: Trailing
+    private var TrailingIconGroup: some View {
+        HStack(spacing: 8) {
+            Group {
+                if !searchFocused {
+                    RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", iconBold: true, fullWidth: false) {
+                        searchFocused = true
+                        searchTextFocused = true
+                    }
+                }
+                
+                RDButton(variant: .outline, size: .icon, leadingIcon: "qrcode.viewfinder", iconBold: true, fullWidth: false) {
+                    showScannerSheet = true
+                }
+                
+                RDButton(variant: .outline, size: .icon, leadingIcon: "plus", iconBold: true, fullWidth: false) {
+                    showCreateModelCover = true
+                }
+            }
+            .foregroundColor(.red)
+        }
+    }
+    
     // MARK: Inventory List
+    
     @ViewBuilder
     private func InventoryList() -> some View {
         ScrollView {
             LazyVStack(spacing: 8) {
-                ForEach(viewModel.documentsArray, id: \.id) { model in
-                    NavigationLink(value: model) {
-                        Text("MODEL V2 LIST ITEM VIEW")
+                ForEach(viewModel.documentsArray, id: \.id) { item in
+                    NavigationLink(value: item) {
+                        ItemListItemView(item: item)
                     }
                     .buttonStyle(PlainButtonStyle())
+                    .onAppear {
+                        if item == viewModel.documentsArray.last {
+                            Task {
+                                await viewModel.loadMoreDocuments()
+                            }
+                        }
+                    }
                 }
                 
-                if isLoadingModels {
+                if viewModel.isLoading {
                     ProgressView()
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding()
-                } else {
-                    RDButton(variant: .outline, text: "Load More") {
-                        Task {
-                            await viewModel.loadMoreDocuments()
-                        }
-                    }
                 }
             }
         }
         .refreshable {
-            Task {
-                if !isLoadingModels {
-                    await viewModel.loadMoreDocuments()
-                }
+            if !viewModel.isLoading {
+                await viewModel.refresh()
             }
         }
     }

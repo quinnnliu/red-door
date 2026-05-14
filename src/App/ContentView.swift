@@ -30,6 +30,12 @@ struct ContentView: View {
                     .tint(.blue)
                     .environment(coordinator)
             }
+            
+            Tab("Item Inventory", systemImage: "chair.lounge.fill", value: NavigationCoordinator.Tab.itemInventory) {
+                ItemDocumentListViewV2(path: $coordinator.itemInventoryPath)
+                    .tint(.blue)
+                    .environment(coordinator)
+            }
 
             Tab("Options", systemImage: "ellipsis.circle", value: NavigationCoordinator.Tab.options) {
                 OptionsView()
