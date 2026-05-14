@@ -1,1 +1,10 @@
 GoogleService-Info.plist
+# macOS
+
+.DS_Store
+
+# Xcode user data
+
+xcuserdata/
+
+*.xcuserstate
