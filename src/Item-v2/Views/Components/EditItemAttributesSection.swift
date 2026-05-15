@@ -119,8 +119,21 @@ struct EditItemAttributesSection: View {
                     HStack {
                         Text("Date:")
                             .frame(width: 110, alignment: .leading)
-                        TextField("MM/DD/YYYY (optional)", text: datePurchasedBinding)
-                        .keyboardType(.numberPad)
+                        if datePurchased != nil {
+                            DatePicker("", selection: datePickerBinding, displayedComponents: .date)
+                                .labelsHidden()
+                            Button {
+                                datePurchased = nil
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.secondary)
+                            }
+                        } else {
+                            Button("Add date") {
+                                datePurchased = Self.dateFormatter.string(from: Date())
+                            }
+                            .foregroundColor(.secondary)
+                        }
                     }
                 }
                 .padding(8)
@@ -242,20 +255,20 @@ struct EditItemAttributesSection: View {
     }
     
     // MARK: Date Purchased Binding
-    
-    private var datePurchasedBinding: Binding<String> {
+
+    private static let dateFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "MM/dd/yyyy"
+        return f
+    }()
+
+    private var datePickerBinding: Binding<Date> {
         Binding(
-            get: { datePurchased ?? "" },
-            set: { newValue in
-                let digits = newValue.filter { $0.isNumber }
-                let limited = String(digits.prefix(8))
-                var formatted = ""
-                for (i, char) in limited.enumerated() {
-                    if i == 2 || i == 4 { formatted += "/" }
-                    formatted.append(char)
-                }
-                datePurchased = formatted.isEmpty ? nil : formatted
-            }
+            get: {
+                guard let str = datePurchased else { return Date() }
+                return Self.dateFormatter.date(from: str) ?? Date()
+            },
+            set: { datePurchased = Self.dateFormatter.string(from: $0) }
         )
     }
 }

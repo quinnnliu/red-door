@@ -1,5 +1,5 @@
 //
-//  EditItemInformationSheet.swift
+//  EditItemSheetV2.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 5/14/26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct EditItemInformationSheet: View {
+struct EditItemSheetV2: View {
     @Environment(\.dismiss) private var dismiss
 
     var viewModel: ItemDetailsViewModel

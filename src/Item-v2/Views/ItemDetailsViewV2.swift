@@ -72,7 +72,7 @@ struct ItemDetailsViewV2: View {
             .frameTop()
             .toolbar(.hidden)
             .sheet(isPresented: $showEditSheet) {
-                EditItemInformationSheet(viewModel: viewModel)
+                EditItemSheetV2(viewModel: viewModel)
             }
             .overlay(
                 ModelRDImageOverlay(
