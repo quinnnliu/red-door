@@ -11,7 +11,7 @@ struct ItemDocumentListViewV2: View {
     @State private var viewModel: DocumentListViewModelV2<ItemV2>
     @Binding var path: NavigationPath
     let itemRepo: ItemRepository
-    
+
     init(
         viewModel: DocumentListViewModelV2<ItemV2> = DocumentListViewModelV2<ItemV2>(),
         path: Binding<NavigationPath>,
@@ -21,46 +21,31 @@ struct ItemDocumentListViewV2: View {
         self._path = path
         self.itemRepo = itemRepo
     }
-    
-    @State private var searchText: String = ""
+
     @State private var searchFocused: Bool = false
-    @FocusState private var searchTextFocused: Bool
-    
     @State private var showCreateModelCover: Bool = false
     @State private var showScannerSheet: Bool = false
     @State private var scannedItemId: String? = nil
-    
-    private var selectedType: ItemType? {
-        viewModel.activeTypeFilter.flatMap(ItemType.init(rawValue:))
-    }
-    
+
     var body: some View {
         NavigationStack(path: $path) {
             VStack(spacing: 12) {
                 if searchFocused {
-                    SearchBar()
+                    SearchBarV2(isActive: $searchFocused, action: handleAction(_:))
                 } else {
                     TopBar()
                 }
-                
-                ItemInventoryFilterView(
-                    selectedType: selectedType,
-                    onSelect: { type in
-                        Task { await viewModel.applyTypeFilter(type?.rawValue) }
-                    }
-                )
-                
+
+                ItemInventoryFilterView(action: handleAction(_:))
+
                 InventoryList()
-                
+
                 Spacer()
             }
             .frameTop()
             .frameHorizontalPadding()
             .task {
                 await viewModel.refresh()
-            }
-            .onChange(of: path) {
-                searchFocused = false
             }
             .fullScreenCover(isPresented: $showCreateModelCover) {
                 CreateItemsViewV2()
@@ -75,7 +60,7 @@ struct ItemDocumentListViewV2: View {
             .rootNavigationDestinationsV2(path: $path)
         }
     }
-    
+
     private func handleScannedItemId(_ id: String) {
         Task {
             let item = try await itemRepo.get(id: id)
@@ -87,7 +72,7 @@ struct ItemDocumentListViewV2: View {
 
 extension ItemDocumentListViewV2 {
     // MARK: Top Bar
-    
+
     @ViewBuilder
     private func TopBar() -> some View {
         TopAppBar(
@@ -105,38 +90,20 @@ extension ItemDocumentListViewV2 {
             }
         ).tint(.red)
     }
-    
-    // MARK: Search Bar
-    
-    @ViewBuilder
-    private func SearchBar() -> some View {
-        SearchBarComponent( // TODO: explore how to make this component own the viewstate for this
-            searchText: $searchText,
-            searchFocused: $searchFocused,
-            searchTextFocused: $searchTextFocused,
-            onSubmit: {
-                Task {
-                    await viewModel.search(text: searchText)
-                }
-            }
-        )
-    }
-    
-    // MARK: Trailing
+
+    // MARK: Trailing Icons
+
     private var TrailingIconGroup: some View {
         HStack(spacing: 8) {
             Group {
-                if !searchFocused {
-                    RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", iconBold: true, fullWidth: false) {
-                        searchFocused = true
-                        searchTextFocused = true
-                    }
+                RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", iconBold: true, fullWidth: false) {
+                    searchFocused = true
                 }
-                
+
                 RDButton(variant: .outline, size: .icon, leadingIcon: "qrcode.viewfinder", iconBold: true, fullWidth: false) {
                     showScannerSheet = true
                 }
-                
+
                 RDButton(variant: .outline, size: .icon, leadingIcon: "plus", iconBold: true, fullWidth: false) {
                     showCreateModelCover = true
                 }
@@ -144,9 +111,9 @@ extension ItemDocumentListViewV2 {
             .foregroundColor(.red)
         }
     }
-    
+
     // MARK: Inventory List
-    
+
     @ViewBuilder
     private func InventoryList() -> some View {
         ScrollView {
@@ -164,7 +131,7 @@ extension ItemDocumentListViewV2 {
                         }
                     }
                 }
-                
+
                 if viewModel.isLoading {
                     ProgressView()
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -176,6 +143,29 @@ extension ItemDocumentListViewV2 {
             if !viewModel.isLoading {
                 await viewModel.refresh()
             }
+        }
+    }
+}
+
+private extension ItemDocumentListViewV2 {
+    func handleAction(_ action: Any?) {
+        guard let action else { return }
+
+        switch action {
+        case let searchAction as SearchBarAction:
+            switch searchAction {
+            case .search(let text):
+                Task { await viewModel.search(text: text) }
+            case .cancel:
+                Task { await viewModel.loadInitialDocuments() }
+            }
+        case let filterAction as ItemInventoryFilterViewAction:
+            switch filterAction {
+            case .selectItemType(let newType):
+                Task { await viewModel.applyTypeFilter(newType) }
+            }
+        default:
+            print("ERROR: Untracked action")
         }
     }
 }

@@ -40,8 +40,8 @@ final class DocumentListViewModelV2<T: AnyRDDocument> {
     /// Apply a type filter by raw string value (e.g. ItemType.rawValue).
     /// Clears any active text search and reloads from page 1.
     @MainActor
-    func applyTypeFilter(_ rawValue: String?) async {
-        activeTypeFilter = rawValue
+    func applyTypeFilter(_ type: ItemType?) async {
+        activeTypeFilter = type?.rawValue
         await reloadWithCurrentFilters()
     }
     

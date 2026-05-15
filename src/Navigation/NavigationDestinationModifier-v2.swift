@@ -5,10 +5,7 @@
 //  Created by Quinn Liu on 4/25/26.
 //
 
-
-
 import Foundation
-
 import SwiftUI
 
 struct NavigationDestinationsModifierV2: ViewModifier {
@@ -24,6 +21,9 @@ struct NavigationDestinationsModifierV2: ViewModifier {
             }
             .navigationDestination(for: ItemWithModel.self) { itemWithModel in
                 ItemDetailView(item: itemWithModel.item, model: itemWithModel.model)
+            }
+            .navigationDestination(for: ItemV2.self) { item in
+                ItemDetailsViewV2(item: item)
             }
             .navigationDestination(for: RDList.self) { list in
                 if list.listType == .pull_list && list.status == .planning {
@@ -44,6 +44,6 @@ struct NavigationDestinationsModifierV2: ViewModifier {
 
 extension View {
     func rootNavigationDestinationsV2(path: Binding<NavigationPath>) -> some View {
-        modifier(NavigationDestinationsModifier(path: path))
+        modifier(NavigationDestinationsModifierV2(path: path))
     }
 }

@@ -10,8 +10,15 @@ import SwiftUI
 
 struct ItemInventoryFilterView: View {
     @Environment(\.colorScheme) private var scheme
-    let selectedType: ItemType?
-    let onSelect: (ItemType?) -> Void
+    
+    @State private var selectedType: ItemType? = nil
+    private let action: (Any?) -> Void
+    
+    init(
+        action: @escaping (Any?) -> Void
+    ) {
+        self.action = action
+    }
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -19,7 +26,9 @@ struct ItemInventoryFilterView: View {
                 ForEach(ItemType.allCases, id: \.rawValue) { type in
                     Button(action: {
                         withAnimation(.snappy) {
-                            onSelect(selectedType == type ? nil : type)
+                            let newType: ItemType? = selectedType == type ? nil : type
+                            selectedType = newType
+                            action(ItemInventoryFilterViewAction.selectItemType(newType: newType))
                         }
                     }) {
                         Text(type.rawValue)
@@ -42,4 +51,8 @@ struct ItemInventoryFilterView: View {
         Capsule()
             .fill(selectedType == type ? Color.accentColor : Color(.systemGray5))
     }
+}
+
+enum ItemInventoryFilterViewAction {
+    case selectItemType(newType: ItemType?)
 }
