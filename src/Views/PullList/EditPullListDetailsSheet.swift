@@ -89,7 +89,7 @@ struct EditPullListDetailsSheet: View {
             }
             .clipShape(Circle())
         }, header: {
-            RDButton(variant: .outline, size: .default, text: editingList.address.isInitialized() ? editingList.address.getStreetAddress() ?? "" : "Enter Address") {
+            RDButton(variant: .outline, size: .default, label: editingList.address.isInitialized() ? editingList.address.getStreetAddress() ?? "" : "Enter Address") {
                 showAddressSheet = true
             }
         }, trailingIcon: {

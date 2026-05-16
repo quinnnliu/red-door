@@ -25,11 +25,11 @@ struct ContentView: View {
                     .environment(coordinator)
             }
             
-            Tab("Inventory", systemImage: "chair.lounge.fill", value: NavigationCoordinator.Tab.inventory) {
-                ModelInventoryView(path: $coordinator.inventoryPath)
-                    .tint(.blue)
-                    .environment(coordinator)
-            }
+//            Tab("Inventory", systemImage: "chair.lounge.fill", value: NavigationCoordinator.Tab.inventory) {
+//                ModelInventoryView(path: $coordinator.inventoryPath)
+//                    .tint(.blue)
+//                    .environment(coordinator)
+//            }
             
             Tab("Item Inventory", systemImage: "chair.lounge.fill", value: NavigationCoordinator.Tab.itemInventory) {
                 ItemDocumentListViewV2(path: $coordinator.itemInventoryPath)

@@ -304,7 +304,7 @@ struct StagingRoomItemView: View {
     @ViewBuilder
     private func Footer() -> some View {
         HStack(spacing: 12) {
-            RDButton(variant: .default, size: .default, leadingIcon: SFSymbols.arrowUturnBackward, text: "Move to Other Room", fullWidth: true) {
+            RDButton(variant: .default, size: .default, leadingIcon: SFSymbols.arrowUturnBackward, label: "Move to Other Room", fullWidth: true) {
                 showOtherRoomSheet = true
             }
         }

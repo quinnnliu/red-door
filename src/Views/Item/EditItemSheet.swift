@@ -67,7 +67,7 @@ struct EditItemSheet: View {
                     }
                 }
 
-                RDButton(variant: .red, size: .default, leadingIcon: "trash", text: "Delete Item", fullWidth: false) {
+                RDButton(variant: .red, size: .default, leadingIcon: "trash", label: "Delete Item", fullWidth: false) {
                     if editingItem.isAvailable {
                         Task {
                             await viewModel.deleteItem()

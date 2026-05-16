@@ -73,7 +73,7 @@ struct AddressEntryView: View {
             Spacer()
 
 
-            RDButton(variant: .default, text: "Save Address", fullWidth: true) {
+            RDButton(variant: .default, label: "Save Address", fullWidth: true) {
                 updateSelectedAddress()
                 dismiss()
             }

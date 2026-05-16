@@ -217,7 +217,7 @@ struct UnstageInstalledListCover: View {
     private func Footer() -> some View {
         if stagedItems.isEmpty {
             HStack(spacing: 0) {
-                RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.checkmarkSquareFill, text: "Set List as Unstaged", fullWidth: true) {
+                RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.checkmarkSquareFill, label: "Set List as Unstaged", fullWidth: true) {
                     Task {
                         await viewModel.setListAsUnstaged()
                         coordinator.resetSelectedPath()

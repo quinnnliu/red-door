@@ -8,16 +8,14 @@
 import SwiftUI
 
 struct ItemDocumentListViewV2: View {
-    @State private var viewModel: DocumentListViewModelV2<ItemV2>
+    @State private var viewModel: DocumentListViewModelV2<ItemV2> = DocumentListViewModelV2<ItemV2>()
     @Binding var path: NavigationPath
     let itemRepo: ItemRepository
 
     init(
-        viewModel: DocumentListViewModelV2<ItemV2> = DocumentListViewModelV2<ItemV2>(),
         path: Binding<NavigationPath>,
         itemRepo: ItemRepository = ItemRepository()
     ) {
-        self._viewModel = State(initialValue: viewModel)
         self._path = path
         self.itemRepo = itemRepo
     }
@@ -33,14 +31,13 @@ struct ItemDocumentListViewV2: View {
                 if searchFocused {
                     SearchBarV2(isActive: $searchFocused, action: handleAction(_:))
                 } else {
-                    TopBar()
+                    TopBar
                 }
 
                 ItemInventoryFilterView(action: handleAction(_:))
 
-                InventoryList()
-
-                Spacer()
+                InventoryList
+                
             }
             .frameTop()
             .frameHorizontalPadding()
@@ -74,7 +71,7 @@ extension ItemDocumentListViewV2 {
     // MARK: Top Bar
 
     @ViewBuilder
-    private func TopBar() -> some View {
+    private var TopBar: some View {
         TopAppBar(
             leadingIcon: {
                 Text("Inventory")
@@ -115,34 +112,39 @@ extension ItemDocumentListViewV2 {
     // MARK: Inventory List
 
     @ViewBuilder
-    private func InventoryList() -> some View {
+    private var InventoryList: some View {
         ScrollView {
             LazyVStack(spacing: 8) {
-                ForEach(viewModel.documentsArray, id: \.id) { item in
+                ForEach(viewModel.documents, id: \.id) { item in
                     NavigationLink(value: item) {
                         ItemListItemView(item: item)
                     }
                     .buttonStyle(PlainButtonStyle())
-                    .onAppear {
-                        if item == viewModel.documentsArray.last {
-                            Task {
-                                await viewModel.loadMoreDocuments()
-                            }
-                        }
-                    }
                 }
 
-                if viewModel.isLoading {
-                    ProgressView()
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .padding()
-                }
+                LoadMoreButton()
             }
         }
         .refreshable {
-            if !viewModel.isLoading {
-                await viewModel.refresh()
+            await viewModel.refresh()
+        }
+    }
+
+    @ViewBuilder
+    private func LoadMoreButton() -> some View {
+        if viewModel.isLoading {
+            ProgressView()
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding()
+        } else if viewModel.hasMore {
+            RDButton(
+                variant: .outline,
+                label: "Load More",
+                fullWidth: true
+            ) {
+                Task { await viewModel.loadMore() }
             }
+            .padding(.vertical, 4)
         }
     }
 }
@@ -157,12 +159,18 @@ private extension ItemDocumentListViewV2 {
             case .search(let text):
                 Task { await viewModel.search(text: text) }
             case .cancel:
-                Task { await viewModel.loadInitialDocuments() }
+                Task { await viewModel.refresh() }
             }
         case let filterAction as ItemInventoryFilterViewAction:
             switch filterAction {
             case .selectItemType(let newType):
-                Task { await viewModel.applyTypeFilter(newType) }
+                Task {
+                    if let newType {
+                        await viewModel.updateFilter(key: "type", value: newType.rawValue)
+                    } else {
+                        await viewModel.removeFilter(key: "type")
+                    }
+                }
             }
         default:
             print("ERROR: Untracked action")

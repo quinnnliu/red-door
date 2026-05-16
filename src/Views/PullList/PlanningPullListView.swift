@@ -154,7 +154,7 @@ struct PlanningPullListView: View {
 
     @ViewBuilder
     private func Footer() -> some View {
-        RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.truckBoxBadgeClockFill, text: "Begin Install", fullWidth: true) {
+        RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.truckBoxBadgeClockFill, label: "Begin Install", fullWidth: true) {
             Task { @MainActor in
                 viewModel.selectedList.status = .staging
                 await viewModel.updateSelectedList()

@@ -65,7 +65,7 @@ struct RoomItemView: View {
 
                 Spacer()
 
-                RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.plus, iconBold: true, text: "Add Item to room", fullWidth: true) {
+                RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.plus, iconBold: true, label: "Add Item to room", fullWidth: true) {
                     Task {
                         let added = await roomViewModel.addItemToRoom(item: item)
                         if added {

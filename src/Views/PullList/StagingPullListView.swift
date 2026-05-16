@@ -104,7 +104,7 @@ struct StagingPullListView: View {
 
     @ViewBuilder
     private func Footer() -> some View {
-        RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.truckBoxBadgeClockFill, text: "Create Installed List", fullWidth: true) {
+        RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.truckBoxBadgeClockFill, label: "Create Installed List", fullWidth: true) {
             Task { // TODO: consider wrapping this in some error-handling function
                 do {
                     await viewModel.loadRooms() // get updated selections
