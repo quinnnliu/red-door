@@ -49,7 +49,7 @@ struct EditModelInformationSheet: View {
                     
                     Spacer()
                     
-                    RDButton(variant: .red, size: .default, leadingIcon: "trash", text: "Delete Model", fullWidth: false) {
+                    RDButton(variant: .red, size: .default, leadingIcon: "trash", label: "Delete Model", fullWidth: false) {
                         showDeleteAlert = true
                     }
                     .alert(

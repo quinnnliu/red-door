@@ -39,7 +39,7 @@ struct CreateModelView: View {
 
                     Spacer()
 
-                    RDButton(variant: .default, size: .default, leadingIcon: "plus", text: "Add Model to Inventory") {
+                    RDButton(variant: .default, size: .default, leadingIcon: "plus", label: "Add Model to Inventory") {
                         saveModel()
                     }
                 }   

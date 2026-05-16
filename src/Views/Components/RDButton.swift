@@ -143,7 +143,7 @@ struct RDButton: View {
     var leadingIcon: String? = nil
     var trailingIcon: String? = nil
     var iconBold: Bool = false
-    var text: String? = nil
+    var label: String? = nil
     var fullWidth: Bool = false
     var disabled: Bool = false
     let action: () -> Void
@@ -159,8 +159,8 @@ struct RDButton: View {
                         .fontWeight(iconBold ? .bold : .medium)
                 }
                 
-                if let text, size != .icon {
-                    Text(text)
+                if let label, size != .icon {
+                    Text(label)
                         .font(size.fontSize)
                         .fontWeight(.medium)
                 }
@@ -246,33 +246,33 @@ struct RDLinkButton: View {
     VStack(spacing: 16) {
         // Default variants
         VStack(spacing: 12) {
-            RDButton(variant: .default, text: "Default", action: {})
-            RDButton(variant: .destructive, text: "Destructive", action: {})
-            RDButton(variant: .outline, text: "Outline", action: {})
-            RDButton(variant: .secondary, text: "Secondary", action: {})
-            RDButton(variant: .ghost, text: "Ghost", action: {})
+            RDButton(variant: .default, label: "Default", action: {})
+            RDButton(variant: .destructive, label: "Destructive", action: {})
+            RDButton(variant: .outline, label: "Outline", action: {})
+            RDButton(variant: .secondary, label: "Secondary", action: {})
+            RDButton(variant: .ghost, label: "Ghost", action: {})
             RDLinkButton(text: "Link Button", action: {})
         }
         
         // Sizes
         VStack(spacing: 12) {
-            RDButton(variant: .default, size: .sm, text: "Small", action: {})
-            RDButton(variant: .default, size: .default, text: "Default", action: {})
-            RDButton(variant: .default, size: .lg, text: "Large", action: {})
+            RDButton(variant: .default, size: .sm, label: "Small", action: {})
+            RDButton(variant: .default, size: .default, label: "Default", action: {})
+            RDButton(variant: .default, size: .lg, label: "Large", action: {})
             RDButton(variant: .default, size: .icon, leadingIcon: "plus", action: {})
         }
         
         // With icons
         VStack(spacing: 12) {
-            RDButton(variant: .default, leadingIcon: "plus", text: "Add Item", action: {})
-            RDButton(variant: .outline, trailingIcon: "arrow.right", text: "Continue", action: {})
+            RDButton(variant: .default, leadingIcon: "plus", label: "Add Item", action: {})
+            RDButton(variant: .outline, trailingIcon: "arrow.right", label: "Continue", action: {})
         }
         
         // Full width
-        RDButton(variant: .default, text: "Full Width Button", fullWidth: true, action: {})
+        RDButton(variant: .default, label: "Full Width Button", fullWidth: true, action: {})
         
         // Disabled
-        RDButton(variant: .default, text: "Disabled", disabled: true, action: {})
+        RDButton(variant: .default, label: "Disabled", disabled: true, action: {})
     }
     .padding()
 }

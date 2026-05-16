@@ -44,102 +44,11 @@ struct EditItemAttributesSection: View {
                     .cornerRadius(8)
             }
 
-            // MARK: Color + Material
-
             ColorMaterialRow
 
-            // MARK: Details
-
-            VStack(alignment: .leading, spacing: 4) {
-                SectionTitle("Details:")
-
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(alignment: .center, spacing: 0) {
-                        HStack(alignment: .center, spacing: 4) {
-                            Text("Type:")
-
-                            Picker("", selection: $type) {
-                                ForEach(ItemType.allCases, id: \.self) { option in
-                                    Text(option.rawValue)
-                                        .tag(option)
-                                }
-                            }
-                            .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                        Spacer()
-
-                        HStack(alignment: .center, spacing: 4) {
-                            Text("Essential:")
-                                .foregroundColor(.red)
-                                .bold()
-
-                            Toggle("", isOn: $isEssential)
-                                .labelsHidden()
-                        }
-                    }
-                }
-                .padding(8)
-                .background(Color(.systemGray5))
-                .cornerRadius(8)
-            }
-
-            // MARK: Purchase Info
-
-            VStack(alignment: .leading, spacing: 4) {
-                SectionTitle("Purchase Info:")
-
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text("Value ($):")
-                            .frame(width: 110, alignment: .leading)
-                        TextField("0.00 (optional)", value: $value, format: .number)
-                            .keyboardType(.decimalPad)
-                    }
-
-                    HStack {
-                        Text("Brand:")
-                            .frame(width: 110, alignment: .leading)
-                        TextField("Brand (optional)", text: Binding(
-                            get: { brand ?? "" },
-                            set: { brand = $0.isEmpty ? nil : $0 }
-                        ))
-                    }
-
-                    HStack {
-                        Text("Purchased At:")
-                            .frame(width: 110, alignment: .leading)
-                        TextField("Store or URL (optional)", text: Binding(
-                            get: { purchaseLocation ?? "" },
-                            set: { purchaseLocation = $0.isEmpty ? nil : $0 }
-                        ))
-                    }
-
-                    HStack {
-                        Text("Date:")
-                            .frame(width: 110, alignment: .leading)
-                        if datePurchased != nil {
-                            DatePicker("", selection: datePickerBinding, displayedComponents: .date)
-                                .labelsHidden()
-                            Button {
-                                datePurchased = nil
-                            } label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundColor(.secondary)
-                            }
-                        } else {
-                            Button("Add date") {
-                                datePurchased = Self.dateFormatter.string(from: Date())
-                            }
-                            .foregroundColor(.secondary)
-                        }
-                    }
-                }
-                .padding(8)
-                .background(Color(.systemGray5))
-                .cornerRadius(8)
-            }
+            DetailsSection
+            
+            PurchaseInfo
         }
     }
 
@@ -195,6 +104,105 @@ struct EditItemAttributesSection: View {
         }
     }
     
+    // MARK: DetailsSection
+    
+    var DetailsSection: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            SectionTitle("Details:")
+            
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .center, spacing: 0) {
+                    HStack(alignment: .center, spacing: 4) {
+                        Text("Type:")
+                        
+                        Picker("", selection: $type) {
+                            ForEach(ItemType.allCases, id: \.self) { option in
+                                Text(option.rawValue)
+                                    .tag(option)
+                            }
+                        }
+                        .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    
+                    Spacer()
+                    
+                    HStack(alignment: .center, spacing: 4) {
+                        Text("Essential:")
+                            .foregroundColor(.red)
+                            .bold()
+                        
+                        Toggle("", isOn: $isEssential)
+                            .labelsHidden()
+                    }
+                }
+            }
+            .padding(8)
+            .background(Color(.systemGray5))
+            .cornerRadius(8)
+        }
+
+    }
+    
+    // MARK: Purchase Info
+    
+    var PurchaseInfo: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            SectionTitle("Purchase Info:")
+            
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    Text("Value ($):")
+                        .frame(width: 110, alignment: .leading)
+                    TextField("0.00 (optional)", value: $value, format: .number)
+                        .keyboardType(.decimalPad)
+                }
+                
+                HStack {
+                    Text("Brand:")
+                        .frame(width: 110, alignment: .leading)
+                    TextField("Brand (optional)", text: Binding(
+                        get: { brand ?? "" },
+                        set: { brand = $0.isEmpty ? nil : $0 }
+                    ))
+                }
+                
+                HStack {
+                    Text("Purchased At:")
+                        .frame(width: 110, alignment: .leading)
+                    TextField("Store or URL (optional)", text: Binding(
+                        get: { purchaseLocation ?? "" },
+                        set: { purchaseLocation = $0.isEmpty ? nil : $0 }
+                    ))
+                }
+                
+                HStack {
+                    Text("Date:")
+                        .frame(width: 110, alignment: .leading)
+                    if datePurchased != nil {
+                        DatePicker("", selection: datePickerBinding, displayedComponents: .date)
+                            .labelsHidden()
+                        Button {
+                            datePurchased = nil
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.secondary)
+                        }
+                    } else {
+                        Button("Add date") {
+                            datePurchased = Self.dateFormatter.string(from: Date())
+                        }
+                        .foregroundColor(.secondary)
+                    }
+                }
+            }
+            .padding(8)
+            .background(Color(.systemGray5))
+            .cornerRadius(8)
+        }
+
+    }
+    
     // MARK: Section Title
     func SectionTitle(_ title: String) -> some View {
         Text(title)
@@ -202,8 +210,8 @@ struct EditItemAttributesSection: View {
             .foregroundStyle(.red)
             .bold()
     }
-        // MARK: MaterialPickerToggle
     
+    // MARK: MaterialPickerToggle
     @ViewBuilder
     func MaterialPickerToggleV2(
         isActive: Binding<Bool>,

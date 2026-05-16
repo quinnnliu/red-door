@@ -54,7 +54,7 @@ struct CreateItemsViewV2: View {
                     variant: .default,
                     size: .default,
                     leadingIcon: "plus",
-                    text: "Add Items to Inventory"
+                    label: "Add Items to Inventory"
                 ) {
                     Task {
                         await viewModel.createItems()

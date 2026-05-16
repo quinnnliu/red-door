@@ -142,7 +142,7 @@ struct OptionsView: View {
                     }
 
                     if editingWarehouses {
-                        RDButton(variant: .secondary, size: .default, leadingIcon: "plus", text: "Add Warehouse", fullWidth: true) {
+                        RDButton(variant: .secondary, size: .default, leadingIcon: "plus", label: "Add Warehouse", fullWidth: true) {
                             newWarehouse = Warehouse(name: "", address: Address())
                             showAddressSheet = true
                         }

@@ -51,7 +51,7 @@ struct EditItemSheetV2: View {
 
                     Spacer()
 
-                    RDButton(variant: .red, size: .default, leadingIcon: "trash", text: "Delete Item", fullWidth: false) {
+                    RDButton(variant: .red, size: .default, leadingIcon: "trash", label: "Delete Item", fullWidth: false) {
                         showDeleteAlert = true
                     }
                     .alert("Confirm Delete", isPresented: $showDeleteAlert) {
