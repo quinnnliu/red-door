@@ -25,7 +25,7 @@ struct NavigationDestinationsModifierV2: ViewModifier {
             .navigationDestination(for: ItemV2.self) { item in
                 ItemDetailsViewV2(item: item)
             }
-            .navigationDestination(for: RDListV2.self) { list in
+            .navigationDestination(for: PullListV2.self) { list in
                 Text("Pull List: \(list.address.getStreetAddress() ?? list.id)")
             }
             .navigationDestination(for: RDList.self) { list in

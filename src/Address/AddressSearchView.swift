@@ -87,7 +87,7 @@ struct AddressSearchView: View {
 
                 Spacer()
 
-                RDButton(variant: .default, label: "Use This Address", fullWidth: true) {
+                RDButton(variant: .red, label: "Use This Address", fullWidth: true) {
                     if let address = convertToAddress(item) {
                         selectedAddress = address
                         addressId = address.id

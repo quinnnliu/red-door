@@ -8,8 +8,8 @@
 import Firebase
 
 class GenericRepository<T: AnyRDDocument> {
-    let collectionRef: CollectionReference
-    let db: Firestore
+    var collectionRef: CollectionReference
+    var db: Firestore
     
     init(db: Firestore = Firestore.firestore()) {
         self.db = db
@@ -20,13 +20,13 @@ class GenericRepository<T: AnyRDDocument> {
         return db.batch()
     }
     
-    // MARK: - Standalone async
-    func set(_ document: T, id: String) async throws {
+    // MARK: - Standard
+    func set(_ document: T, id: String) throws {
         try collectionRef.document(id).setData(from: document)
     }
     
-    func delete(id: String) async throws {
-        try await collectionRef.document(id).delete()
+    func delete(id: String) {
+        collectionRef.document(id).delete()
     }
     
     func get(id: String) async throws -> T {
@@ -34,9 +34,9 @@ class GenericRepository<T: AnyRDDocument> {
         return try snapshot.data(as: T.self)
     }
     
-    func update(id: String, fields: [AnyHashable: Any]) async throws {
+    func update(id: String, fields: [AnyHashable: Any]) {
         let documentRef = collectionRef.document(id)
-        try await documentRef.updateData(fields)
+        documentRef.updateData(fields)
     }
     
     // MARK: - Batch participatory

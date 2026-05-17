@@ -1,5 +1,5 @@
 //
-//  RDListV2.swift
+//  PullListV2.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 5/16/26.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct RDListV2: AnyRDDocument {
+struct PullListV2: AnyRDDocument {
     static let collectionName: String = "pull_list_V2"
     static let orderByField: String = "created_date"
 
@@ -52,25 +52,25 @@ struct RDListV2: AnyRDDocument {
         self.roomIds = roomIds
     }
     
-    // MARK: - Init from Existing List
+    // TODO: - Init from Existing List (need to re-implement for InstalledListV2
     
-    init(
-        list: RDListV2,
-        listType: DocumentType
-    ) {
-        self.id = list.id
-        self.listType = listType
-        
-        self.address = list.address
-        self.addressId = list.address.id
-        
-        self.createdDate = list.createdDate
-        self.installDate = list.installDate
-        self.uninstallDate = list.uninstallDate
-        
-        self.clientId = list.clientId
-        self.roomIds = list.roomIds
-    }
+//    init(
+//        list: PullListV2,
+//        listType: DocumentType
+//    ) {
+//        self.id = list.id
+//        self.listType = listType
+//        
+//        self.address = list.address
+//        self.addressId = list.address.id
+//        
+//        self.createdDate = list.createdDate
+//        self.installDate = list.installDate
+//        self.uninstallDate = list.uninstallDate
+//        
+//        self.clientId = list.clientId
+//        self.roomIds = list.roomIds
+//    }
     
     enum CodingKeys: String, CodingKey {
         case id, address
