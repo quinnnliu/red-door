@@ -9,7 +9,7 @@ import SwiftUI
 
 @Observable
 final class CreateItemsViewModel {
-    private let itemRepo: ItemRepository = ItemRepository()
+    private let itemRepo: ItemRepository = .init()
     
     // MARK: itemState
     var itemState: ItemV2

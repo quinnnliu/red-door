@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct PullListDocumentListViewV2: View {
-    @State private var viewModel: DocumentListViewModelV2<RDListV2> = DocumentListViewModelV2<RDListV2>()
+    @State private var viewModel: DocumentListViewModelV2<PullListV2> = DocumentListViewModelV2<PullListV2>()
     @Binding var path: NavigationPath
 
     @State private var searchFocused: Bool = false
@@ -94,7 +94,7 @@ extension PullListDocumentListViewV2 {
         }
     }
 
-    // MARK: Pull List List
+    // MARK: PullList List
 
     @ViewBuilder
     private var PullListList: some View {
@@ -102,7 +102,7 @@ extension PullListDocumentListViewV2 {
             LazyVStack(spacing: 8) {
                 ForEach(viewModel.documents, id: \.id) { list in
                     NavigationLink(value: list) {
-                        RDListV2ListItem(list: list)
+                        PullListV2ListItem(list: list)
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
@@ -152,10 +152,10 @@ private extension PullListDocumentListViewV2 {
     }
 }
 
-// MARK: - RDListV2ListItem
+// MARK: - PullListV2ListItem
 
-struct RDListV2ListItem: View {
-    let list: RDListV2
+struct PullListV2ListItem: View {
+    let list: PullListV2
 
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
