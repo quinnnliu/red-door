@@ -51,7 +51,7 @@ extension PullListDocumentListViewV2 {
     @ViewBuilder
     private var TopBar: some View {
         TopAppBar(
-            leadingIcon: {
+            leadingView: {
                 Text("Pull Lists")
                     .font(.system(.title2, design: .default))
                     .bold()
@@ -60,7 +60,7 @@ extension PullListDocumentListViewV2 {
             header: {
                 EmptyView()
             },
-            trailingIcon: {
+            trailingView: {
                 TrailingIconGroup
             }
         ).tint(.red)
@@ -101,7 +101,7 @@ extension PullListDocumentListViewV2 {
         ScrollView {
             LazyVStack(spacing: 8) {
                 ForEach(viewModel.documents, id: \.id) { list in
-                    NavigationLink(value: list) {
+                    NavigationLink(value: NavigationDestination.pulllistDetail(list)) {
                         PullListV2ListItem(list: list)
                     }
                     .buttonStyle(PlainButtonStyle())
@@ -149,47 +149,6 @@ private extension PullListDocumentListViewV2 {
         default:
             print("ERROR: Untracked action")
         }
-    }
-}
-
-// MARK: - PullListV2ListItem
-
-struct PullListV2ListItem: View {
-    let list: PullListV2
-
-    var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            Text(list.address.getStreetAddress() ?? "")
-                .font(.headline)
-
-            VStack(alignment: .leading, spacing: 6) {
-                (
-                    Text("Install Date: ")
-                        .foregroundColor(.red)
-                    +
-                    Text(list.installDate)
-                        .foregroundColor(.secondary)
-                )
-
-                (
-                    Text("Client ID: ")
-                        .foregroundColor(.red)
-                    +
-                    Text(list.clientId)
-                        .foregroundColor(.secondary)
-                )
-            }
-            .font(.caption)
-
-            Spacer()
-        }
-        .padding(12)
-        .background(Color(.systemGray5))
-        .overlay(
-            RoundedRectangle(cornerRadius: 6)
-                .stroke(Color(.systemGray3), lineWidth: 4)
-        )
-        .frame(maxWidth: .infinity)
     }
 }
 

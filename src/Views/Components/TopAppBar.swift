@@ -7,23 +7,25 @@
 
 import SwiftUI
 
-struct TopAppBar<LeadingIcon: View, Header: View, TrailingIcon: View>: View {
-    @ViewBuilder var leadingIcon: LeadingIcon
+struct TopAppBar<LeadingView: View, Header: View, TrailingView: View>: View {
+    @ViewBuilder var leadingView: LeadingView
     @ViewBuilder var header: Header
-    @ViewBuilder var trailingIcon: TrailingIcon
+    @ViewBuilder var trailingView: TrailingView
 
     var body: some View {
-        HStack(alignment: .center, spacing: 0) {
-            leadingIcon
-
-            Spacer()
-
+        ZStack(alignment: .center) {
+            HStack(alignment: .center, spacing: 0) {
+                leadingView
+                
+                Spacer()
+                
+                trailingView
+            }
+            
             header
-
-            Spacer()
-
-            trailingIcon
+                .frame(maxWidth: (Constants.screenWidth * 0.7), alignment: .center)
         }
+        
     }
 }
 

@@ -119,7 +119,7 @@ struct CreatePullListViewV2: View {
     @ViewBuilder
     private var TopBar: some View {
         TopAppBar(
-            leadingIcon: {
+            leadingView: {
                 BackButton()
             }, header: {
                 RDButton(
@@ -128,7 +128,7 @@ struct CreatePullListViewV2: View {
                     label: viewModel.pullListState.address.isInitialized() ? viewModel.pullListState.address.getStreetAddress() ?? "" : "Enter Address") {
                     showAddressSheet = true
                 }
-            }, trailingIcon: {
+            }, trailingView: {
                 Spacer().frame(width: 32)
             }
         )

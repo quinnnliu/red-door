@@ -97,7 +97,7 @@ struct ItemDetailsViewV2: View {
     @ViewBuilder
     private func TopBar() -> some View {
         TopAppBar(
-            leadingIcon: {
+            leadingView: {
                 BackButton()
             },
             header: {
@@ -107,7 +107,7 @@ struct ItemDetailsViewV2: View {
                     Text(viewModel.item.name)
                 }
             },
-            trailingIcon: {
+            trailingView: {
                 RDButton(variant: .red, size: .icon, leadingIcon: "square.and.pencil", iconBold: true, fullWidth: false) {
                     showEditSheet = true
                 }

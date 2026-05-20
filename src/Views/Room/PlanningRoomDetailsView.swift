@@ -102,7 +102,7 @@ struct PlanningRoomDetailsView: View {
     @ViewBuilder
     private func TopBar() -> some View {
         TopAppBar(
-            leadingIcon: {
+            leadingView: {
                 BackButton()
             }, header: {
                 (
@@ -113,7 +113,7 @@ struct PlanningRoomDetailsView: View {
                     Text(roomViewModel.selectedRoom.roomName)
                         .bold()
                 )
-            }, trailingIcon: {
+            }, trailingView: {
                 RoomDetailsMenu()
             }
         )

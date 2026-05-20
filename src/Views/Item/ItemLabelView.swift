@@ -100,11 +100,11 @@ struct ItemLabelView: View {
 
     @ViewBuilder
     private func TopBar() -> some View {
-        TopAppBar(leadingIcon: {
+        TopAppBar(leadingView: {
             BackButton()
         }, header: {
             Text("QR Code")
-        }, trailingIcon: {
+        }, trailingView: {
             Spacer().frame(width: 32)
         })
     }

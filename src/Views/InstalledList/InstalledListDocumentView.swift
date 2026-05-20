@@ -52,7 +52,7 @@ struct InstalledListDocumentView: View {
 
     @ViewBuilder private func TopBar() -> some View {
         TopAppBar(
-            leadingIcon: {
+            leadingView: {
                 Text("Installed Lists")
                     .font(.system(.title2, design: .default))
                     .bold()
@@ -61,7 +61,7 @@ struct InstalledListDocumentView: View {
             header: {
                 EmptyView()
             },
-            trailingIcon: {
+            trailingView: {
                 HStack(spacing: 12) {
                     if !searchFocused {
                         RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", iconBold: true, fullWidth: false) {

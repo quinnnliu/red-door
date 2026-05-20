@@ -100,7 +100,7 @@ struct RoomItemView: View {
     @ViewBuilder
     private func TopBar() -> some View {
         TopAppBar(
-            leadingIcon: {
+            leadingView: {
                 BackButton()
             }, header: {
                 HStack(spacing: 0) {
@@ -110,7 +110,7 @@ struct RoomItemView: View {
 
                     Text(model.name)
                 }
-            }, trailingIcon: {
+            }, trailingView: {
                 Spacer().frame(32)
             }
         )

@@ -85,7 +85,7 @@ struct RoomAddItemsSheet: View {
     @ViewBuilder
     private func TopBar() -> some View {
         TopAppBar(
-            leadingIcon: {
+            leadingView: {
                 Text("Available Inventory")
                     .font(.system(.title2, design: .default))
                     .bold()
@@ -94,7 +94,7 @@ struct RoomAddItemsSheet: View {
             header: {
                 EmptyView()
             },
-            trailingIcon: {
+            trailingView: {
                 if !searchFocused {
                     RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", iconBold: true, fullWidth: false) {
                         searchFocused = true

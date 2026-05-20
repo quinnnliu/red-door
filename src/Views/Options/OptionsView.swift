@@ -80,14 +80,14 @@ struct OptionsView: View {
     // MARK: Top Bar
     @ViewBuilder
     private func TopBar() -> some View {
-        TopAppBar(leadingIcon: {
+        TopAppBar(leadingView: {
             Text("Options")
                 .font(.system(.title2, design: .default))
                 .foregroundColor(.red)
                 .bold()
         }, header: {
             EmptyView()
-        }, trailingIcon: {
+        }, trailingView: {
             ProfileImage()
         })
     }

@@ -90,7 +90,7 @@ struct EditItemSheetV2: View {
     @ViewBuilder
     private func TopBar() -> some View {
         TopAppBar(
-            leadingIcon: {
+            leadingView: {
                 RDButton(variant: .red, size: .icon, leadingIcon: "xmark", iconBold: true, fullWidth: false) {
                     dismiss()
                 }
@@ -99,7 +99,7 @@ struct EditItemSheetV2: View {
             header: {
                 ItemNameEntry()
             },
-            trailingIcon: {
+            trailingView: {
                 RDButton(variant: .red, size: .icon, leadingIcon: "checkmark", iconBold: true, fullWidth: false) {
                     saveItem()
                 }

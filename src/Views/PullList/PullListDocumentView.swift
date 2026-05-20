@@ -56,7 +56,7 @@ struct PullListDocumentView: View {
     @ViewBuilder 
     private func TopBar() -> some View {
         TopAppBar(
-            leadingIcon: {
+            leadingView: {
                 Text("Pull Lists")
                     .font(.system(.title2, design: .default))
                     .bold()
@@ -65,7 +65,7 @@ struct PullListDocumentView: View {
             header: {
                 EmptyView()
             },
-            trailingIcon: {
+            trailingView: {
                 HStack(spacing: 8) {
                     if !searchFocused {
                         RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", iconBold: true, fullWidth: false) {

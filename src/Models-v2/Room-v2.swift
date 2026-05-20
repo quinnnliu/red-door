@@ -28,8 +28,9 @@ struct RoomV2: AnyRDDocument {
     }
     
     enum CodingKeys: String, CodingKey {
-        case id, name, items
+        case id, items
         case listId = "list_id"
+        case displayName = "display_name"
     }
 }
 

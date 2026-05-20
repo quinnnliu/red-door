@@ -38,6 +38,23 @@ class GenericRepository<T: AnyRDDocument> {
         let documentRef = collectionRef.document(id)
         documentRef.updateData(fields)
     }
+
+    func get(ids: [String]) async throws -> [T] {
+        guard !ids.isEmpty else { return [] }
+        var result: [T] = []
+        // Firestore "in" queries are capped at 30; chunk at 10 for safety
+        let chunks = stride(from: 0, to: ids.count, by: 10).map {
+            Array(ids[$0..<min($0 + 10, ids.count)])
+        }
+        for chunk in chunks {
+            let snapshot = try await collectionRef
+                .whereField(FieldPath.documentID(), in: chunk)
+                .getDocuments()
+            let documents = try snapshot.documents.map { try $0.data(as: T.self) }
+            result.append(contentsOf: documents)
+        }
+        return result
+    }
     
     // MARK: - Batch participatory
     func set(_ document: T, id: String, inBatch batch: WriteBatch) throws {
