@@ -15,12 +15,14 @@ struct NavigationDestinationsModifierV2: ViewModifier {
         content
             .navigationDestination(for: NavigationDestination.self) { destination in
                 switch destination {
-                case .itemDetail(let item):
+                case .itemDetailView(let item):
                     ItemDetailsViewV2(item: item)
-                case .pulllistDetail(let list):
+                case .pullListDetailView(let list):
                     PullListV2DetailsView(list: list)
-                case .roomDetail(let room, let list):
-                    Text("placholder room detail view")
+                case .roomDetailView(let room, let list):
+                    Text("placholder room detail view for room \(room.displayName) in list \(list.id)")
+                case .pullListItemDetailView(let item, let list):
+                    Text("placeholder itemdetailview for item \(item.id) for pull list \(list.id)")
                 }
             }
     }

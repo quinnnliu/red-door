@@ -5,6 +5,8 @@
 //  Created by Quinn Liu on 11/16/25.
 //
 
+// TODO: remove dead code from v2 structs
+
 import SwiftUI
 
 @Observable

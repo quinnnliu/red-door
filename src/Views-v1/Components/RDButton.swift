@@ -146,6 +146,7 @@ struct RDButton: View {
     var label: String? = nil
     var fullWidth: Bool = false
     var disabled: Bool = false
+    var allowsHitTesting: Bool = true
     let action: () -> Void
     
     @State private var isPressed = false
@@ -190,6 +191,7 @@ struct RDButton: View {
             .scaleEffect(isPressed ? 0.98 : 1.0)
             .opacity(disabled ? 0.5 : 1.0)
         }
+        .allowsHitTesting(allowsHitTesting)
         .disabled(disabled)
         .buttonStyle(PlainButtonStyle())
         .simultaneousGesture(

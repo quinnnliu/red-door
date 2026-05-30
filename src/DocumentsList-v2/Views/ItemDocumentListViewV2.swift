@@ -116,7 +116,7 @@ extension ItemDocumentListViewV2 {
         ScrollView {
             LazyVStack(spacing: 8) {
                 ForEach(viewModel.documents, id: \.id) { item in
-                    NavigationLink(value: NavigationDestination.itemDetail(item)) {
+                    NavigationLink(value: NavigationDestination.itemDetailView(item)) {
                         ItemListItemView(item: item)
                     }
                     .buttonStyle(PlainButtonStyle())

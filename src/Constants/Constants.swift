@@ -49,4 +49,11 @@ enum SFSymbols {
     static let pencil = "pencil"
     static let checkmarkSquareFill = "checkmark.square.fill"
     static let shippingbox = "shippingbox"
+    static let chairFill = "chair.fill"
+    static let deskFill = "table.furniture.fill"
+    static let tableFill = "table.furniture.fill"
+    static let couchFill = "sofa.fill"
+    static let lampFill = "lamp.floor.fill"
+    static let art = "photo.artframe"
+    static let noSign = "nosign"
 }
