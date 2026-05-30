@@ -71,7 +71,7 @@ struct UnstageInstalledListCover: View {
     @ViewBuilder
     private func TopBar() -> some View {
         TopAppBar(
-            leadingIcon: { ExitButton() },
+            leadingView: { ExitButton() },
             header: {
                 (
                     Text("Unstaging: ")
@@ -81,7 +81,7 @@ struct UnstageInstalledListCover: View {
                     Text(viewModel.selectedList.address.getStreetAddress() ?? "")
                 )
             },
-            trailingIcon: { 
+            trailingView: { 
                 RDButton(variant: .red, size: .icon, leadingIcon: "arrow.counterclockwise", fullWidth: false) {
                     Task {
                         stagedItems = []

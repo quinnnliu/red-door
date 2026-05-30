@@ -73,7 +73,7 @@ struct ModelInventoryView: View {
     @ViewBuilder
     private func TopBar() -> some View {
         TopAppBar(
-            leadingIcon: {
+            leadingView: {
                 Text("Inventory")
                     .font(.system(.title2, design: .default))
                     .bold()
@@ -82,7 +82,7 @@ struct ModelInventoryView: View {
             header: {
                 EmptyView()
             },
-            trailingIcon: {
+            trailingView: {
                 HStack(spacing: 8) {
                     Group {
                         if !searchFocused {

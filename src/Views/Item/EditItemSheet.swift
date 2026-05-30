@@ -104,7 +104,7 @@ struct EditItemSheet: View {
     // MARK: Top Bar
     @ViewBuilder
     private func TopBar() -> some View {
-        TopAppBar(leadingIcon: {
+        TopAppBar(leadingView: {
             RDButton(variant: .red, size: .icon, leadingIcon: "xmark", iconBold: true, fullWidth: false) {
                 dismiss()
             }
@@ -117,7 +117,7 @@ struct EditItemSheet: View {
 
                 Text(model.name)
             }
-        }, trailingIcon: {
+        }, trailingView: {
             RDButton(variant: .red, size: .icon, leadingIcon: "checkmark", iconBold: true, fullWidth: false) {
                 focusAttentionReason = false
                 saveItem()

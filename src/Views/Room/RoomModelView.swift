@@ -60,13 +60,13 @@ struct RoomModelView: View {
     @ViewBuilder
     private func TopBar() -> some View {
         TopAppBar(
-            leadingIcon: {
+            leadingView: {
                 BackButton()
             },
             header: {
                 ModelNameView()
             },
-            trailingIcon: {
+            trailingView: {
                 Spacer().frame(32)
             }
         )

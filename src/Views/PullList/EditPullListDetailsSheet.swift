@@ -83,7 +83,7 @@ struct EditPullListDetailsSheet: View {
     // MARK: Top Bar
     @ViewBuilder
     private func TopBar() -> some View {
-        TopAppBar(leadingIcon: {
+        TopAppBar(leadingView: {
             RDButton(variant: .red, size: .icon, leadingIcon: "xmark", iconBold: true, fullWidth: false) {
                 dismiss()
             }
@@ -92,7 +92,7 @@ struct EditPullListDetailsSheet: View {
             RDButton(variant: .outline, size: .default, label: editingList.address.isInitialized() ? editingList.address.getStreetAddress() ?? "" : "Enter Address") {
                 showAddressSheet = true
             }
-        }, trailingIcon: {
+        }, trailingView: {
             RDButton(variant: .red, size: .icon, leadingIcon: "checkmark", iconBold: true, fullWidth: false) {
                 let installDateString = installDate.formatted(.dateTime.year().month().day())
                 if installDateString != viewModel.selectedList.installDate {

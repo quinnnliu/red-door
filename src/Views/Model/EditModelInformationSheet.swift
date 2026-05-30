@@ -92,7 +92,7 @@ struct EditModelInformationSheet: View {
     @ViewBuilder
     private func TopBar() -> some View {
         TopAppBar(
-            leadingIcon: {
+            leadingView: {
                 RDButton(variant: .red, size: .icon, leadingIcon: "xmark", iconBold: true, fullWidth: false) {
                     dismiss()
                 }
@@ -101,7 +101,7 @@ struct EditModelInformationSheet: View {
             header: {
                 ModelNameEntry()
             },
-            trailingIcon: {
+            trailingView: {
                 RDButton(variant: .red, size: .icon, leadingIcon: "checkmark", iconBold: true, fullWidth: false) {
                     saveModel()
                 }

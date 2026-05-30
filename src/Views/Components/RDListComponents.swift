@@ -23,7 +23,7 @@ struct RDListTopBar<TrailingIcon: View>: View {
 
     var body: some View {
         TopAppBar(
-            leadingIcon: { BackButton() },
+            leadingView: { BackButton() },
             header: { 
                 (
                     Text("\(status.rawValue.capitalized): ")
@@ -33,7 +33,7 @@ struct RDListTopBar<TrailingIcon: View>: View {
                     Text(streetAddress.getStreetAddress() ?? "")
                 )
             },
-            trailingIcon: { trailingIcon }
+            trailingView: { trailingIcon }
         )
     }
 }

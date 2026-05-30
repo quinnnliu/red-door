@@ -73,7 +73,7 @@ extension ItemDocumentListViewV2 {
     @ViewBuilder
     private var TopBar: some View {
         TopAppBar(
-            leadingIcon: {
+            leadingView: {
                 Text("Inventory")
                     .font(.system(.title2, design: .default))
                     .bold()
@@ -82,7 +82,7 @@ extension ItemDocumentListViewV2 {
             header: {
                 EmptyView()
             },
-            trailingIcon: {
+            trailingView: {
                 TrailingIconGroup
             }
         ).tint(.red)
@@ -116,7 +116,7 @@ extension ItemDocumentListViewV2 {
         ScrollView {
             LazyVStack(spacing: 8) {
                 ForEach(viewModel.documents, id: \.id) { item in
-                    NavigationLink(value: item) {
+                    NavigationLink(value: NavigationDestination.itemDetail(item)) {
                         ItemListItemView(item: item)
                     }
                     .buttonStyle(PlainButtonStyle())

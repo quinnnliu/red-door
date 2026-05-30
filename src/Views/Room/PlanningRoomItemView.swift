@@ -106,7 +106,7 @@ struct PlanningRoomItemView: View {
 
     @ViewBuilder
     private func TopBar() -> some View {
-        TopAppBar(leadingIcon: {
+        TopAppBar(leadingView: {
             BackButton()
         }, header: {
             HStack(spacing: 0) {
@@ -116,7 +116,7 @@ struct PlanningRoomItemView: View {
 
                 Text(model?.name ?? "Loading...")
             }
-        }, trailingIcon: {
+        }, trailingView: {
             Spacer().frame(32)
         })
     }

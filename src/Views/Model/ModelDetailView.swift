@@ -113,13 +113,13 @@ struct ModelDetailView: View {
     @ViewBuilder
     private func TopBar() -> some View {
         TopAppBar(
-            leadingIcon: {
+            leadingView: {
                 BackButton()
             },
             header: {
                 ModelNameView()
             },
-            trailingIcon: {
+            trailingView: {
                 RDButton(variant: .red, size: .icon, leadingIcon: "square.and.pencil", iconBold: true, fullWidth: false) {
                     showEditSheet = true
                 }

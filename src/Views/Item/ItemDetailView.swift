@@ -105,7 +105,7 @@ struct ItemDetailView: View {
 
     @ViewBuilder
     private func TopBar() -> some View {
-        TopAppBar(leadingIcon: {
+        TopAppBar(leadingView: {
             BackButton()
         }, header: {
             HStack(spacing: 0) {
@@ -115,7 +115,7 @@ struct ItemDetailView: View {
 
                 Text(model?.name ?? "Loading...")
             }
-        }, trailingIcon: {
+        }, trailingView: {
             RDButton(variant: .red, size: .icon, leadingIcon: "square.and.pencil", fullWidth: false) {
                 showEditSheet = true
                 backupItem = viewModel.selectedItem

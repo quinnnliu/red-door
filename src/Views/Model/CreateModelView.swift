@@ -78,7 +78,7 @@ struct CreateModelView: View {
     @ViewBuilder
     private func TopBar() -> some View {
         TopAppBar(
-            leadingIcon: {
+            leadingView: {
                 RDButton(variant: .red, size: .icon, leadingIcon: "xmark", iconBold: true, fullWidth: false) {
                     dismiss()
                 }
@@ -87,7 +87,7 @@ struct CreateModelView: View {
             header: {
                 ModelNameEntry()
             },
-            trailingIcon: {
+            trailingView: {
                 Spacer().frame(24)
             }
         )

@@ -89,7 +89,7 @@ struct StagingRoomItemView: View {
 
     @ViewBuilder
     private func TopBar() -> some View {
-        TopAppBar(leadingIcon: {
+        TopAppBar(leadingView: {
             BackButton()
         }, header: {
             HStack(spacing: 0) {
@@ -99,7 +99,7 @@ struct StagingRoomItemView: View {
 
                 Text(model?.name ?? "Loading...")
             }
-        }, trailingIcon: {
+        }, trailingView: {
             Spacer().frame(32)
         })
     }

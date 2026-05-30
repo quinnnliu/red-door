@@ -86,7 +86,7 @@ struct StagingRoomDetailsView: View {
     @ViewBuilder
     private func TopBar() -> some View {
         TopAppBar(
-            leadingIcon: {
+            leadingView: {
                 BackButton()
             }, header: {
                 (
@@ -97,7 +97,7 @@ struct StagingRoomDetailsView: View {
                     Text(roomViewModel.selectedRoom.roomName)
                         .bold()
                 )
-            }, trailingIcon: {
+            }, trailingView: {
                 Spacer().frame(32)
             }
         )

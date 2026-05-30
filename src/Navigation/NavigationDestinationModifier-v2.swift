@@ -13,33 +13,14 @@ struct NavigationDestinationsModifierV2: ViewModifier {
     
     func body(content: Content) -> some View {
         content
-            .navigationDestination(for: Model.self) { model in
-                ModelDetailView(model: model)
-            }
-            .navigationDestination(for: Item.self) { item in
-                ItemDetailView(item: item)
-            }
-            .navigationDestination(for: ItemWithModel.self) { itemWithModel in
-                ItemDetailView(item: itemWithModel.item, model: itemWithModel.model)
-            }
-            .navigationDestination(for: ItemV2.self) { item in
-                ItemDetailsViewV2(item: item)
-            }
-            .navigationDestination(for: PullListV2.self) { list in
-                Text("Pull List: \(list.address.getStreetAddress() ?? list.id)")
-            }
-            .navigationDestination(for: RDList.self) { list in
-                if list.listType == .pull_list && list.status == .planning {
-                    PlanningPullListView(pullList: list)
-                } else if list.listType == .pull_list && list.status == .staging {
-                    StagingPullListView(pullList: list)
-                } else if list.listType == .installed_list {
-                    InstalledListDetailView(installedList: list)
-                }
-            }
-            .navigationDestination(for: String.self) { string in
-                Group {
-                    if string == "might be useful" {}
+            .navigationDestination(for: NavigationDestination.self) { destination in
+                switch destination {
+                case .itemDetail(let item):
+                    ItemDetailsViewV2(item: item)
+                case .pulllistDetail(let list):
+                    PullListV2DetailsView(list: list)
+                case .roomDetail(let room, let list):
+                    Text("placholder room detail view")
                 }
             }
     }

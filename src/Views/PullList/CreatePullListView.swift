@@ -101,13 +101,13 @@ struct CreatePullListView: View {
 
     @ViewBuilder 
     private func TopBar() -> some View {
-        TopAppBar(leadingIcon: {
+        TopAppBar(leadingView: {
             BackButton()
         }, header: {
             RDButton(variant: .outline, size: .default, label: viewModel.selectedList.address.isInitialized() ? viewModel.selectedList.address.getStreetAddress() ?? "" : "Enter Address") {
                 showAddressSheet = true
             }
-        }, trailingIcon: {
+        }, trailingView: {
             Spacer().frame(width: 32)
         })
     }
