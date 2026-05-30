@@ -101,7 +101,7 @@ extension PullListDocumentListViewV2 {
         ScrollView {
             LazyVStack(spacing: 8) {
                 ForEach(viewModel.documents, id: \.id) { list in
-                    NavigationLink(value: NavigationDestination.pulllistDetail(list)) {
+                    NavigationLink(value: NavigationDestination.pullListDetailView(list)) {
                         PullListV2ListItem(list: list)
                     }
                     .buttonStyle(PlainButtonStyle())

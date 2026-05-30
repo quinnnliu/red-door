@@ -21,7 +21,13 @@ final class PullListV2DetailsViewModel {
 
     private let roomRepo: RoomRepository
     private let itemRepo: ItemRepository
+    private let pullListRepo: PullListRepository
+    
+    var showAlert: Bool = false
+    var alertText: String = ""
 
+    // MARK: init
+    
     init(from list: PullListV2) {
         self.pullListState = list
         guard let roomRepo = RoomRepository(list: list) else {
@@ -29,11 +35,14 @@ final class PullListV2DetailsViewModel {
         }
         self.roomRepo = roomRepo
         self.itemRepo = ItemRepository()
+        self.pullListRepo = PullListRepository()
     }
 
     deinit {
         stopListening()
     }
+
+    // MARK: start / stop listening
 
     func startListening() {
         guard roomsListener == nil else { return }
@@ -54,6 +63,8 @@ final class PullListV2DetailsViewModel {
         itemsByRoom.removeAll()
     }
 
+    // MARK: handleRoomSnapshot
+    
     @MainActor
     private func handleRoomSnapshot(_ snapshot: RoomRepository.RoomsListenerSnapshot) async {
         isLoading = false
@@ -68,7 +79,9 @@ final class PullListV2DetailsViewModel {
             }
         }
     }
-
+    
+    // MARK: fetchItemsForRoom
+    
     @MainActor
     private func fetchItemsForRoom(_ room: RoomV2) async {
         do {
@@ -92,6 +105,8 @@ final class PullListV2DetailsViewModel {
         }
     }
 
+    // MARK: refreshRoom
+    
     func refreshRoom(_ roomId: String) {
         guard let room = rooms.first(where: { $0.id == roomId }) else { return }
         let roomItemIds = Set(room.items)
@@ -102,6 +117,8 @@ final class PullListV2DetailsViewModel {
             await fetchItemsForRoom(room)
         }
     }
+    
+    // MARK: refreshPullList
 
     func refreshPullList() {
         itemsCache.removeAll()
@@ -111,5 +128,45 @@ final class PullListV2DetailsViewModel {
                 await fetchItemsForRoom(room)
             }
         }
+    }
+    
+    // MARK: refreshRoom
+    func deletePullList() {
+        
+    }
+}
+
+extension PullListV2DetailsViewModel {
+    
+    // MARK: createEmptyRoom
+
+    // TODO: remove this duplicate (copy of CreatePullListViewModelV2
+    func createEmptyRoom(_ roomName: String) {
+        guard !RoomV2.roomExists(newRoomName: roomName, rooms: rooms) else {
+            alertText = "Room with same name already exists for this list" // room not added
+            showAlert = true
+            return
+        }
+        
+        let newRoom = RoomV2(
+            displayName: roomName,
+            listId: pullListState.id
+        )
+        do {
+            try roomRepo.set(newRoom, id: newRoom.id)
+            pullListRepo.update(
+                id: pullListState.id,
+                fields: ["room_ids": newRoom.id]
+            )
+        } catch {
+            alertText = "error adding \(newRoom.displayName): \(error.localizedDescription)" // room not added
+            showAlert = true
+            return
+        }
+        
+        pullListState.roomIds.append(newRoom.id)
+        rooms.append(newRoom)
+        alertText = "\(newRoom.displayName) successfully created" // room not added
+        showAlert = true
     }
 }

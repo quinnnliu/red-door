@@ -100,8 +100,11 @@ struct CreatePullListViewV2: View {
             }
             .toolbar(.hidden)
             .frameHorizontalPadding()
+            .alert(viewModel.alertText, isPresented: $viewModel.showAlert) {
+                Button("Ok", role: .cancel) {}
+            }
             .sheet(isPresented: $showCreateRoomSheet) {
-                CreateEmptyRoomSheet()
+                CreateEmptyRoomSheet
                     .onAppear {
                         newRoomName = ""
                         keyboardFocused = true
@@ -140,7 +143,7 @@ struct CreatePullListViewV2: View {
     @State private var newRoomName: String = ""
     @State private var existingRoomAlert: Bool = false
     @ViewBuilder
-    private func CreateEmptyRoomSheet() -> some View {
+    private var CreateEmptyRoomSheet: some View {
         VStack(spacing: 16) {
             TextField("Room Name", text: $newRoomName)
                 .focused($keyboardFocused)
@@ -157,10 +160,7 @@ struct CreatePullListViewV2: View {
                 Spacer()
                 
                 Button {
-                    existingRoomAlert = !viewModel.createEmptyRoom(newRoomName)
-                    if !existingRoomAlert {
-                        showCreateRoomSheet = false
-                    }
+                    viewModel.createEmptyRoom(newRoomName)
                 } label: {
                     Text("Add Room")
                         .fontWeight(.semibold)
@@ -188,6 +188,19 @@ struct CreatePullListViewV2: View {
         .padding(12)
         .background(Color(.systemGray5))
         .clipShape(RoundedRectangle(cornerRadius: 6))
+    }
+}
+
+extension CreatePullListViewV2 {
+    func handleAction(_ actionArgument: Any?) {
+        guard actionArgument != nil else { return }
+        
+        if let createRoomAction = actionArgument as? CreateEmptyRoomAction {
+            switch createRoomAction {
+            case .createEmptyRoom(let newRoomName):
+                viewModel.createEmptyRoom(newRoomName)
+            }
+        }
     }
 }
 

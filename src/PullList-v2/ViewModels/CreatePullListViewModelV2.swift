@@ -16,6 +16,9 @@ final class CreatePullListViewModelV2 {
     
     var isLoading: Bool = false
     
+    var showAlert: Bool = false
+    var alertText: String = ""
+    
     init() {
         self.pullListState = PullListV2(
             id: UUID().uuidString,
@@ -39,7 +42,8 @@ final class CreatePullListViewModelV2 {
             try pullListRepo.set(pullListState, id: pullListState.id)
             
             guard let roomRepo = RoomRepository(list: pullListState) else {
-                print("[ERROR] Failed to initialize RoomRepository")
+                alertText = "[ERROR] Failed to initialize RoomRepository"
+                showAlert = true
                 return
             }
             
@@ -48,12 +52,16 @@ final class CreatePullListViewModelV2 {
                 do {
                     try roomRepo.set(room, id: room.id, inBatch: batch)
                 } catch {
-                    print("[ERROR] Failed creating room: \(error)")
+                    alertText = "[ERROR] Failed creating room: \(error)"
+                    showAlert = true
+                    return
                 }
             }
             try await batch.commit()
         } catch {
-            print("[ERROR] Failed creating pull list: \(error)")
+            alertText = "[ERROR] Failed creating pull list: \(error)"
+            showAlert = true
+            return
         }
     }
 }
@@ -63,9 +71,11 @@ extension CreatePullListViewModelV2 {
     // MARK: createEmptyRoom
     
     // TODO: use a toast to display error (instead of sending bool)
-    func createEmptyRoom(_ roomName: String) -> Bool {
+    func createEmptyRoom(_ roomName: String) {
         guard !RoomV2.roomExists(newRoomName: roomName, rooms: rooms) else {
-            return false // room not added
+            alertText = "Room with same name already exists for this list" // room not added
+            showAlert = true
+            return
         }
         
         let newRoom = RoomV2(
@@ -74,6 +84,8 @@ extension CreatePullListViewModelV2 {
         )
         pullListState.roomIds.append(newRoom.id)
         rooms.append(newRoom)
-        return true // room successfully added
+        
+        alertText = "\(newRoom.displayName) successfully created" // room not added
+        showAlert = true
     }
 }

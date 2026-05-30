@@ -123,6 +123,24 @@ enum ItemType: String, Codable, CaseIterable {
     case misc = "Miscellaneous"
     
     var title: String { rawValue }
+    
+    var icon: String {
+        switch self {
+        case .chair:
+            SFSymbols.chairFill
+        case .desk:
+            SFSymbols.deskFill
+        case .table:
+            SFSymbols.tableFill
+        case .lamp:
+            SFSymbols.lampFill
+        case .accessories:
+            SFSymbols.pencil // TODO: find a better icon
+        case .misc:
+            SFSymbols.ellipsis
+        }
+    
+    }
 }
 
 enum ItemColor: String, Codable, CaseIterable {
