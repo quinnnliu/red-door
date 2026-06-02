@@ -93,7 +93,7 @@ final class CreateItemsViewModel {
 
             let batch = itemRepo.db.batch()
             for item in updatedItems {
-                try itemRepo.set(item, id: item.id, inBatch: batch)
+                try itemRepo.set(document: item, id: item.id, inBatch: batch)
             }
             try await batch.commit()
 

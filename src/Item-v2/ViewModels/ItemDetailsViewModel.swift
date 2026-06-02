@@ -37,7 +37,7 @@ final class ItemDetailsViewModel {
                 updatedItem.primaryImage = uploadedImage
             }
             item = updatedItem
-            try await itemRepo.set(item, id: item.id)
+            try itemRepo.set(document: item)
         } catch {
             print("Error updating item \(item.id): \(error.localizedDescription)")
         }
@@ -49,7 +49,7 @@ final class ItemDetailsViewModel {
         do {
             try await itemRepo.delete(id: item.id)
         } catch {
-            print("Error deleting item \(item.id): \(error.localizedDescription)")
+            print("error deleting \(item.name): \(error.localizedDescription)")
         }
     }
 }

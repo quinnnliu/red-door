@@ -104,11 +104,9 @@ struct CreatePullListViewV2: View {
                 Button("Ok", role: .cancel) {}
             }
             .sheet(isPresented: $showCreateRoomSheet) {
-                CreateEmptyRoomSheet
-                    .onAppear {
-                        newRoomName = ""
-                        keyboardFocused = true
-                    }
+                EditRoomV2Sheet { roomName in
+                    viewModel.createEmptyRoom(roomName)
+                }
             }
             .sheet(isPresented: $showAddressSheet) {
                 AddressSheet(selectedAddress: $viewModel.pullListState.address, addressId: $viewModel.pullListState.addressId)
@@ -195,12 +193,6 @@ extension CreatePullListViewV2 {
     func handleAction(_ actionArgument: Any?) {
         guard actionArgument != nil else { return }
         
-        if let createRoomAction = actionArgument as? CreateEmptyRoomAction {
-            switch createRoomAction {
-            case .createEmptyRoom(let newRoomName):
-                viewModel.createEmptyRoom(newRoomName)
-            }
-        }
     }
 }
 

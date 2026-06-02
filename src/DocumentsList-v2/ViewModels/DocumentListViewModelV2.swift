@@ -24,14 +24,16 @@ final class DocumentListViewModelV2<T: AnyRDDocument> {
     private let pageSize: Int
     private var cursor: DocumentSnapshot? = nil
     private var activeFilters: [String: AnyHashable] = [:]
+    private var defaultFilters: [String: AnyHashable]?
     /// Incremented on every reload. After a Firestore await resumes, a fetch
     /// checks that its captured generation still matches — if not, it was
     /// superseded and discards its results without touching shared state.
     private var fetchGeneration: Int = 0
 
-    init(pageSize: Int = 10, db: Firestore = Firestore.firestore()) {
+    init(pageSize: Int = 10, db: Firestore = Firestore.firestore(), defaultFilters: [String: AnyHashable]? = nil) {
         self.pageSize = pageSize
         self.collectionRef = db.collection(T.collectionName)
+        self.defaultFilters = defaultFilters
     }
 
     // MARK: - Public API
@@ -123,7 +125,10 @@ final class DocumentListViewModelV2<T: AnyRDDocument> {
 
     private func applyFilters(to query: Query) -> Query {
         var q = query
-        for (key, value) in activeFilters {
+        
+        let allFilters = activeFilters.merging(defaultFilters ?? [:]) { (current, new) in return new }
+        
+        for (key, value) in allFilters {
             if key == "name_lowercased", let text = value as? String {
                 q = q.whereField("name_lowercased", isGreaterThanOrEqualTo: text)
                      .whereField("name_lowercased", isLessThan: text + "\u{f8ff}")

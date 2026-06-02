@@ -21,7 +21,7 @@ struct ItemDocumentListViewV2: View {
     }
 
     @State private var searchFocused: Bool = false
-    @State private var showCreateModelCover: Bool = false
+    @State private var showCreateItemSheet: Bool = false
     @State private var showScannerSheet: Bool = false
     @State private var scannedItemId: String? = nil
 
@@ -44,7 +44,7 @@ struct ItemDocumentListViewV2: View {
             .task {
                 await viewModel.refresh()
             }
-            .fullScreenCover(isPresented: $showCreateModelCover) {
+            .fullScreenCover(isPresented: $showCreateItemSheet) {
                 CreateItemsViewV2()
             }
             .sheet(isPresented: $showScannerSheet) {
@@ -102,7 +102,7 @@ extension ItemDocumentListViewV2 {
                 }
 
                 RDButton(variant: .outline, size: .icon, leadingIcon: "plus", iconBold: true, fullWidth: false) {
-                    showCreateModelCover = true
+                    showCreateItemSheet = true
                 }
             }
             .foregroundColor(.red)
@@ -122,7 +122,7 @@ extension ItemDocumentListViewV2 {
                     .buttonStyle(PlainButtonStyle())
                 }
 
-                LoadMoreButton()
+                LoadMoreButton
             }
         }
         .refreshable {
@@ -131,7 +131,7 @@ extension ItemDocumentListViewV2 {
     }
 
     @ViewBuilder
-    private func LoadMoreButton() -> some View {
+    private var LoadMoreButton: some View {
         if viewModel.isLoading {
             ProgressView()
                 .frame(maxWidth: .infinity, alignment: .center)

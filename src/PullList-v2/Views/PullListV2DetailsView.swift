@@ -24,8 +24,6 @@ struct PullListV2DetailsView: View {
             if viewModel.isLoading && viewModel.rooms.isEmpty {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            } else if let errorMessage = viewModel.errorMessage {
-                ErrorView(errorMessage)
             }
             
             PullListDetailsSection(viewModel.pullListState)
@@ -45,7 +43,11 @@ struct PullListV2DetailsView: View {
             Button("Ok", role: .cancel) {}
         }
         .sheet(isPresented: $showAddRoomsSheet) {
-            CreateEmptyRoomSheet(action: handleAction(_:))
+            EditRoomV2Sheet { newRoomName in
+                Task {
+                    await viewModel.createEmptyRoom(newRoomName)
+                }
+            }
         }
     }
 }
@@ -69,12 +71,12 @@ extension PullListV2DetailsView {
             trailingView: {
                 HStack(spacing: 8) {
                     RDButton(
-                        variant: .outline,
+                        variant: .default,
                         size: .icon,
                         leadingIcon: SFSymbols.arrowCounterclockwise
                     ) {
                         viewModel.refreshPullList()
-                    }
+                    }.clipShape(.circle)
 
                     TopBarMenu
                 }
@@ -87,10 +89,6 @@ extension PullListV2DetailsView {
     var TopBarMenu: some View {
         Menu {
             Group {
-                Button("Add Room", systemImage: SFSymbols.plus) {
-                    showAddRoomsSheet = true
-                }
-                
                 Button("Edit List Details", systemImage: SFSymbols.pencil) {
                     showEditListSheet = true
                 }
@@ -109,24 +107,8 @@ extension PullListV2DetailsView {
                 size: .icon,
                 leadingIcon: SFSymbols.ellipsis,
                 iconBold: true
-            ) { }
+            ) { }.clipShape(.circle)
         }
-    }
-    
-    // MARK: Error View
-    func ErrorView(_ errorMessage: String) -> some View {
-        VStack(spacing: 8) {
-            Text("Error")
-                .font(.headline)
-            Text(errorMessage)
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding()
-        .background(Color.red.opacity(0.1))
-        .cornerRadius(8)
-        .padding()
     }
     
     // MARK: PullListDetailsSection
@@ -181,15 +163,23 @@ extension PullListV2DetailsView {
     var RoomsListSection: some View {
         if !viewModel.rooms.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
-                Text("Rooms")
-                    .font(.headline)
+                HStack(spacing: .zero) {
+                    Text("Rooms")
+                        .font(.headline)
+                    
+                    Spacer()
+                    
+                    SmallCTA(type: .red, leadingIcon: SFSymbols.plus, text: "Add Room") {
+                        showAddRoomsSheet = true
+                    }
+                }
                 
                 ScrollView {
                     LazyVStack(spacing: 12) {
                         ForEach(viewModel.rooms, id: \.id) { room in
                             NavigationLink(value: NavigationDestination.roomDetailView(
-                                room: room,
-                                list: viewModel.pullListState
+                                items: viewModel.itemsByRoom[room.id] ?? [],
+                                room: room
                             )) {
                                 RoomListItemView(
                                     room: room,
@@ -217,11 +207,6 @@ extension PullListV2DetailsView {
             switch roomListItemAction {
             case .refreshRoom(let roomId):
                 viewModel.refreshRoom(roomId)
-            }
-        } else if let createRoomAction = actionArgument as? CreateEmptyRoomAction {
-            switch createRoomAction {
-            case .createEmptyRoom(let newRoomName):
-                viewModel.createEmptyRoom(newRoomName)
             }
         }
     }
