@@ -20,8 +20,10 @@ struct RoomListItemView: View {
             
             RoomPreviewHeader
             
-            if !items.isEmpty {
-                RoomPreview
+            if !items.isEmpty && showRoomPreview {
+                withAnimation {
+                    RoomPreview
+                }
             }
         }
         .padding(12)

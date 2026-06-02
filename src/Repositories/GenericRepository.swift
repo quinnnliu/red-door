@@ -21,12 +21,12 @@ class GenericRepository<T: AnyRDDocument> {
     }
     
     // MARK: - Standard
-    func set(_ document: T, id: String) throws {
-        try collectionRef.document(id).setData(from: document)
+    func set(document: T) throws {
+        try collectionRef.document(document.id).setData(from: document)
     }
     
-    func delete(id: String) {
-        collectionRef.document(id).delete()
+    func delete(id: String) async throws {
+        try await collectionRef.document(id).delete()
     }
     
     func get(id: String) async throws -> T {
@@ -34,9 +34,8 @@ class GenericRepository<T: AnyRDDocument> {
         return try snapshot.data(as: T.self)
     }
     
-    func update(id: String, fields: [AnyHashable: Any]) {
-        let documentRef = collectionRef.document(id)
-        documentRef.updateData(fields)
+    func update(id: String, fields: [String: AnyHashable]) async throws {
+        try await collectionRef.document(id).updateData(fields)
     }
 
     func get(ids: [String]) async throws -> [T] {
@@ -57,7 +56,7 @@ class GenericRepository<T: AnyRDDocument> {
     }
     
     // MARK: - Batch participatory
-    func set(_ document: T, id: String, inBatch batch: WriteBatch) throws {
+    func set(document: T, id: String, inBatch batch: WriteBatch) throws {
         try batch.setData(
             from: document,
             forDocument: collectionRef.document(id)
@@ -68,7 +67,7 @@ class GenericRepository<T: AnyRDDocument> {
         batch.deleteDocument(collectionRef.document(id))
     }
     
-    func update(id: String, fields: [AnyHashable: Any], inBatch batch: WriteBatch) {
+    func update(id: String, fields: [String: AnyHashable], inBatch batch: WriteBatch) {
         let documentRef = collectionRef.document(id)
         batch.updateData(fields, forDocument: documentRef)
     }
@@ -79,22 +78,72 @@ class GenericRepository<T: AnyRDDocument> {
         let snapshot = try transaction.getDocument(ref)
         return try snapshot.data(as: T.self)
     }
-    
-    func set(_ document: T, id: String, in transaction: Transaction) throws {
+
+    func set(document: T, id: String, in transaction: Transaction) throws {
         try transaction.setData(
             from: document,
             forDocument: collectionRef.document(id)
         )
     }
-    
+
     func delete(id: String, in transaction: Transaction) {
         transaction.deleteDocument(
             collectionRef.document(id)
         )
     }
-    
-    func update(_ id: String, fields: [AnyHashable: Any], in transaction: Transaction) {
+
+    func update(id: String, fields: [String: AnyHashable], in transaction: Transaction) {
         let documentRef = collectionRef.document(id)
         transaction.updateData(fields, forDocument: documentRef)
+    }
+
+    // MARK: - Listeners
+    typealias ListenerCallback<Value> = (Result<Value, Error>) -> Void
+
+    func addDocumentListener(
+        id: String,
+        onChange: @escaping ListenerCallback<T>
+    ) -> ListenerRegistration {
+        collectionRef.document(id).addSnapshotListener { snapshot, error in
+            if let error = error {
+                onChange(.failure(error))
+                return
+            }
+
+            guard let snapshot else {
+                onChange(.failure(RepositoryError.decodeFailure))
+                return
+            }
+
+            do {
+                let document = try snapshot.data(as: T.self)
+                onChange(.success(document))
+            } catch {
+                onChange(.failure(error))
+            }
+        }
+    }
+
+    func addCollectionListener(
+        onChange: @escaping (Result<[T], Error>) -> Void
+    ) -> ListenerRegistration {
+        collectionRef.addSnapshotListener { snapshot, error in
+            if let error = error {
+                onChange(.failure(error))
+                return
+            }
+
+            guard let snapshot else {
+                onChange(.failure(RepositoryError.decodeFailure))
+                return
+            }
+
+            do {
+                let documents = try snapshot.documents.map { try $0.data(as: T.self) }
+                onChange(.success(documents))
+            } catch {
+                onChange(.failure(error))
+            }
+        }
     }
 }

@@ -12,25 +12,29 @@ struct RoomV2: AnyRDDocument {
     static let orderByField: String = "name"
     
     var id: String
+    var nameId: String
     var displayName: String
     var listId: String
-    var items: Set<String>
+    var itemIds: Set<String>
     
     init(
         displayName: String,
         listId: String,
-        items: Set<String> = []
+        itemIds: Set<String> = []
     ) {
-        self.id = RoomV2.nameToId(displayName)
+        self.id = UUID().uuidString
+        self.nameId = RoomV2.nameToId(displayName)
         self.displayName = displayName
         self.listId = listId
-        self.items = items
+        self.itemIds = itemIds
     }
     
     enum CodingKeys: String, CodingKey {
-        case id, items
+        case id
+        case itemIds = "item_ids"
         case listId = "list_id"
         case displayName = "display_name"
+        case nameId = "name_id"
     }
 }
 

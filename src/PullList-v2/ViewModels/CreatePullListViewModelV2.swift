@@ -39,7 +39,7 @@ final class CreatePullListViewModelV2 {
         isLoading = true
         defer { isLoading = false }
         do {
-            try pullListRepo.set(pullListState, id: pullListState.id)
+            try pullListRepo.set(document: pullListState)
             
             guard let roomRepo = RoomRepository(list: pullListState) else {
                 alertText = "[ERROR] Failed to initialize RoomRepository"
@@ -50,7 +50,7 @@ final class CreatePullListViewModelV2 {
             let batch = pullListRepo.db.batch()
             for room in rooms {
                 do {
-                    try roomRepo.set(room, id: room.id, inBatch: batch)
+                    try roomRepo.set(document: room, id: room.id, inBatch: batch)
                 } catch {
                     alertText = "[ERROR] Failed creating room: \(error)"
                     showAlert = true
@@ -85,7 +85,7 @@ extension CreatePullListViewModelV2 {
         pullListState.roomIds.append(newRoom.id)
         rooms.append(newRoom)
         
-        alertText = "\(newRoom.displayName) successfully created" // room not added
-        showAlert = true
+//        alertText = "\(newRoom.displayName) successfully created" // room added
+//        showAlert = true
     }
 }

@@ -19,10 +19,14 @@ struct NavigationDestinationsModifierV2: ViewModifier {
                     ItemDetailsViewV2(item: item)
                 case .pullListDetailView(let list):
                     PullListV2DetailsView(list: list)
-                case .roomDetailView(let room, let list):
-                    Text("placholder room detail view for room \(room.displayName) in list \(list.id)")
+                case .roomDetailView(let items, let room):
+                    RoomDetailsView(items: items, room: room)
                 case .pullListItemDetailView(let item, let list):
                     Text("placeholder itemdetailview for item \(item.id) for pull list \(list.id)")
+                case .addItemToRoomDetailView(let item, let room):
+                    AddItemToRoomDetailView(item: item, room: room)
+                default:
+                    Text("UNHANDLED NAVIGATION DESTINATION")
                 }
             }
     }

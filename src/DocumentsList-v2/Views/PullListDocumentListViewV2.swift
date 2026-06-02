@@ -29,8 +29,7 @@ struct PullListDocumentListViewV2: View {
                     TopBar
                 }
 
-                PullListList
-
+                PullListListSection
             }
             .frameTop()
             .frameHorizontalPadding()
@@ -97,7 +96,7 @@ extension PullListDocumentListViewV2 {
     // MARK: PullList List
 
     @ViewBuilder
-    private var PullListList: some View {
+    private var PullListListSection: some View {
         ScrollView {
             LazyVStack(spacing: 8) {
                 ForEach(viewModel.documents, id: \.id) { list in

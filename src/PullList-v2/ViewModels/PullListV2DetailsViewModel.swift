@@ -14,10 +14,9 @@ final class PullListV2DetailsViewModel {
     var rooms: [RoomV2] = []
     var itemsByRoom: [String: [ItemV2]] = [:] // key: roomId, value: [ItemV2]
     var isLoading: Bool = false
-    var errorMessage: String? = nil
+    var itemsCache: [String: ItemV2] = [:] // key: itemId, value: ItemV2
 
     private var roomsListener: ListenerRegistration? = nil
-    private var itemsCache: [String: ItemV2] = [:] // key: itemId, value: ItemV2
 
     private let roomRepo: RoomRepository
     private let itemRepo: ItemRepository
@@ -47,11 +46,16 @@ final class PullListV2DetailsViewModel {
     func startListening() {
         guard roomsListener == nil else { return }
         isLoading = true
-        errorMessage = nil
+        alertText = ""
 
-        roomsListener = roomRepo.addRoomsListener { [weak self] snapshot in
+        roomsListener = roomRepo.addRoomsListener { [weak self] result in
             Task { @MainActor in
-                await self?.handleRoomSnapshot(snapshot)
+                switch result {
+                case .success(let rooms):
+                    await self?.handleRoomSnapshot(rooms)
+                case .failure(let error):
+                    await self?.handleListenerError(error)
+                }
             }
         }
     }
@@ -66,18 +70,20 @@ final class PullListV2DetailsViewModel {
     // MARK: handleRoomSnapshot
     
     @MainActor
-    private func handleRoomSnapshot(_ snapshot: RoomRepository.RoomsListenerSnapshot) async {
+    private func handleRoomSnapshot(_ rooms: [RoomV2]) async {
         isLoading = false
-        rooms = snapshot.rooms.sorted { $0.displayName < $1.displayName }
+        self.rooms = rooms.sorted { $0.displayName < $1.displayName }
 
-        for change in snapshot.changes {
-            if change.type == .added || change.type == .modified {
-                guard let room = snapshot.rooms.first(where: { $0.id == change.document.documentID }) else { continue }
-                await fetchItemsForRoom(room)
-            } else if change.type == .removed {
-                itemsByRoom.removeValue(forKey: change.document.documentID)
-            }
+        for room in self.rooms {
+            await fetchItemsForRoom(room)
         }
+    }
+
+    @MainActor
+    private func handleListenerError(_ error: Error) async {
+        isLoading = false
+        showAlert = true
+        alertText = error.localizedDescription
     }
     
     // MARK: fetchItemsForRoom
@@ -85,7 +91,7 @@ final class PullListV2DetailsViewModel {
     @MainActor
     private func fetchItemsForRoom(_ room: RoomV2) async {
         do {
-            let uncachedIds = room.items.filter { itemsCache[$0] == nil }
+            let uncachedIds = room.itemIds.filter { itemsCache[$0] == nil }
             if !uncachedIds.isEmpty {
                 let fetched = try await itemRepo.get(ids: Array(uncachedIds))
                 for item in fetched {
@@ -93,15 +99,16 @@ final class PullListV2DetailsViewModel {
                 }
             }
 
-            let loadedItems = room.items.compactMap { itemsCache[$0] }.sorted { $0.name < $1.name }
-            let allItemsLoaded = room.items.allSatisfy { itemsCache[$0] != nil }
+            let loadedItems = room.itemIds.compactMap { itemsCache[$0] }.sorted { $0.name < $1.name }
+            let allItemsLoaded = room.itemIds.allSatisfy { itemsCache[$0] != nil }
 
-            if allItemsLoaded || room.items.isEmpty {
+            if allItemsLoaded || room.itemIds.isEmpty {
                 itemsByRoom[room.id] = loadedItems
-                errorMessage = nil
+                alertText = ""
             }
         } catch {
-            errorMessage = error.localizedDescription
+            alertText = error.localizedDescription
+            showAlert = true
         }
     }
 
@@ -109,7 +116,7 @@ final class PullListV2DetailsViewModel {
     
     func refreshRoom(_ roomId: String) {
         guard let room = rooms.first(where: { $0.id == roomId }) else { return }
-        let roomItemIds = Set(room.items)
+        let roomItemIds = Set(room.itemIds)
         for id in roomItemIds {
             itemsCache.removeValue(forKey: id)
         }
@@ -132,7 +139,7 @@ final class PullListV2DetailsViewModel {
     
     // MARK: refreshRoom
     func deletePullList() {
-        
+        // TODO: DELETE PULL LIST LOGIC
     }
 }
 
@@ -141,32 +148,32 @@ extension PullListV2DetailsViewModel {
     // MARK: createEmptyRoom
 
     // TODO: remove this duplicate (copy of CreatePullListViewModelV2
-    func createEmptyRoom(_ roomName: String) {
+    func createEmptyRoom(_ roomName: String) async {
         guard !RoomV2.roomExists(newRoomName: roomName, rooms: rooms) else {
-            alertText = "Room with same name already exists for this list" // room not added
+            alertText = "Room with same name already exists for this list"
             showAlert = true
             return
         }
-        
+
         let newRoom = RoomV2(
             displayName: roomName,
             listId: pullListState.id
         )
         do {
-            try roomRepo.set(newRoom, id: newRoom.id)
-            pullListRepo.update(
+            try roomRepo.set(document: newRoom)
+            try await pullListRepo.update(
                 id: pullListState.id,
-                fields: ["room_ids": newRoom.id]
+                fields: [PullListV2.CodingKeys.roomIds.stringValue: newRoom.id]
             )
         } catch {
-            alertText = "error adding \(newRoom.displayName): \(error.localizedDescription)" // room not added
+            alertText = "error adding \(newRoom.displayName): \(error.localizedDescription)"
             showAlert = true
             return
         }
-        
+
         pullListState.roomIds.append(newRoom.id)
         rooms.append(newRoom)
-        alertText = "\(newRoom.displayName) successfully created" // room not added
+        alertText = "\(newRoom.displayName) successfully created"
         showAlert = true
     }
 }

@@ -20,21 +20,30 @@ final class RoomRepository: GenericRepository<RoomV2> {
             .document(pullList.id)
             .collection(RoomV2.collectionName)
     }
+    
+    init?(
+        db: Firestore = Firestore.firestore(),
+        room: RoomV2
+    ) {
+        super.init(db: db)
+        self.collectionRef = db
+            .collection(PullListV2.collectionName)
+            .document(room.listId)
+            .collection(RoomV2.collectionName)
+    }
 }
 
 extension RoomRepository {
-    struct RoomsListenerSnapshot {
-        let rooms: [RoomV2]
-        let changes: [DocumentChange]
+    func addRoomListener(
+        roomId: String,
+        onChange: @escaping (Result<RoomV2, Error>) -> Void
+    ) -> ListenerRegistration {
+        addDocumentListener(id: roomId, onChange: onChange)
     }
 
     func addRoomsListener(
-        onChange: @escaping (RoomsListenerSnapshot) -> Void
+        onChange: @escaping (Result<[RoomV2], Error>) -> Void
     ) -> ListenerRegistration {
-        collectionRef.addSnapshotListener { snapshot, error in
-            guard let snapshot, error == nil else { return }
-            guard let rooms = try? snapshot.documents.map({ try $0.data(as: RoomV2.self) }) else { return }
-            onChange(RoomsListenerSnapshot(rooms: rooms, changes: snapshot.documentChanges))
-        }
+        addCollectionListener(onChange: onChange)
     }
 }
