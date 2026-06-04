@@ -21,8 +21,6 @@ struct EditItemAttributesSection: View {
     @State private var isColorPickerActive = false
     @State private var isMaterialPickerActive = false
 
-    @FocusState private var focusDescription: Bool
-
     // MARK: Body
 
     var body: some View {
@@ -32,12 +30,12 @@ struct EditItemAttributesSection: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 SectionTitle("Description:")
-
-                TextField("Add a brief description about these items...", text: $description, axis: .vertical)
+                
+                // TODO: make this multi-line (keyboard dismiss issue)
+                TextField("A brief description about these items...", text: $description)
+                    .font(.footnote)
                     .lineLimit(2...5)
-                    .focused($focusDescription)
                     .submitLabel(.done)
-                    .onSubmit { focusDescription = false }
                     .disabled(description.count > 100)
                     .padding(8)
                     .background(Color(.systemGray5))
