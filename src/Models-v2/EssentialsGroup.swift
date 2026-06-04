@@ -6,11 +6,17 @@
 //
 
 struct EssentialsGroup: AnyGroup {
+    static let collectionName: String = "essentials"
+    static let orderByField: String = "name"
+    static let searchField: String = "name"
+    
     var id: String
     var name: String
     var items: [ItemV2]
     var groupType: GroupType
     
-    static var collectionName: String = "essentials"
-    static var orderByField: String = "name"
+    enum CodingKeys: String, CodingKey {
+        case id, name, items
+        case groupType = "group_type"
+    }
 }

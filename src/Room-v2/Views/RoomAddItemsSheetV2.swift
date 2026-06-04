@@ -131,9 +131,9 @@ private extension RoomAddItemsSheetV2 {
             case .selectItemType(let newType):
                 Task {
                     if let newType {
-                        await viewModel.updateFilter(key: "type", value: newType.rawValue)
+                        await viewModel.updateFilter(key: ItemV2.CodingKeys.type.stringValue, value: newType.rawValue)
                     } else {
-                        await viewModel.removeFilter(key: "type")
+                        await viewModel.removeFilter(key: ItemV2.CodingKeys.type.stringValue)
                     }
                 }
             }

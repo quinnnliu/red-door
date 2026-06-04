@@ -7,7 +7,8 @@
 
 protocol AnyRDDocument: Codable, Hashable, Identifiable {
     var id: String { get }
-    
+
     static var collectionName: String { get }
     static var orderByField: String { get }
+    static var searchField: String { get }
 }

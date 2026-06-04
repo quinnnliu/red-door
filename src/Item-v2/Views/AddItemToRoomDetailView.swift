@@ -74,6 +74,7 @@ struct AddItemToRoomDetailView: View {
                             ) {
                                 Task {
                                     await viewModel.addItemToRoom()
+                                    dismiss()
                                 }
                             }.frame(alignment: .bottom)
                         }

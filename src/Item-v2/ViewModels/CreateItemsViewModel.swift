@@ -62,6 +62,7 @@ final class CreateItemsViewModel {
     func createItems() async {
         let resolvedModelId = modelId
         var items: [ItemV2] = []
+        itemState.nameLowercased = itemState.name.lowercased()
         for _ in (0..<itemCount) {
             var newItem = ItemV2(item: itemState)
             newItem.modelId = resolvedModelId
