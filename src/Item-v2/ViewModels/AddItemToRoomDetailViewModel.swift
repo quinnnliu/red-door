@@ -71,36 +71,4 @@ extension AddItemToRoomDetailViewModel {
             print("[ERROR]: Failed to add \(item.name) to \(room.displayName): \(error.localizedDescription)")
         }
     }
-    
-//    do {
-//        let _ = try await db.runTransaction({ (transaction, errorPointer) -> Any? in
-//            let sfDocument: DocumentSnapshot
-//            do {
-//                try sfDocument = transaction.getDocument(sfReference)
-//            } catch let fetchError as NSError {
-//                errorPointer?.pointee = fetchError
-//                return nil
-//            }
-//            
-//            guard let oldPopulation = sfDocument.data()?["population"] as? Int else {
-//                let error = NSError(
-//                    domain: "AppErrorDomain",
-//                    code: -1,
-//                    userInfo: [
-//                        NSLocalizedDescriptionKey: "Unable to retrieve population from snapshot \(sfDocument)"
-//                    ]
-//                )
-//                errorPointer?.pointee = error
-//                return nil
-//            }
-//            
-//                // Note: this could be done without a transaction
-//                //       by updating the population using FieldValue.increment()
-//            transaction.updateData(["population": oldPopulation + 1], forDocument: sfReference)
-//            return nil
-//        })
-//        print("Transaction successfully committed!")
-//    } catch {
-//        print("Transaction failed: \(error)")
-//    }
 }

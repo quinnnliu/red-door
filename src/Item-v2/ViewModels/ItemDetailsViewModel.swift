@@ -30,6 +30,7 @@ final class ItemDetailsViewModel {
         defer { isLoading = false }
         do {
             var updatedItem = item
+            updatedItem.nameLowercased = updatedItem.name.lowercased()
             if let uploadedImage = try await FirebaseImageManager.shared.updateImage(
                 item.primaryImage,
                 resultImageType: .item

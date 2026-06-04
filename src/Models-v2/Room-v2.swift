@@ -10,6 +10,7 @@ import Foundation
 struct RoomV2: AnyRDDocument {
     static let collectionName: String = "rooms"
     static let orderByField: String = "name"
+    static let searchField: String = "display_name"
     
     var id: String
     var nameId: String

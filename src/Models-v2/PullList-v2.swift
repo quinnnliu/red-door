@@ -10,44 +10,45 @@ import Foundation
 struct PullListV2: AnyRDDocument {
     static let collectionName: String = "pull_list_V2"
     static let orderByField: String = "created_date"
+    static let searchField: String = "address_id"
 
     var id: String
     var listType: DocumentType
-    
+
     var address: Address
     var addressId: String
-    
+
     var createdDate: String
     var installDate: String
     var uninstallDate: String
     var clientId: String // TODO: make a "job" object?
-    
+
     var roomIds: [String]
     
     init(
         id: String = UUID().uuidString,
         listType: DocumentType = .pullListV2,
-    
+
         address: Address,
         addressId: String,
-    
+
         createdDate: String,
         installDate: String,
         uninstallDate: String,
         clientId: String,
-    
+
         roomIds: [String] = []
     ) {
         self.id = id
         self.listType = listType
-        
+
         self.address = address
         self.addressId = address.id
-        
+
         self.createdDate = createdDate
         self.installDate = installDate
         self.uninstallDate = uninstallDate
-        
+
         self.clientId = clientId
         self.roomIds = roomIds
     }

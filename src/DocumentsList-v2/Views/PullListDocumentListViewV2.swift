@@ -108,6 +108,7 @@ extension PullListDocumentListViewV2 {
 
                 LoadMoreButton()
             }
+            .padding(8)
         }
         .refreshable {
             await viewModel.refresh()

@@ -60,7 +60,7 @@ final class DocumentListViewModelV2<T: AnyRDDocument> {
     /// Search by text and reload from page 1.
     func search(text: String) async {
         if !text.isEmpty {
-            await updateFilter(key: "name_lowercased", value: text.lowercased())
+            await updateFilter(key: T.searchField, value: text.lowercased())
         }
     }
 
@@ -93,9 +93,10 @@ final class DocumentListViewModelV2<T: AnyRDDocument> {
         let generation = fetchGeneration
 
         var query: Query = collectionRef
+        query = applyFilters(to: query)
+        query = query
             .order(by: T.orderByField)
             .limit(to: pageSize)
-        query = applyFilters(to: query)
         if appending, let cursor {
             query = query.start(afterDocument: cursor)
         }
@@ -125,13 +126,13 @@ final class DocumentListViewModelV2<T: AnyRDDocument> {
 
     private func applyFilters(to query: Query) -> Query {
         var q = query
-        
+
         let allFilters = activeFilters.merging(defaultFilters ?? [:]) { (current, new) in return new }
-        
+
         for (key, value) in allFilters {
-            if key == "name_lowercased", let text = value as? String {
-                q = q.whereField("name_lowercased", isGreaterThanOrEqualTo: text)
-                     .whereField("name_lowercased", isLessThan: text + "\u{f8ff}")
+            if key == T.searchField, let text = value as? String {
+                q = q.whereField(key, isGreaterThanOrEqualTo: text)
+                     .whereField(key, isLessThan: text + "\u{f8ff}")
             } else if key == "address_id", let text = value as? String {
                 q = q.whereField("address_id", isGreaterThanOrEqualTo: text)
                      .whereField("address_id", isLessThan: text + "\u{f8ff}")

@@ -9,6 +9,7 @@ import SwiftUI
 struct ItemV2: AnyRDDocument {
     static let collectionName: String = "items_v2"
     static let orderByField: String = "name_lowercased"
+    static let searchField: String = "name_lowercased"
 
     var id: String
     var modelId: String
