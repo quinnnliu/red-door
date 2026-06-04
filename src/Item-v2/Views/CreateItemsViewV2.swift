@@ -46,22 +46,22 @@ struct CreateItemsViewV2: View {
                         purchaseLocation: $viewModel.itemState.purchaseLocation,
                         datePurchased: $viewModel.itemState.datePurchased
                     )
-                    
+
                     ItemCountPicker
-                }
-                
-                RDButton(
-                    variant: .default,
-                    size: .default,
-                    leadingIcon: "plus",
-                    label: "Add Items to Inventory"
-                ) {
-                    Task {
-                        await viewModel.createItems()
-                        dismiss()
+                    
+                    RDButton(
+                        variant: .default,
+                        size: .default,
+                        leadingIcon: "plus",
+                        label: "Add Items to Inventory"
+                    ) {
+                        Task {
+                            await viewModel.createItems()
+                            dismiss()
+                        }
                     }
                 }
-                .frame(alignment: .bottom)
+                .ignoresSafeArea(.keyboard)
             }
             .toolbar(.hidden)
             .frameTop()
