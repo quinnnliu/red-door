@@ -37,7 +37,7 @@ struct ContentView: View {
                     .environment(coordinator)
             }
             
-            Tab("Item Inventory", systemImage: "chair.lounge.fill", value: NavigationCoordinator.Tab.itemInventory) {
+            Tab("Item Inventory (V2)", systemImage: "chair.lounge.fill", value: NavigationCoordinator.Tab.itemInventory) {
                 ItemDocumentListViewV2(path: $coordinator.itemInventoryPath)
                     .tint(.blue)
                     .environment(coordinator)

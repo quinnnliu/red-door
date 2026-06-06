@@ -1,5 +1,5 @@
 //
-//  ItemDetailsViewV2.swift
+//  ItemDetailViewV2.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 5/14/26.
@@ -7,19 +7,19 @@
 
 import SwiftUI
 
-struct ItemDetailsViewV2: View {
+struct ItemDetailViewV2: View {
     // Environment
     @Environment(\.dismiss) private var dismiss
 
     // Data
-    @State private var viewModel: ItemDetailsViewModel
+    @State private var viewModel: ItemDetailViewModel
 
     // Presented
     @State private var showEditSheet: Bool = false
     @State private var showInformation: Bool = false
 
     init(item: ItemV2) {
-        viewModel = ItemDetailsViewModel(item: item)
+        viewModel = ItemDetailViewModel(item: item)
     }
 
     // MARK: - Body

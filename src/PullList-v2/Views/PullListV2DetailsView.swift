@@ -183,8 +183,9 @@ extension PullListV2DetailsView {
                             )) {
                                 RoomListItemView(
                                     room: room,
-                                    list: viewModel.pullListState,
+                                    rooms: viewModel.rooms,
                                     items: viewModel.itemsByRoom[room.id] ?? [],
+                                    list: viewModel.pullListState,
                                     action: handleAction(_:)
                                 )
                             }
