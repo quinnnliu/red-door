@@ -1,5 +1,5 @@
 //
-//  EditModelAttributesSection.swift
+//  EditItemDetailSection.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 4/26/26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct EditItemAttributesSection: View {
+struct EditItemDetailSection: View {
     @Binding var description: String
     @Binding var color: ItemColor
     @Binding var material: ItemMaterial

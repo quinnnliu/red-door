@@ -32,15 +32,15 @@ struct TopAppBar<LeadingView: View, Header: View, TrailingView: View>: View {
 struct BackButton: View {
     @Environment(\.dismiss) private var dismiss
 
-    var path: Binding<NavigationPath>? = nil
-
     var body: some View {
-        RDButton(variant: .red, size: .icon, leadingIcon: "chevron.left", iconBold: true, fullWidth: false) {
-            if path != nil {
-                self.path?.wrappedValue = NavigationPath()
-            } else {
-                dismiss()
-            }
+        RDButton(
+            variant: .red,
+            size: .icon,
+            leadingIcon: self.isPresentedModally ? SFSymbols.xmark : SFSymbols.chevronLeft,
+            iconBold: true,
+            fullWidth: false
+        ) {
+            dismiss()
         }
         .clipShape(Circle())
     }

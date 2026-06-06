@@ -35,7 +35,7 @@ struct CreateItemsViewV2: View {
                         image: $viewModel.itemState.primaryImage
                     )
 
-                    EditItemAttributesSection(
+                    EditItemDetailSection(
                         description: $viewModel.itemState.description,
                         color: $viewModel.itemState.color,
                         material: $viewModel.itemState.material,

@@ -12,72 +12,61 @@ struct MoveItemV2RoomSheet: View {
     
     @State var viewModel: MoveItemV2RoomSheetViewModel
     
-    let item: ItemV2
-    let room: RoomV2
-    var rooms: [RoomV2]
-    let list: PullListV2
-    
-    @State var showAlert: Bool = false
-    @State var alertMessage: String = ""
-    
-    init(room: RoomV2, rooms: [RoomV2], item: ItemV2, list: PullListV2) {
-        self.viewModel = MoveItemV2RoomSheetViewModel(room: room)
-        self.room = room
-        self.item = item
-        self.rooms = rooms
-        self.list = list
+    init(room: RoomV2, item: ItemV2) {
+        self.viewModel = MoveItemV2RoomSheetViewModel(item: item, room: room)
     }
     
     var body: some View {
         VStack(spacing: 16) {
             DragIndicator()
             
-            (
-                Text("Other Rooms: ")
-                +
-                Text(list.address.getStreetAddress() ?? list.address.formattedAddress)
-                    .bold()
-                    .foregroundColor(.red)
-            )
+            Text("Other Rooms")
+                .font(.headline)
+                .foregroundStyle(.red)
             
-            ScrollView {
-                LazyVStack {
-                    ForEach(rooms) { otherRoom in
-                        if otherRoom.id != room.id {
-                            Button {
-                                Task {
-                                    let added = await viewModel.moveItemToNewRoom(item: item)
-                                    dismiss()
-                                    if added {
-                                        showAlert = true
-                                        alertMessage = "Item has been moved to \(otherRoom.displayName)."
-                                    } else {
-                                        showAlert = true
-                                        alertMessage = "Failed to move item to \(otherRoom.displayName)."
+            if viewModel.rooms.isEmpty {
+                ProgressView()
+            } else {
+                ScrollView {
+                    LazyVStack {
+                        ForEach(viewModel.rooms) { otherRoom in
+                            if otherRoom.id != viewModel.room.id {
+                                Button {
+                                    Task {
+                                        let added = await viewModel.moveItemToNewRoom()
+                                        dismiss()
+                                        if added {
+                                            viewModel.showAlert = true
+                                            viewModel.alertMessage = "Item has been moved to \(otherRoom.displayName)."
+                                        } else {
+                                            viewModel.showAlert = true
+                                            viewModel.alertMessage = "Failed to move item to \(otherRoom.displayName)."
+                                        }
                                     }
+                                } label: {
+                                    Text(otherRoom.displayName)
+                                        .padding()
+                                        .frame(maxWidth: .infinity)
+                                        .background(Color(.systemGray5))
+                                        .cornerRadius(8)
+                                        .foregroundColor(.primary)
+                                        .bold()
                                 }
-                            } label: {
-                                Text(otherRoom.displayName)
-                                    .padding()
-                                    .frame(maxWidth: .infinity)
-                                    .background(Color(.systemGray5))
-                                    .cornerRadius(8)
-                                    .foregroundColor(.primary)
-                                    .bold()
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
-
                 }
             }
-            
-//            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-//            }
         }
         .frameTop()
         .frameHorizontalPadding()
-        .frameVerticalPadding()
         .presentationDetents([.medium])
+        .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
+            Button("Ok") { }
+        }
+        .task {
+            await viewModel.fetchRoomsForMove()
+        }
     }
 }

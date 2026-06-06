@@ -1,5 +1,5 @@
 //
-//  RoomDetailsView.swift
+//  PullListRoomDetailsView.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 5/30/26.
@@ -8,13 +8,13 @@
 import SwiftUI
 import CachedAsyncImage
 
-struct RoomDetailsView: View {
+struct PullListRoomDetailsView: View {
     @Environment(NavigationCoordinator.self) var coordinator
-    @State var viewModel: RoomDetailsViewModel
+    @State var viewModel: PullListRoomDetailsViewModel
     @State var itemToRemove: ItemV2? = nil
-    
+
     init(items: [ItemV2], room: RoomV2) {
-        self.viewModel = RoomDetailsViewModel(room: room, items: items)
+        self.viewModel = PullListRoomDetailsViewModel(room: room, items: items)
     }
     
     // MARK: State Variables
@@ -129,7 +129,7 @@ struct RoomDetailsView: View {
         ScrollView {
             LazyVStack(spacing: 12) {
                 ForEach(viewModel.items, id: \.self) { item in
-                    NavigationLink(value: NavigationDestination.roomItemDetailView(item: item, room: viewModel.roomState)) {
+                    NavigationLink(value: NavigationDestination.pullListItemDetailView(item: item, room: viewModel.roomState)) {
                         RoomItemListItemView(item: item)
                     }
                 }
@@ -185,7 +185,6 @@ struct RoomDetailsView: View {
             RoundedRectangle(cornerRadius: 6)
                 .stroke(item.attention ? Color.yellow : Color(.systemGray3), lineWidth: 3)
         )
-        
     }
     
     // MARK: Item Image

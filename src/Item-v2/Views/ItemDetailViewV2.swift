@@ -17,6 +17,7 @@ struct ItemDetailViewV2: View {
     // Presented
     @State private var showEditSheet: Bool = false
     @State private var showInformation: Bool = false
+    @State private var showQRCodeLabel: Bool = false
 
     init(item: ItemV2) {
         viewModel = ItemDetailViewModel(item: item)
@@ -39,24 +40,32 @@ struct ItemDetailViewV2: View {
                         )
 
                         VStack(spacing: 12) {
-                            Button(action: {
-                                withAnimation(.spring(response: 0.3)) {
-                                    showInformation.toggle()
+                            HStack {
+                                Button(action: {
+                                    withAnimation(.spring(response: 0.3)) {
+                                        showInformation.toggle()
+                                    }
+                                }) {
+                                    HStack(spacing: 0) {
+                                        Text("Information")
+                                            .foregroundColor(.white)
+                                            .bold()
+                                        
+                                        Spacer()
+                                        
+                                        Image(systemName: showInformation ? "chevron.up" : "chevron.down")
+                                            .foregroundColor(.white)
+                                    }
+                                    .padding(8)
+                                    .background(.red)
+                                    .cornerRadius(6)
                                 }
-                            }) {
-                                HStack(spacing: 0) {
-                                    Text("Information")
-                                        .foregroundColor(.white)
-                                        .bold()
-
-                                    Spacer()
-
-                                    Image(systemName: showInformation ? "chevron.up" : "chevron.down")
-                                        .foregroundColor(.white)
+                                
+                                Spacer()
+                                
+                                SmallCTA(type: .red, leadingIcon: SFSymbols.qrcode, text: "Label") {
+                                    showQRCodeLabel = true
                                 }
-                                .padding(8)
-                                .background(.red)
-                                .cornerRadius(6)
                             }
 
                             if showInformation {
@@ -73,6 +82,9 @@ struct ItemDetailViewV2: View {
             .toolbar(.hidden)
             .sheet(isPresented: $showEditSheet) {
                 EditItemSheetV2(viewModel: viewModel)
+            }
+            .fullScreenCover(isPresented: $showQRCodeLabel) {
+                ItemV2LabelView(item: viewModel.item)
             }
             .overlay(
                 ModelRDImageOverlay(

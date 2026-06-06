@@ -15,18 +15,15 @@ struct PullListItemDetailView: View {
 	@State var viewModel: PullListItemDetailsViewModel
 
 	@State private var showInformation: Bool = false
+    @State private var showQRCodeSheet: Bool = false
 
 	init(
 		item: ItemV2,
-        room: RoomV2,
-		rooms: [RoomV2],
-        list: PullListV2
+        room: RoomV2
 	) {
 		self.viewModel = PullListItemDetailsViewModel(
 			item: item,
-            room: room,
-			rooms: rooms,
-            list: list
+            room: room
 		)
 	}
     
@@ -53,8 +50,11 @@ struct PullListItemDetailView: View {
 				Footer()
 					.frameHorizontalPadding()
 			}
-			.sheet(item: $viewModel.itemToMove) { item in
-                MoveItemV2RoomSheet(room: viewModel.room, rooms: viewModel.rooms, item: viewModel.itemState, list: viewModel.list)
+            .fullScreenCover(isPresented: $showQRCodeSheet) {
+                ItemV2LabelView(item: viewModel.itemState)
+            }
+            .sheet(isPresented: $viewModel.showMoveItemSheet) {
+                MoveItemV2RoomSheet(room: viewModel.room, item: viewModel.itemState)
 			}
 			.alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
 				Button("OK", role: .cancel) {
@@ -105,7 +105,10 @@ struct PullListItemDetailView: View {
 				Text(viewModel.itemState.name)
 			}
 		}, trailingView: {
-			Spacer().frame(32)
+            RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.qrcode) {
+                showQRCodeSheet = true
+            }
+            .clipShape(.circle)
 		})
 	}
 
@@ -118,8 +121,17 @@ struct PullListItemDetailView: View {
                     Text("Location: ")
                         .foregroundColor(.red)
                         .bold()
-                    
-                    Text(listId)
+
+					if let address = viewModel.pullList?.address.getStreetAddress() ?? viewModel.pullList?.address.formattedAddress {
+						Text(address)
+					} else {
+						Text(listId)
+							.onAppear {
+								Task {
+									await viewModel.fetchPullListForLocation()
+								}
+							}
+					}
                 }
             }
 

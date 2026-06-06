@@ -27,7 +27,7 @@ struct ItemV2LabelView: View {
     
     var body: some View {
         VStack(spacing: 16) {
-            TopBar()
+            TopBar
             
             VStack(alignment: .center, spacing: 0) {
                 if pdfDocument == nil {
@@ -94,10 +94,8 @@ struct ItemV2LabelView: View {
         .toolbar(.hidden)
     }
     
-        // MARK: Top Bar
-    
-    @ViewBuilder
-    private func TopBar() -> some View {
+    // MARK: Top Bar
+    private var TopBar: some View {
         TopAppBar(leadingView: {
             BackButton()
         }, header: {

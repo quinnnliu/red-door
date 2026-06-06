@@ -12,16 +12,39 @@ final class MoveItemV2RoomSheetViewModel {
     
     let roomRepo: RoomRepository
     let itemRepo: ItemRepository
+    let listRepo: PullListRepository
     
-    init(room: RoomV2) {
-        guard let roomRepo = RoomRepository(room: room) else {
-            fatalError("[ERROR] Unable to create RoomRepository with room: \(room.displayName)")
-        }
-        self.roomRepo = roomRepo
+    let room: RoomV2
+    let item: ItemV2
+    var rooms: [RoomV2] = []
+    
+    var showAlert: Bool = false
+    var alertMessage: String = ""
+    
+    init(item: ItemV2, room: RoomV2) {
+        self.roomRepo = RoomRepository(room: room)
         self.itemRepo = ItemRepository()
+        self.listRepo = PullListRepository()
+        self.room = room
+        self.item = item
     }
     
-    func moveItemToNewRoom(item: ItemV2) async -> Bool {
+    func moveItemToNewRoom() async -> Bool {
         return true
+    }
+    
+    @MainActor
+    func fetchRoomsForMove() async {
+        if rooms.isEmpty {
+            do {
+                async let fetchedRooms = listRepo.getRooms(listId: room.listId)
+                rooms = try await fetchedRooms
+            } catch {
+                alertMessage = "[ERROR] Unable to fetch other rooms in pull list: \(error.localizedDescription)"
+                showAlert = true
+            }
+        } else {
+           return
+        }
     }
 }

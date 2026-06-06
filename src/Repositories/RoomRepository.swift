@@ -9,6 +9,7 @@ import Foundation
 import Firebase
 
 final class RoomRepository: GenericRepository<RoomV2> {
+    // MARK: PullList init
     init?(
         db: Firestore = Firestore.firestore(),
         list: any AnyRDDocument
@@ -21,7 +22,21 @@ final class RoomRepository: GenericRepository<RoomV2> {
             .collection(RoomV2.collectionName)
     }
     
-    init?(
+    // MARK: ListId init
+    init(
+        db: Firestore = Firestore.firestore(),
+        listId: String
+    ) {
+        super.init(db: db)
+        self.collectionRef = db
+            .collection(PullListV2.collectionName)
+            .document(listId)
+            .collection(RoomV2.collectionName)
+    }
+    
+    // MARK: Room init
+    
+    init(
         db: Firestore = Firestore.firestore(),
         room: RoomV2
     ) {

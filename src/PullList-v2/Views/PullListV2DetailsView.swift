@@ -12,6 +12,7 @@ struct PullListV2DetailsView: View {
     @State private var viewModel: PullListV2DetailsViewModel
     @State private var showAddRoomsSheet: Bool = false
     @State private var showEditListSheet: Bool = false // TODO: implement this
+    @State private var showPDFSheet: Bool = false
 
     init(list: PullListV2) {
         viewModel = PullListV2DetailsViewModel(from: list)
@@ -49,6 +50,9 @@ struct PullListV2DetailsView: View {
                 }
             }
         }
+        .fullScreenCover(isPresented: $showPDFSheet) {
+            PullListPDFViewV2(list: viewModel.pullListState)
+        }
     }
 }
 
@@ -85,7 +89,6 @@ extension PullListV2DetailsView {
     }
     
     // MARK: TopBar Right Icon Menu
-    @ViewBuilder
     var TopBarMenu: some View {
         Menu {
             Group {
@@ -164,8 +167,9 @@ extension PullListV2DetailsView {
         if !viewModel.rooms.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: .zero) {
-                    Text("Rooms")
-                        .font(.headline)
+                    SmallCTA(type: .secondary, leadingIcon: SFSymbols.richtextPageFill, text: "Show PDF") {
+                        showPDFSheet = true
+                    }
                     
                     Spacer()
                     
@@ -175,17 +179,20 @@ extension PullListV2DetailsView {
                 }
                 
                 ScrollView {
+                    Text("Rooms")
+                        .foregroundStyle(.red)
+                        .font(.headline)
+                        .frame(alignment: .leading)
+                    
                     LazyVStack(spacing: 12) {
                         ForEach(viewModel.rooms, id: \.id) { room in
-                            NavigationLink(value: NavigationDestination.roomDetailView(
+                            NavigationLink(value: NavigationDestination.pulllistRoomDetailView(
                                 items: viewModel.itemsByRoom[room.id] ?? [],
                                 room: room
                             )) {
                                 RoomListItemView(
                                     room: room,
-                                    rooms: viewModel.rooms,
                                     items: viewModel.itemsByRoom[room.id] ?? [],
-                                    list: viewModel.pullListState,
                                     action: handleAction(_:)
                                 )
                             }
