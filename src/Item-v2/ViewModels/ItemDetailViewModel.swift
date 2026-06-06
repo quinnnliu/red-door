@@ -8,7 +8,7 @@
 import SwiftUI
 
 @Observable
-final class ItemDetailsViewModel {
+final class ItemDetailViewModel {
     private let itemRepo: ItemRepository = ItemRepository()
 
     // MARK: Item State

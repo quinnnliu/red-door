@@ -66,6 +66,23 @@ class NavigationCoordinator {
             pullListV2Path.append(item)
         }
     }
+    
+    func removeFromSelectedPath(_ k: Int? = nil) {
+        switch selectedTab {
+        case .pullList:
+            pullListPath.removeLast(k ?? 1)
+        case .installedList:
+            installedListPath.removeLast(k ?? 1)
+        case .inventory:
+            inventoryPath.removeLast(k ?? 1)
+        case .itemInventory:
+            itemInventoryPath.removeLast(k ?? 1)
+        case .options:
+            optionsPath.removeLast(k ?? 1)
+        case .pullListV2:
+            pullListV2Path.removeLast(k ?? 1)
+        }
+    }
 
     func resetSelectedPath() {
         switch selectedTab {

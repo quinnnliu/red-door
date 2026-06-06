@@ -1,5 +1,5 @@
 //
-//  RoomDetailsViewModel.swift
+//  PullListRoomDetailsViewModel.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 5/30/26.
@@ -9,7 +9,7 @@ import Foundation
 import Firebase
 
 @Observable
-final class RoomDetailsViewModel {
+final class PullListRoomDetailsViewModel {
     private let roomRepo: RoomRepository
     private let itemRepo: ItemRepository
 
@@ -24,12 +24,9 @@ final class RoomDetailsViewModel {
 
     init(
         room: RoomV2,
-        items: [ItemV2] = [],
+        items: [ItemV2] = []
     ) {
-        guard let roomRepo = RoomRepository(room: room) else {
-            fatalError("[ERROR] Unable to create RoomRepository with room: \(room.displayName)")
-        }
-        self.roomRepo = roomRepo
+        self.roomRepo = RoomRepository(room: room)
         self.itemRepo = ItemRepository()
         self.roomState = room
         self.items = items
@@ -107,7 +104,7 @@ final class RoomDetailsViewModel {
 }
 
 
-extension RoomDetailsViewModel {
+extension PullListRoomDetailsViewModel {
     // MARK: removeItemFromRoom
     
     func removeItemFromRoom(item: ItemV2) async {

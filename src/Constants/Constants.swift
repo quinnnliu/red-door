@@ -22,6 +22,7 @@ enum SFSymbols {
     static let photoBadgeExclamationmarkFill = "photo.badge.exclamationmark.fill"
     static let checkmarkCircleFill = "checkmark.circle.fill"
     static let squareAndPencil = "square.and.pencil"
+    static let chevronLeft = "chevron.left"
     static let chevronUp = "chevron.up"
     static let chevronDown = "chevron.down"
     static let arrowCounterclockwise = "arrow.counterclockwise"
@@ -56,4 +57,6 @@ enum SFSymbols {
     static let lampFill = "lamp.floor.fill"
     static let art = "photo.artframe"
     static let noSign = "nosign"
+    static let xmark = "xmark"
+    static let richtextPageFill = "richtext.page.fill"
 }

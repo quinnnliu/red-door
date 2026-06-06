@@ -9,7 +9,6 @@ import SwiftUI
 
 struct RoomListItemView: View {
     let room: RoomV2
-    let list: PullListV2
     let items: [ItemV2]
     let action: (Any?) -> Void
     
@@ -72,12 +71,9 @@ extension RoomListItemView {
                 action(RoomListItemViewAction.refreshRoom(roomId: room.id))
             }
             
-            RDButton(
-                variant: .red,
-                size: .icon,
-                leadingIcon: SFSymbols.chevronRight,
-                allowsHitTesting: false
-            ) { return }
+            Image(systemName: SFSymbols.chevronRight)
+                .frame(32)
+                .foregroundStyle(.gray)
         }
     }
     
@@ -97,8 +93,7 @@ extension RoomListItemView {
     // MARK: Item List Item
     @ViewBuilder
     private func ItemListItem(item: ItemV2) -> some View {
-        NavigationLink(value:
-            NavigationDestination.pullListItemDetailView(item: item, list: list)
+        NavigationLink(value: NavigationDestination.pullListItemDetailView(item: item, room: room)
         ) {
             HStack(alignment: .center, spacing: 12) {
                 

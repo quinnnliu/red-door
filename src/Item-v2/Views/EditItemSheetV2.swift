@@ -10,7 +10,7 @@ import SwiftUI
 struct EditItemSheetV2: View {
     @Environment(\.dismiss) private var dismiss
 
-    var viewModel: ItemDetailsViewModel
+    var viewModel: ItemDetailViewModel
     @State private var editingItem: ItemV2
     var onDelete: (() -> Void)?
 
@@ -21,7 +21,7 @@ struct EditItemSheetV2: View {
     // Loading and delete
     @State private var showDeleteAlert: Bool = false
 
-    init(viewModel: ItemDetailsViewModel, onDelete: (() -> Void)? = nil) {
+    init(viewModel: ItemDetailViewModel, onDelete: (() -> Void)? = nil) {
         self.viewModel = viewModel
         self.editingItem = viewModel.item
         self.onDelete = onDelete
@@ -37,7 +37,7 @@ struct EditItemSheetV2: View {
 
                     ItemImageEditor(image: $editingItem.primaryImage)
 
-                    EditItemAttributesSection(
+                    EditItemDetailSection(
                         description: $editingItem.description,
                         color: $editingItem.color,
                         material: $editingItem.material,
@@ -91,7 +91,7 @@ struct EditItemSheetV2: View {
     private func TopBar() -> some View {
         TopAppBar(
             leadingView: {
-                RDButton(variant: .red, size: .icon, leadingIcon: "xmark", iconBold: true, fullWidth: false) {
+                RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.xmark, iconBold: true, fullWidth: false) {
                     dismiss()
                 }
                 .clipShape(Circle())

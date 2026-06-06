@@ -27,10 +27,7 @@ final class AddItemToRoomDetailViewModel {
         item: ItemV2,
         room: RoomV2
     ) {
-        guard let roomRepo = RoomRepository(room: room) else {
-            fatalError("[ERROR] Unable to create RoomRepository with room: \(room.displayName)")
-        }
-        self.roomRepo = roomRepo
+        self.roomRepo = RoomRepository(room: room)
         self.room = room
         self.item = item
     }

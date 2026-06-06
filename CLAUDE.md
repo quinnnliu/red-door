@@ -6,23 +6,6 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Red Door Design + Staging inventory management iOS app. Stack: SwiftUI, Firebase (Firestore + Storage), iOS 17+, `@Observable` macro (no `ObservableObject`/`@Published`).
 
-## Build & Run
-
-```bash
-# Build (no workspace — use .xcodeproj directly)
-xcodebuild -project RedDoor.xcodeproj -scheme RedDoor -configuration Debug build
-
-# Build for simulator
-xcodebuild -project RedDoor.xcodeproj -scheme RedDoor -destination 'platform=iOS Simulator,name=iPhone 15' build
-
-# Run on simulator
-xcrun simctl boot "iPhone 15"
-xcrun simctl install booted build/Build/Products/Debug-iphonesimulator/RedDoor.app
-xcrun simctl launch booted com.quinnliu.reddoor
-```
-
-No linting config (Xcode warnings only). No tests exist yet.
-
 Requires `GoogleService-Info.plist` (not committed) for Firebase to work.
 
 ## Active V2 Refactor
@@ -59,13 +42,46 @@ Concrete repositories subclass and add only collection-specific logic (e.g., `Pu
 
 **`DocumentListViewModelV2<T: AnyRDDocument>`** (`src/DocumentsList-v2/ViewModels/DocumentListViewModelV2.swift`) — generic, reusable paginated list ViewModel. Handles pagination (cursor-based), search, and key-value filters. Use this for any list screen instead of writing a new one.
 
-Screen-specific ViewModels (e.g., `CreatePullListViewModelV2`) are small and focused — they own only the logic their screen needs and inject repositories at init.
+ViewModels are scoped to an entire screen, screen-specific, and are small and focused (e.g., `CreatePullListViewModelV2`) — they own only the logic their screen needs and inject repositories at init.
+
+### Action Handling
+
+Generic components fire screen-specific actions via type-casting dispatch. Parent screen defines an action handler; component passes action enums.
+
+Parent screen pattern:
+```swift
+private extension RoomAddItemsSheetV2 {
+    func handleAction(_ action: Any?) {
+        switch action {
+        case let action as SearchBarAction:
+            // dispatch to viewModel based on action case
+        case let action as ItemInventoryFilterViewAction:
+            // dispatch to viewModel based on action case
+        default: break
+        }
+    }
+}
+```
+
+Component pattern:
+```swift
+struct SearchBarV2: View {
+    private let action: (Any) -> Void
+    // ... view code emits: action(SearchBarAction.search(text:)) or action(SearchBarAction.cancel)
+}
+
+enum SearchBarAction { case search(text: String); case cancel }
+```
+
+See `RoomAddItemsSheetV2.swift` and `SearchBarV2.swift` for full implementations.
 
 ### Navigation
 
 **`NavigationCoordinator`** (`src/Navigation/NavigationCoordinator.swift`) — `@Observable` class injected via `@Environment`. Owns each tab's `NavigationPath`.
 
 **`NavigationDestinationsModifierV2`** (`src/Navigation/NavigationDestinationModifier-v2.swift`) — registers all `.navigationDestination` handlers in one place. Applied at the root of each tab stack via `.rootNavigationDestinationsV2(path:)`. Add new destination types here.
+
+**`NavigationDestinations`** (`src/Navigation/NavigationDestinations.swift`) - enum that defines destinations for any screen in the app. Each destination has associated values that are needed for initializing the screen and/or its ViewModel.
 
 **`ContentView`** (`src/App/ContentView.swift`) — tab root. V1 tabs are commented out; active tabs use V2 views.
 
@@ -79,6 +95,14 @@ Screen-specific ViewModels (e.g., `CreatePullListViewModelV2`) are small and foc
 ### Real-Time Listeners
 
 Use listeners **only** for single-document detail views (attach in `activate()`, detach in `deactivate()`, called from `onAppear`/`onDisappear`). List views use one-time fetches via `DocumentListViewModelV2`.
+
+**`GenericRepository<T>`** provides typed listeners:
+```swift
+func addDocumentListener(id: String, onChange: @escaping (Result<T, Error>) -> Void) -> ListenerRegistration
+func addCollectionListener(onChange: @escaping (Result<[T], Error>) -> Void) -> ListenerRegistration
+```
+
+See `src/Repositories/GenericRepository.swift` for full signatures.
 
 ## Code Style
 

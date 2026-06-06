@@ -25,6 +25,15 @@ extension View {
     func onHighPriorityTap(action: @escaping () -> Void) -> some View {
         highPriorityGesture(TapGesture().onEnded { action() })
     }
+    
+    var isPresentedModally: Bool {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let window = windowScene.windows.first
+        else {
+            return false
+        }
+        return window.rootViewController?.presentedViewController != nil
+    }
 }
 
 // MARK: Frame

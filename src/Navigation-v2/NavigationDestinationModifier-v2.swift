@@ -16,13 +16,13 @@ struct NavigationDestinationsModifierV2: ViewModifier {
             .navigationDestination(for: NavigationDestination.self) { destination in
                 switch destination {
                 case .itemDetailView(let item):
-                    ItemDetailsViewV2(item: item)
+                    ItemDetailViewV2(item: item)
                 case .pullListDetailView(let list):
                     PullListV2DetailsView(list: list)
-                case .roomDetailView(let items, let room):
-                    RoomDetailsView(items: items, room: room)
-                case .pullListItemDetailView(let item, let list):
-                    Text("placeholder itemdetailview for item \(item.id) for pull list \(list.id)")
+                case .pulllistRoomDetailView(let items, let room):
+                    PullListRoomDetailsView(items: items, room: room)
+                case .pullListItemDetailView(let item, let room):
+                    PullListItemDetailView(item: item, room: room)
                 case .addItemToRoomDetailView(let item, let room):
                     AddItemToRoomDetailView(item: item, room: room)
                 default:
