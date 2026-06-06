@@ -147,6 +147,7 @@ struct RDButton: View {
     var fullWidth: Bool = false
     var disabled: Bool = false
     var allowsHitTesting: Bool = true
+    var font: Font? = nil
     let action: () -> Void
     
     @State private var isPressed = false
@@ -162,7 +163,7 @@ struct RDButton: View {
                 
                 if let label, size != .icon {
                     Text(label)
-                        .font(size.fontSize)
+                        .font(font ?? size.fontSize)
                         .fontWeight(.medium)
                 }
                 

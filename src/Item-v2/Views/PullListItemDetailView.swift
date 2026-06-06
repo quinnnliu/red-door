@@ -67,7 +67,6 @@ struct PullListItemDetailView: View {
 					Task {
 						let success = await viewModel.removeItemFromRoom()
 						if success {
-							viewModel.showRemovalSuccess()
 							dismiss()
 						}
 					}
@@ -187,7 +186,7 @@ struct PullListItemDetailView: View {
 
 						Spacer()
 
-						Image(systemName: showInformation ? "chevron.up" : "chevron.down")
+                        Image(systemName: showInformation ? SFSymbols.chevronUp : SFSymbols.chevronDown)
 							.foregroundColor(.white)
 					}
 					.padding(8)
@@ -241,12 +240,12 @@ struct PullListItemDetailView: View {
 	@ViewBuilder
 	private func Footer() -> some View {
 		HStack(spacing: 12) {
-			RDButton(variant: .default, size: .default, leadingIcon: SFSymbols.arrowUturnBackward, label: "Move to Other Room", fullWidth: true) {
-				viewModel.initiateMove()
+            RDButton(variant: .default, size: .default, leadingIcon: SFSymbols.arrowUturnBackward, label: "Move to Other Room", fullWidth: true, font: .caption2) {
+				viewModel.showMoveItemSheet = true
 			}
 
-			RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.trash, label: "Remove from \(viewModel.room.displayName)", fullWidth: true) {
-				viewModel.initiateRemoval()
+            RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.trash, label: "Remove from \(viewModel.room.displayName)", fullWidth: true, font: .caption2) {
+				viewModel.showRemoveConfirmationAlert = true
 			}
 		}
 	}

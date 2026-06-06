@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Firebase
 
 @Observable
 final class PullListItemDetailsViewModel {
@@ -29,8 +30,9 @@ final class PullListItemDetailsViewModel {
 	let itemState: ItemV2
     let room: RoomV2
 
-	private let listRepo = PullListRepository()
-	private let roomRepo: RoomRepository?
+    private let listRepo: PullListRepository = PullListRepository()
+	private let roomRepo: RoomRepository
+    private let itemRepo: ItemRepository = ItemRepository()
 
 	// MARK: - Initialization
 
@@ -46,21 +48,44 @@ final class PullListItemDetailsViewModel {
 
 	// MARK: - Actions
 
-	func initiateMove() {
-        showMoveItemSheet = true
-	}
-
-	func initiateRemoval() {
-		showRemoveConfirmationAlert = true
-	}
-
-	func showRemovalSuccess() {
-        alertMessage = "Item has been removed from \(room.displayName)."
-		showAlert = true
-	}
-
+    @MainActor
     func removeItemFromRoom() async -> Bool {
-        return true
+        let itemRepo = self.itemRepo
+        let roomRepo = self.roomRepo
+        let itemId = itemState.id
+        let roomId = room.id
+
+        do {
+            let result = try await itemRepo.db.runTransaction { (transaction, errorPointer) -> Any? in
+                do {
+                    var currentRoom = try roomRepo.get(id: roomId, in: transaction)
+                    currentRoom.itemIds.remove(itemId)
+
+                    itemRepo.update(
+                        id: itemId,
+                        fields: [
+                            ItemV2.CodingKeys.isAvailable.stringValue: true,
+                            ItemV2.CodingKeys.listId.stringValue: NSNull()
+                        ],
+                        in: transaction
+                    )
+                    roomRepo.update(
+                        id: roomId,
+                        fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(currentRoom.itemIds)],
+                        in: transaction
+                    )
+                } catch {
+                    errorPointer?.pointee = error as NSError
+                    return false
+                }
+                return true
+            }
+            return result as? Bool ?? false
+        } catch {
+            alertMessage = "Failed to remove item from room: \(error.localizedDescription)"
+            showAlert = true
+            return false
+        }
     }
 
 	// MARK: - Data Fetching

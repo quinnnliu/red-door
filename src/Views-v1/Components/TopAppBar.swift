@@ -31,6 +31,12 @@ struct TopAppBar<LeadingView: View, Header: View, TrailingView: View>: View {
 
 struct BackButton: View {
     @Environment(\.dismiss) private var dismiss
+    
+    let action: (() -> ())?
+    
+    init(action: (() -> ())? = nil) {
+        self.action = action
+    }
 
     var body: some View {
         RDButton(
@@ -40,8 +46,17 @@ struct BackButton: View {
             iconBold: true,
             fullWidth: false
         ) {
+            if let action = self.action {
+                action()
+            }
             dismiss()
         }
         .clipShape(Circle())
+    }
+}
+
+struct EmptyTopBarIconButton: View {
+    var body: some View {
+        EmptyView().frame(32)
     }
 }

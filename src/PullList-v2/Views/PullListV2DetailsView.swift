@@ -13,6 +13,7 @@ struct PullListV2DetailsView: View {
     @State private var showAddRoomsSheet: Bool = false
     @State private var showEditListSheet: Bool = false // TODO: implement this
     @State private var showPDFSheet: Bool = false
+    @State private var showInstallListSheet: Bool = false
 
     init(list: PullListV2) {
         viewModel = PullListV2DetailsViewModel(from: list)
@@ -30,6 +31,17 @@ struct PullListV2DetailsView: View {
             PullListDetailsSection(viewModel.pullListState)
 
             RoomsListSection
+            
+            Spacer()
+            
+            RDButton(
+                variant: viewModel.canOpenInstallSheet ? .red : .secondary,
+                leadingIcon: SFSymbols.truckBoxBadgeClockFill,
+                label: viewModel.canOpenInstallSheet ? "Begin Install" : "Being Installed...",
+                fullWidth: true
+            ) {
+                handleInstallListAction()
+            }
         }
         .frameTop()
         .frameHorizontalPadding()
@@ -37,11 +49,18 @@ struct PullListV2DetailsView: View {
         .onAppear {
             viewModel.startListening()
         }
-        .onDisappear {
-            viewModel.stopListening()
-        }
-        .alert(viewModel.alertText, isPresented: $viewModel.showAlert) {
+        .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("Ok", role: .cancel) {}
+        }
+        .alert("Install in Progress", isPresented: $viewModel.showInstallBlockedAlert) {
+            Button("Clear Lock", role: .destructive) {
+                viewModel.clearInstallingSession()
+            }
+            Button("Cancel", role: .cancel) {
+                Task { await viewModel.refreshPullListDetails() }
+            }
+        } message: {
+            Text(viewModel.getInstallBlockedMessage())
         }
         .sheet(isPresented: $showAddRoomsSheet) {
             EditRoomV2Sheet { newRoomName in
@@ -49,6 +68,9 @@ struct PullListV2DetailsView: View {
                     await viewModel.createEmptyRoom(newRoomName)
                 }
             }
+        }
+        .fullScreenCover(isPresented: $showInstallListSheet) {
+            InstallPullListSheet(list: viewModel.pullListState)
         }
         .fullScreenCover(isPresented: $showPDFSheet) {
             PullListPDFViewV2(list: viewModel.pullListState)
@@ -79,7 +101,7 @@ extension PullListV2DetailsView {
                         size: .icon,
                         leadingIcon: SFSymbols.arrowCounterclockwise
                     ) {
-                        viewModel.refreshPullList()
+                        viewModel.refreshPullListAndRooms()
                     }.clipShape(.circle)
 
                     TopBarMenu
@@ -95,10 +117,16 @@ extension PullListV2DetailsView {
                 Button("Edit List Details", systemImage: SFSymbols.pencil) {
                     showEditListSheet = true
                 }
-                
-                Button("Delete Pull List", systemImage: SFSymbols.trash) {
+
+                if viewModel.pullListState.installingSession != nil {
+                    Button("Clear Install Lock", systemImage: SFSymbols.xmark, role: .destructive) {
+                        viewModel.clearInstallingSession()
+                    }
+                }
+
+                Button("Delete Pull List", systemImage: SFSymbols.trash, role: .destructive) {
                     Task {
-                        viewModel.deletePullList()
+                        await viewModel.deletePullList()
                         dismiss()
                     }
                 }
@@ -172,6 +200,12 @@ extension PullListV2DetailsView {
                     }
                     
                     Spacer()
+
+                    Text("Rooms")
+                        .foregroundStyle(.red)
+                        .font(.headline)
+                    
+                    Spacer()
                     
                     SmallCTA(type: .red, leadingIcon: SFSymbols.plus, text: "Add Room") {
                         showAddRoomsSheet = true
@@ -179,11 +213,6 @@ extension PullListV2DetailsView {
                 }
                 
                 ScrollView {
-                    Text("Rooms")
-                        .foregroundStyle(.red)
-                        .font(.headline)
-                        .frame(alignment: .leading)
-                    
                     LazyVStack(spacing: 12) {
                         ForEach(viewModel.rooms, id: \.id) { room in
                             NavigationLink(value: NavigationDestination.pulllistRoomDetailView(
@@ -216,6 +245,19 @@ extension PullListV2DetailsView {
             case .refreshRoom(let roomId):
                 viewModel.refreshRoom(roomId)
             }
+        }
+    }
+    
+    func handleInstallListAction() {
+        if viewModel.canOpenInstallSheet {
+            Task {
+                let didCreate = await viewModel.createInstallingSession()
+                if didCreate {
+                    showInstallListSheet = true
+                }
+            }
+        } else {
+            viewModel.showInstallBlockedAlert = true
         }
     }
 }

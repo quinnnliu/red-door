@@ -29,8 +29,52 @@ final class MoveItemV2RoomSheetViewModel {
         self.item = item
     }
     
-    func moveItemToNewRoom() async -> Bool {
-        return true
+    func moveItemToNewRoom(newRoom: RoomV2) async {
+        do {
+            let success = try await roomRepo.db.runTransaction({ (transaction, errorPointer) -> Any? in
+                do {
+                    let fetchedItem = try self.itemRepo.get(id: self.item.id, in: transaction)
+                    let fetchedNewRoom = try self.roomRepo.get(id: newRoom.id, in: transaction)
+                    let fetchedCurrentRoom = try self.roomRepo.get(id: self.room.id, in: transaction)
+                    
+                    // TODO: better error handling
+                    guard !fetchedNewRoom.itemIds.contains(fetchedItem.id),
+                          fetchedCurrentRoom.itemIds.contains(fetchedItem.id),
+                          fetchedItem.listId == fetchedCurrentRoom.listId else {
+                        self.alertMessage = "Failed to add \(self.item.name) to \(self.room.displayName)"
+                        self.showAlert = true
+                        print("[ERROR]: Failed to add \(self.item.name) to \(self.room.displayName): validation error, item is in stale state")
+                        return
+                    }
+                    
+                    var updatedCurrentRoomItemIds = fetchedCurrentRoom.itemIds
+                    updatedCurrentRoomItemIds.remove(fetchedItem.id)
+                    
+                    var updatedNewRoomItemIds = fetchedNewRoom.itemIds
+                    updatedNewRoomItemIds.insert(fetchedItem.id)
+                    
+                    self.roomRepo.update(
+                        id: fetchedCurrentRoom.id,
+                        fields: [RoomV2.CodingKeys.itemIds.stringValue: updatedCurrentRoomItemIds],
+                        in: transaction
+                    )
+                    self.roomRepo.update(
+                        id: fetchedNewRoom.id,
+                        fields: [RoomV2.CodingKeys.itemIds.stringValue: updatedNewRoomItemIds],
+                        in: transaction
+                    )
+                    return true
+                } catch {
+                    errorPointer?.pointee = error as NSError
+                    return false
+                }
+            })
+            
+        } catch {
+            alertMessage = "Failed to add \(item.name) to \(room.displayName)"
+            showAlert = true
+            print("[ERROR]: Failed to add \(item.name) to \(room.displayName): \(error.localizedDescription)")
+        }
     }
     
     @MainActor

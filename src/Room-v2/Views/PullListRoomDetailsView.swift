@@ -73,9 +73,6 @@ struct PullListRoomDetailsView: View {
         .onAppear {
             viewModel.startListening()
         }
-        .onDisappear {
-            viewModel.stopListening()
-        }
         .toolbar(.hidden)
         .frameTop()
         .frameHorizontalPadding()

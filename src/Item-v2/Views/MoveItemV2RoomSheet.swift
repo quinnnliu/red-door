@@ -33,15 +33,9 @@ struct MoveItemV2RoomSheet: View {
                             if otherRoom.id != viewModel.room.id {
                                 Button {
                                     Task {
-                                        let added = await viewModel.moveItemToNewRoom()
-                                        dismiss()
-                                        if added {
-                                            viewModel.showAlert = true
-                                            viewModel.alertMessage = "Item has been moved to \(otherRoom.displayName)."
-                                        } else {
-                                            viewModel.showAlert = true
-                                            viewModel.alertMessage = "Failed to move item to \(otherRoom.displayName)."
-                                        }
+                                        await viewModel.moveItemToNewRoom(newRoom: otherRoom)
+                                        viewModel.alertMessage = "Added \(viewModel.item.name) to \(otherRoom.displayName)"
+                                        viewModel.showAlert = true
                                     }
                                 } label: {
                                     Text(otherRoom.displayName)
