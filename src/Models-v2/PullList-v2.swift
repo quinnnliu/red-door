@@ -7,6 +7,16 @@
 
 import Foundation
 
+struct InstallingSession: Codable, Hashable {
+    let userId: String
+    let startedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case userId = "user_id"
+        case startedAt = "started_at"
+    }
+}
+
 struct PullListV2: AnyRDDocument {
     static let collectionName: String = "pull_list_V2"
     static let orderByField: String = "created_date"
@@ -24,7 +34,8 @@ struct PullListV2: AnyRDDocument {
     var clientId: String // TODO: make a "job" object?
 
     var roomIds: [String]
-    
+    var installingSession: InstallingSession?
+
     init(
         id: String = UUID().uuidString,
         listType: DocumentType = .pullListV2,
@@ -37,7 +48,8 @@ struct PullListV2: AnyRDDocument {
         uninstallDate: String,
         clientId: String,
 
-        roomIds: [String] = []
+        roomIds: [String] = [],
+        installingSession: InstallingSession? = nil
     ) {
         self.id = id
         self.listType = listType
@@ -51,6 +63,7 @@ struct PullListV2: AnyRDDocument {
 
         self.clientId = clientId
         self.roomIds = roomIds
+        self.installingSession = installingSession
     }
     
     // TODO: - Init from Existing List (need to re-implement for InstalledListV2
@@ -82,5 +95,6 @@ struct PullListV2: AnyRDDocument {
         case uninstallDate = "uninstall_date"
         case clientId = "client_id"
         case roomIds = "room_ids"
+        case installingSession = "installing_session"
     }
 }

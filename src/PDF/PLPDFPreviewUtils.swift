@@ -99,7 +99,7 @@ struct PullListPDFView: View {
         for room in rooms {
             let roomVM = RoomViewModel(room: room)
             await roomVM.getRoomItems()
-            await roomVM.getRoomModels() // TODO: good place for model and item store
+            await roomVM.getRoomModels()
             roomViewModels.append(roomVM)
         }
 
