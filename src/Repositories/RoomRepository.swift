@@ -10,15 +10,14 @@ import Firebase
 
 final class RoomRepository: GenericRepository<RoomV2> {
     // MARK: PullList init
-    init?(
+    init(
         db: Firestore = Firestore.firestore(),
-        list: any AnyRDDocument
+        list: PullListV2
     ) {
-        guard let pullList = list as? PullListV2 else { return nil }
         super.init(db: db)
         self.collectionRef = db
             .collection(PullListV2.collectionName)
-            .document(pullList.id)
+            .document(list.id)
             .collection(RoomV2.collectionName)
     }
     

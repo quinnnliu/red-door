@@ -20,8 +20,10 @@ struct PullListPDFViewV2: View {
 
     private let pullListRepository = PullListRepository()
     private let itemRepository = ItemRepository()
+    private let roomRepository: RoomRepository
 
     init(list: PullListV2) {
+        self.roomRepository = RoomRepository(list: list)
         self.list = list
     }
 
@@ -153,9 +155,6 @@ struct PullListPDFViewV2: View {
 
     private func fetchRooms() async throws -> [RoomV2] {
         guard !list.roomIds.isEmpty else { return [] }
-        guard let roomRepository = RoomRepository(list: list) else {
-            throw NSError(domain: "RoomRepository", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to initialize RoomRepository"])
-        }
         return try await roomRepository.get(ids: list.roomIds)
     }
 

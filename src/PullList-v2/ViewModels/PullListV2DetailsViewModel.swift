@@ -30,10 +30,7 @@ final class PullListV2DetailsViewModel {
     
     init(from list: PullListV2) {
         self.pullListState = list
-        guard let roomRepo = RoomRepository(list: list) else {
-            fatalError("PullListV2DetailsViewModel init failed: list is not a PullListV2")
-        }
-        self.roomRepo = roomRepo
+        self.roomRepo = RoomRepository(list: list)
         self.itemRepo = ItemRepository()
         self.pullListRepo = PullListRepository()
     }
@@ -166,8 +163,8 @@ final class PullListV2DetailsViewModel {
                     itemRepo.update(
                         id: itemId,
                         fields: [
-                            ItemV2.CodingKeys.listId.stringValue: NSNull(),
-                            ItemV2.CodingKeys.isAvailable.stringValue: true
+                            ItemV2.CodingKeys.status.stringValue: ItemStatus.inStorage.rawValue,
+                            ItemV2.CodingKeys.locationId.stringValue: Warehouse.warehouse1.id
                         ],
                         in: transaction
                     )

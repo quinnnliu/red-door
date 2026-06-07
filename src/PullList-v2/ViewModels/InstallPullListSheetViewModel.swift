@@ -29,10 +29,7 @@ final class InstallPullListSheetViewModel {
 
     init(from list: PullListV2) {
         self.pullListState = list
-        guard let roomRepo = RoomRepository(list: list) else {
-            fatalError("InstallPullListSheetViewModel init failed: list is not a PullListV2")
-        }
-        self.roomRepo = roomRepo
+        self.roomRepo = RoomRepository(list: list)
         self.itemRepo = ItemRepository()
         self.pullListRepo = PullListRepository()
     }

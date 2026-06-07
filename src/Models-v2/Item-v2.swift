@@ -62,7 +62,7 @@ struct ItemV2: AnyRDDocument {
         purchaseLocation: String? = nil,
         datePurchased: String? = nil,
         status: ItemStatus = .inStorage,
-        locationId: String = Warehouse.warehouse1.id,
+        locationId: String = Warehouse.warehouse1.id, // TODO: non-default warehouse (select where they should be stored)
         attention: Bool,
         attentionDescription: String? = nil,
         description: String,
