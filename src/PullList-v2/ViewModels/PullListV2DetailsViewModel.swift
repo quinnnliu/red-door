@@ -23,7 +23,8 @@ final class PullListV2DetailsViewModel {
     private let pullListRepo: PullListRepository
     
     var showAlert: Bool = false
-    var alertText: String = ""
+    var alertMessage: String = ""
+    var showInstallBlockedAlert: Bool = false
 
     // MARK: init
     
@@ -46,7 +47,7 @@ final class PullListV2DetailsViewModel {
     func startListening() {
         guard roomsListener == nil else { return }
         isLoading = true
-        alertText = ""
+        alertMessage = ""
 
         roomsListener = roomRepo.addRoomsListener { [weak self] result in
             Task { @MainActor in
@@ -68,7 +69,7 @@ final class PullListV2DetailsViewModel {
     }
 
     // MARK: handleRoomSnapshot
-    
+
     @MainActor
     private func handleRoomSnapshot(_ rooms: [RoomV2]) async {
         isLoading = false
@@ -83,7 +84,7 @@ final class PullListV2DetailsViewModel {
     private func handleListenerError(_ error: Error) async {
         isLoading = false
         showAlert = true
-        alertText = error.localizedDescription
+        alertMessage = error.localizedDescription
     }
     
     // MARK: fetchItemsForRoom
@@ -104,10 +105,10 @@ final class PullListV2DetailsViewModel {
 
             if allItemsLoaded || room.itemIds.isEmpty {
                 itemsByRoom[room.id] = loadedItems
-                alertText = ""
+                alertMessage = ""
             }
         } catch {
-            alertText = error.localizedDescription
+            alertMessage = error.localizedDescription
             showAlert = true
         }
     }
@@ -125,32 +126,141 @@ final class PullListV2DetailsViewModel {
         }
     }
     
-    // MARK: refreshPullList
+    // MARK: refreshPullListAndRooms
 
-    func refreshPullList() {
+    func refreshPullListAndRooms() {
         itemsCache.removeAll()
         itemsByRoom.removeAll()
         Task { @MainActor in
+            await refreshPullListDetails()
             for room in rooms {
                 await fetchItemsForRoom(room)
             }
         }
     }
     
-    // MARK: refreshRoom
-    func deletePullList() {
-        // TODO: DELETE PULL LIST LOGIC
+    // MARK: refreshPullListDetails
+    
+    func refreshPullListDetails() async {
+        do {
+            pullListState = try await pullListRepo.get(id: pullListState.id)
+        } catch {
+            alertMessage = "Error refreshing pull list, please try again"
+            showAlert = true
+        }
+    }
+    
+    // MARK: deletePullList
+    func deletePullList() async {
+        let itemRepo = self.itemRepo
+        let roomRepo = self.roomRepo
+        let pullListRepo = self.pullListRepo
+        let roomSnapshot = self.rooms
+        let pullListId = self.pullListState.id
+
+        do {
+            _ = try await pullListRepo.db.runTransaction { (transaction, errorPointer) -> Any? in
+                // Update all items: clear listId, mark as available
+                let allItemIds = roomSnapshot.flatMap { $0.itemIds }
+                for itemId in allItemIds {
+                    itemRepo.update(
+                        id: itemId,
+                        fields: [
+                            ItemV2.CodingKeys.listId.stringValue: NSNull(),
+                            ItemV2.CodingKeys.isAvailable.stringValue: true
+                        ],
+                        in: transaction
+                    )
+                }
+
+                // Delete all rooms
+                for room in roomSnapshot {
+                    roomRepo.delete(id: room.id, in: transaction)
+                }
+
+                // Delete the pull list
+                pullListRepo.delete(id: pullListId, in: transaction)
+
+                return true
+            }
+        } catch {
+            alertMessage = "Failed to delete pull list: \(error.localizedDescription)"
+            showAlert = true
+            print("[ERROR]: Failed to delete pull list: \(error.localizedDescription)")
+        }
+    }
+
+    // MARK: computedProperties
+
+    var canOpenInstallSheet: Bool {
+        pullListState.installingSession == nil
+    }
+
+    func getInstallBlockedMessage() -> String {
+        guard let session = pullListState.installingSession else { return "" }
+        return "This list is currently being installed by \(session.userId)"
+    }
+
+    // MARK: clearInstallingSession
+
+    func clearInstallingSession() {
+        let pullListId = pullListState.id
+        Task {
+            do {
+                try await pullListRepo.update(
+                    id: pullListId,
+                    fields: [PullListV2.CodingKeys.installingSession.stringValue: NSNull()]
+                )
+                pullListState.installingSession = nil
+                alertMessage = "Install lock cleared"
+                showAlert = true
+            } catch {
+                alertMessage = "Failed to clear install lock: \(error.localizedDescription)"
+                showAlert = true
+            }
+        }
+    }
+
+    // MARK: createInstallingSession
+
+    func createInstallingSession() async -> Bool {
+        let pullListId = pullListState.id
+
+        do {
+            let freshList = try await pullListRepo.get(id: pullListId)
+            guard freshList.installingSession == nil else {
+                alertMessage = "This list is currently being installed by \(freshList.installingSession?.userId ?? "another user")"
+                showInstallBlockedAlert = true
+                return false
+            }
+
+            let session = InstallingSession(userId: "another user", startedAt: Date())
+            let sessionData: [String: AnyHashable] = [
+                InstallingSession.CodingKeys.userId.stringValue: session.userId,
+                InstallingSession.CodingKeys.startedAt.stringValue: session.startedAt
+            ]
+            try await pullListRepo.update(
+                id: pullListId,
+                fields: [PullListV2.CodingKeys.installingSession.stringValue: sessionData]
+            )
+            pullListState.installingSession = session
+            return true
+        } catch {
+            alertMessage = "Failed to create install session: \(error.localizedDescription)"
+            showAlert = true
+            return false
+        }
     }
 }
 
 extension PullListV2DetailsViewModel {
-    
+
     // MARK: createEmptyRoom
 
     // TODO: remove this duplicate (copy of CreatePullListViewModelV2
     func createEmptyRoom(_ roomName: String) async {
         guard !RoomV2.roomExists(newRoomName: roomName, rooms: rooms) else {
-            alertText = "Room with same name already exists for this list"
+            alertMessage = "Room with same name already exists for this list"
             showAlert = true
             return
         }
@@ -166,14 +276,14 @@ extension PullListV2DetailsViewModel {
                 fields: [PullListV2.CodingKeys.roomIds.stringValue: newRoom.id]
             )
         } catch {
-            alertText = "error adding \(newRoom.displayName): \(error.localizedDescription)"
+            alertMessage = "error adding \(newRoom.displayName): \(error.localizedDescription)"
             showAlert = true
             return
         }
 
         pullListState.roomIds.append(newRoom.id)
         rooms.append(newRoom)
-        alertText = "\(newRoom.displayName) successfully created"
+        alertMessage = "\(newRoom.displayName) successfully created"
         showAlert = true
     }
 }

@@ -99,7 +99,6 @@ struct RDList: Codable, Identifiable, Hashable {
         self.roomIds = []
     }
 
-    // TODO: Eventually move to RDListDataStore
     static func getList(listId: String, listType: DocumentType = .installed_list) async -> RDList {
         do {
             let documentSnapshot = try await Firestore.firestore().collection(listType.collectionString).document(listId).getDocument()
