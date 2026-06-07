@@ -115,22 +115,20 @@ struct PullListItemDetailView: View {
 
     private var ItemDetails: some View {
 		VStack(alignment: .leading, spacing: 12) {
-            if let listId = viewModel.itemState.listId {
+            if viewModel.itemState.status != .inStorage {
                 HStack(alignment: .center, spacing: 0) {
                     Text("Location: ")
                         .foregroundColor(.red)
                         .bold()
 
-					if let address = viewModel.pullList?.address.getStreetAddress() ?? viewModel.pullList?.address.formattedAddress {
-						Text(address)
-					} else {
-						Text(listId)
-							.onAppear {
-								Task {
-									await viewModel.fetchPullListForLocation()
-								}
-							}
-					}
+                    if let address = viewModel.pullList?.address.getStreetAddress() ?? viewModel.pullList?.address.formattedAddress {
+                        Text(address)
+                    } else {
+                        Text(viewModel.pullList?.address.getStreetAddress() ?? "Loading...")
+                            .task {
+                                await viewModel.fetchPullListForLocation()
+                            }
+                    }
                 }
             }
 

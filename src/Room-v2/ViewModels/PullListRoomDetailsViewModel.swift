@@ -116,8 +116,8 @@ extension PullListRoomDetailsViewModel {
             itemRepo.update(
                 id: item.id,
                 fields: [
-                    ItemV2.CodingKeys.isAvailable.stringValue: true,
-                    ItemV2.CodingKeys.listId.stringValue: nil
+                    ItemV2.CodingKeys.status.stringValue: ItemStatus.inStorage.rawValue,
+                    ItemV2.CodingKeys.locationId.stringValue: Warehouse.warehouse1.id
                 ],
                 inBatch: batch
             )

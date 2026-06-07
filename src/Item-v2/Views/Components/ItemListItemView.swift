@@ -33,8 +33,8 @@ struct ItemListItemView: View {
                         .font(.headline)
                         .foregroundStyle(.primary)
 
-                    if !item.isAvailable {
-                        Text("• Unavailable")
+                    if item.status != .inStorage {
+                        Text("• \(item.status.displayTitle)")
                             .font(.footnote)
                             .foregroundStyle(.red)
                     }
