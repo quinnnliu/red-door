@@ -6,6 +6,20 @@
 //
 import SwiftUI
 
+enum ItemStatus: String, Codable {
+    case inPullList      = "in_pull_list"
+    case inStorage       = "in_storage"
+    case inInstalledList = "in_installed_list"
+
+    var displayTitle: String {
+        switch self {
+        case .inPullList:      return "On Pull List"
+        case .inStorage:       return "In Storage"
+        case .inInstalledList: return "Installed"
+        }
+    }
+}
+
 struct ItemV2: AnyRDDocument {
     static let collectionName: String = "items_v2"
     static let orderByField: String = "name_lowercased"
@@ -14,7 +28,7 @@ struct ItemV2: AnyRDDocument {
     var id: String
     var modelId: String
     var groupId: String?
-    
+
     var name: String
     var nameLowercased: String // for search
     var primaryImage: RDImage
@@ -26,13 +40,13 @@ struct ItemV2: AnyRDDocument {
     var brand: String?
     var purchaseLocation: String?
     var datePurchased: String?
-    var listId: String?
+    var status: ItemStatus
+    var locationId: String
     var attention: Bool
-    var attentionDescription: String? // TODO: implement decodable default for this? (if nil default to empty)
+    var attentionDescription: String?
     var description: String
     var isEssential: Bool
-    var isAvailable: Bool
-    
+
     init(
         id: String,
         modelId: String,
@@ -47,13 +61,12 @@ struct ItemV2: AnyRDDocument {
         brand: String? = nil,
         purchaseLocation: String? = nil,
         datePurchased: String? = nil,
-        listId: String? = nil,
+        status: ItemStatus = .inStorage,
+        locationId: String = Warehouse.warehouse1.id,
         attention: Bool,
         attentionDescription: String? = nil,
         description: String,
-        isEssential: Bool,
-        isAvailable: Bool
-        
+        isEssential: Bool
     ) {
         self.id = id
         self.modelId = modelId
@@ -69,14 +82,14 @@ struct ItemV2: AnyRDDocument {
         self.brand = brand
         self.purchaseLocation = purchaseLocation
         self.datePurchased = datePurchased
-        self.listId = listId
+        self.status = status
+        self.locationId = locationId
         self.attention = attention
         self.attentionDescription = attentionDescription
         self.description = description
         self.isEssential = isEssential
-        self.isAvailable = isAvailable
     }
-    
+
     init(item: ItemV2) {
         self.id = UUID().uuidString
         self.modelId = item.modelId
@@ -92,18 +105,18 @@ struct ItemV2: AnyRDDocument {
         self.brand = item.brand
         self.purchaseLocation = item.purchaseLocation
         self.datePurchased = item.datePurchased
-        self.listId = item.listId
+        self.status = item.status
+        self.locationId = item.locationId
         self.attention = item.attention
         self.attentionDescription = item.attentionDescription
         self.description = item.description
         self.isEssential = item.isEssential
-        self.isAvailable = item.isAvailable
     }
-    
+
     enum CodingKeys: String, CodingKey {
         case modelId = "model_id"
-        case listId = "list_id"
-        case isAvailable = "is_available"
+        case status = "status"
+        case locationId = "location_id"
         case id, attention, type, color, material, value, brand, description, name
         case attentionDescription = "attention_description"
         case nameLowercased = "name_lowercased"
@@ -112,6 +125,43 @@ struct ItemV2: AnyRDDocument {
         case isEssential = "is_essential"
         case primaryImage = "primary_image"
         case secondaryImages = "secondary_images"
+    }
+
+    // Backwards compatibility: old Firestore documents have `is_available` + `list_id` instead of `status` + `location_id`.
+    private enum LegacyCodingKeys: String, CodingKey {
+        case listId = "list_id"
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+
+        id                = try c.decode(String.self,    forKey: .id)
+        modelId           = try c.decode(String.self,    forKey: .modelId)
+        groupId           = nil
+        name              = try c.decode(String.self,    forKey: .name)
+        nameLowercased    = try c.decode(String.self,    forKey: .nameLowercased)
+        primaryImage      = try c.decode(RDImage.self,   forKey: .primaryImage)
+        secondaryImages   = try c.decodeIfPresent([RDImage].self, forKey: .secondaryImages)
+        type              = try c.decode(ItemType.self,  forKey: .type)
+        color             = try c.decode(ItemColor.self, forKey: .color)
+        material          = try c.decode(ItemMaterial.self, forKey: .material)
+        value             = try c.decodeIfPresent(Double.self,  forKey: .value)
+        brand             = try c.decodeIfPresent(String.self,  forKey: .brand)
+        purchaseLocation  = try c.decodeIfPresent(String.self,  forKey: .purchaseLocation)
+        datePurchased     = try c.decodeIfPresent(String.self,  forKey: .datePurchased)
+        attention         = try c.decode(Bool.self, forKey: .attention)
+        attentionDescription = try c.decodeIfPresent(String.self, forKey: .attentionDescription)
+        description       = try c.decode(String.self, forKey: .description)
+        isEssential       = try c.decode(Bool.self, forKey: .isEssential)
+
+        status = try c.decodeIfPresent(ItemStatus.self, forKey: .status) ?? .inStorage
+
+        if let locationId = try c.decodeIfPresent(String.self, forKey: .locationId) {
+            self.locationId = locationId
+        } else {
+            let legacy = try decoder.container(keyedBy: LegacyCodingKeys.self)
+            self.locationId = try legacy.decodeIfPresent(String.self, forKey: .listId) ?? Warehouse.warehouse1.id
+        }
     }
 }
 
@@ -122,9 +172,9 @@ enum ItemType: String, Codable, CaseIterable {
     case lamp = "Lamp"
     case accessories = "Accessories"
     case misc = "Miscellaneous"
-    
+
     var title: String { rawValue }
-    
+
     var icon: String {
         switch self {
         case .chair:
@@ -140,7 +190,7 @@ enum ItemType: String, Codable, CaseIterable {
         case .misc:
             SFSymbols.ellipsis
         }
-    
+
     }
 }
 
@@ -161,9 +211,9 @@ enum ItemColor: String, Codable, CaseIterable {
     case white = "White"
     case yellow = "Yellow"
     case clear = "Clear"
-    
+
     var title: String { rawValue }
-    
+
     var color: Color {
         switch self {
         case .black: return .black
@@ -209,6 +259,6 @@ enum ItemMaterial: String, Codable, CaseIterable {
     case wicker = "Wicker"
     case wood = "Wood"
     case other = "Other"
-    
+
     var title: String { rawValue }
 }

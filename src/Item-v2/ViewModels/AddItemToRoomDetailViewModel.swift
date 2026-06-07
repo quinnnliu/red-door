@@ -49,8 +49,8 @@ extension AddItemToRoomDetailViewModel {
                     self.itemRepo.update(
                         id: self.item.id,
                         fields: [
-                            ItemV2.CodingKeys.listId.stringValue: self.room.listId,
-                            ItemV2.CodingKeys.isAvailable.stringValue: false
+                            ItemV2.CodingKeys.status.stringValue: ItemStatus.inPullList.rawValue,
+                            ItemV2.CodingKeys.locationId.stringValue: self.room.listId
                         ],
                         in: transaction
                     )

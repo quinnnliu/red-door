@@ -64,8 +64,8 @@ final class PullListItemDetailsViewModel {
                     itemRepo.update(
                         id: itemId,
                         fields: [
-                            ItemV2.CodingKeys.isAvailable.stringValue: true,
-                            ItemV2.CodingKeys.listId.stringValue: NSNull()
+                            ItemV2.CodingKeys.status.stringValue: ItemStatus.inStorage.rawValue,
+                            ItemV2.CodingKeys.locationId.stringValue: Warehouse.warehouse1.id // TODO: should select where it should be stored
                         ],
                         in: transaction
                     )
@@ -91,11 +91,10 @@ final class PullListItemDetailsViewModel {
 	// MARK: - Data Fetching
 
 	func fetchPullListForLocation() async {
-		guard let listId = itemState.listId else { return }
-        guard pullList == nil else { return }
+        guard itemState.status != .inStorage, itemState.status == .inPullList, pullList == nil else { return }
 
 		do {
-			pullList = try await listRepo.get(id: listId)
+			pullList = try await listRepo.get(id: itemState.locationId)
 		} catch {
 			alertMessage = "Failed to load item location: \(error.localizedDescription)"
 			showAlert = true

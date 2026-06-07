@@ -67,9 +67,12 @@ struct ItemDetailSection: View {
                         
                         Spacer()
                         
-                        Text("Available:")
-                        Image(systemName: item.isAvailable ? "checkmark.circle.fill" : "xmark.circle.fill")
-                            .foregroundColor(item.isAvailable ? .green : .red)
+                        Text("Status:")
+                        Text(item.status.displayTitle)
+                            .padding(4)
+                            .background(item.status == .inStorage ? Color.green.opacity(0.15) : Color.red.opacity(0.15))
+                            .cornerRadius(4)
+                            .foregroundColor(item.status == .inStorage ? .green : .red)
                     }
                 }
                 .padding(8)

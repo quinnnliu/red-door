@@ -40,7 +40,7 @@ final class MoveItemV2RoomSheetViewModel {
                     // TODO: better error handling
                     guard !fetchedNewRoom.itemIds.contains(fetchedItem.id),
                           fetchedCurrentRoom.itemIds.contains(fetchedItem.id),
-                          fetchedItem.listId == fetchedCurrentRoom.listId else {
+                          fetchedItem.locationId == fetchedCurrentRoom.listId else {
                         self.alertMessage = "Failed to add \(self.item.name) to \(self.room.displayName)"
                         self.showAlert = true
                         print("[ERROR]: Failed to add \(self.item.name) to \(self.room.displayName): validation error, item is in stale state")

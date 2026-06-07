@@ -50,8 +50,7 @@ final class CreateItemsViewModel {
             material: .none,
             attention: false,
             description: "",
-            isEssential: false,
-            isAvailable: true
+            isEssential: false
         )
         self.itemCount = 1
         self.selectedRDImage = nil
