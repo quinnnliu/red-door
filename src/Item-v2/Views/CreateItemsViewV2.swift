@@ -19,14 +19,6 @@ struct CreateItemsViewV2: View {
     // MARK: - Body
     var body: some View {
         ZStack {
-            if viewModel.isLoading {
-                Color.black.opacity(0.3).ignoresSafeArea()
-                ProgressView("Saving Model...")
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
-                    .shadow(radius: 10)
-            }
-            
             VStack(spacing: 12) {
                 TopBar()
                 
@@ -66,6 +58,14 @@ struct CreateItemsViewV2: View {
             .toolbar(.hidden)
             .frameTop()
             .frameHorizontalPadding()
+            
+            if viewModel.isLoading {
+                Color.black.opacity(0.3).ignoresSafeArea()
+                ProgressView("Saving Model...")
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
+                    .shadow(radius: 10)
+            }
         }
         .overlay(
             ModelRDImageOverlay(selectedRDImage: viewModel.selectedRDImage, isImageSelected: $viewModel.isImageSelected)
@@ -97,7 +97,7 @@ struct CreateItemsViewV2: View {
     
     @ViewBuilder
     private func ModelNameEntry() -> some View {
-        TextField("Items Name", text: $viewModel.itemState.name)
+        TextField("Items Name", text: $viewModel.itemState.displayName)
             .padding(6)
             .background(viewModel.isImageSelected ? Color.clear : Color(.systemGray5))
             .cornerRadius(8)

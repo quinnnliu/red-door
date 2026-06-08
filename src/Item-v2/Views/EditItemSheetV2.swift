@@ -112,7 +112,7 @@ struct EditItemSheetV2: View {
 
     @ViewBuilder
     private func ItemNameEntry() -> some View {
-        TextField("Item Name", text: $editingItem.name)
+        TextField("Item Name", text: $editingItem.displayName)
             .padding(6)
             .background(isImageSelected ? Color.clear : Color(.systemGray5))
             .cornerRadius(8)

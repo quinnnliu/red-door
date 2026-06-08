@@ -97,7 +97,7 @@ final class PullListV2DetailsViewModel {
                 }
             }
 
-            let loadedItems = room.itemIds.compactMap { itemsCache[$0] }.sorted { $0.name < $1.name }
+            let loadedItems = room.itemIds.compactMap { itemsCache[$0] }.sorted { $0.displayName < $1.displayName }
             let allItemsLoaded = room.itemIds.allSatisfy { itemsCache[$0] != nil }
 
             if allItemsLoaded || room.itemIds.isEmpty {

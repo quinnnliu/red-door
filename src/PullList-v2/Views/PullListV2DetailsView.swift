@@ -70,7 +70,7 @@ struct PullListV2DetailsView: View {
             }
         }
         .fullScreenCover(isPresented: $showInstallListSheet) {
-            InstallPullListSheet(list: viewModel.pullListState)
+            InstallPullListSheet(list: viewModel.pullListState, rooms: viewModel.rooms, itemsByRoom: viewModel.itemsByRoom)
         }
         .fullScreenCover(isPresented: $showPDFSheet) {
             PullListPDFViewV2(list: viewModel.pullListState)
@@ -219,7 +219,7 @@ extension PullListV2DetailsView {
                                 items: viewModel.itemsByRoom[room.id] ?? [],
                                 room: room
                             )) {
-                                RoomListItemView(
+                                PullListRoomListItem(
                                     room: room,
                                     items: viewModel.itemsByRoom[room.id] ?? [],
                                     action: handleAction(_:)

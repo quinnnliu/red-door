@@ -149,7 +149,7 @@ struct PullListRoomDetailsView: View {
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(item.name)
+                Text(item.displayName)
                     .foregroundColor(.primary)
                     .bold()
                 

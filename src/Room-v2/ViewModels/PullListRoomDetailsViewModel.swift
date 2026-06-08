@@ -87,7 +87,7 @@ final class PullListRoomDetailsViewModel {
                 }
             }
 
-            items = room.itemIds.compactMap { itemsCache[$0] }.sorted { $0.name < $1.name }
+            items = room.itemIds.compactMap { itemsCache[$0] }.sorted { $0.displayName < $1.displayName }
         } catch {
             alertMessage = "Failed to load items: \(error.localizedDescription)"
             showAlert = true
@@ -128,7 +128,7 @@ extension PullListRoomDetailsViewModel {
             )
             try await batch.commit()
             itemsCache.removeValue(forKey: item.id)
-            alertMessage = "Removed item: \(item.name)"
+            alertMessage = "Removed item: \(item.displayName)"
             showAlert = true
             roomState.itemIds = updatedItems
         } catch {

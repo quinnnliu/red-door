@@ -122,7 +122,7 @@ struct PLGeneratedPDFViewV2: View {
                 .frame(width: 50, height: 50, alignment: .center)
                 .padding(.leading, 6)
 
-            Text(item.name)
+            Text(item.displayName)
                 .font(.system(size: 9))
                 .frame(width: 120, alignment: .leading)
                 .padding(.leading, 6)

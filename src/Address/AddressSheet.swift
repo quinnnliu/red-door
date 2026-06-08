@@ -3,12 +3,13 @@ import SwiftUI
 struct AddressSheet: View {
     @Binding var selectedAddress: Address
     @Binding var addressId: String
-    @State private var selectedAddressMode: String = "Search"
+    @State private var selectedAddressMode: String
     let addressOptions = ["Search", "Entry"]
 
     init(selectedAddress: Binding<Address>, addressId: Binding<String>) {
         _selectedAddress = selectedAddress
         _addressId = addressId
+        _selectedAddressMode = State(initialValue: selectedAddress.wrappedValue.isInitialized() ? "Entry" : "Search")
     }
 
     var body: some View {

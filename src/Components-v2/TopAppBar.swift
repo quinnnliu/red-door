@@ -42,7 +42,7 @@ struct BackButton: View {
         RDButton(
             variant: .red,
             size: .icon,
-            leadingIcon: self.isPresentedModally ? SFSymbols.xmark : SFSymbols.chevronLeft,
+            leadingIcon: self.isPresentedModally ? SFSymbols.xmark : SFSymbols.chevronLeft, // TODO: consider the environment variable injection instead of UIKit
             iconBold: true,
             fullWidth: false
         ) {

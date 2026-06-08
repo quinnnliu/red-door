@@ -58,7 +58,7 @@ struct ItemV2LabelView: View {
                         ShareLink(
                             item: PDFFile(data: pdfData),
                             preview: SharePreview(
-                                "NAME:\(item.name)-ID:\(item.id)-Label.pdf",
+                                "NAME:\(item.displayName)-ID:\(item.id)-Label.pdf",
                                 image: Image(systemName: SFSymbols.docFill)
                             ),
                             label: {

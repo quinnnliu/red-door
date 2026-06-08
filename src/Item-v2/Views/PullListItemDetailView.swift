@@ -54,7 +54,8 @@ struct PullListItemDetailView: View {
                 ItemV2LabelView(item: viewModel.itemState)
             }
             .sheet(isPresented: $viewModel.showMoveItemSheet) {
-                MoveItemV2RoomSheet(room: viewModel.room, item: viewModel.itemState)
+                SelectDocumentSheet(title: "Other Rooms", documents: viewModel.rooms.filter { $0.id != viewModel.room.id }, action: handleAction(_:))
+                    .task { await viewModel.fetchRoomsForMove() }
 			}
 			.alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
 				Button("OK", role: .cancel) {
@@ -90,6 +91,21 @@ struct PullListItemDetailView: View {
 		}
 	}
     
+    // MARK: - Action Handling
+
+    private func handleAction(_ action: Any?) {
+        guard let action else { return }
+        switch action {
+        case let sheetAction as SelectDocumentSheetAction<RoomV2>:
+            switch sheetAction {
+            case .selected(let newRoom):
+                Task { await viewModel.moveItemToNewRoom(newRoom: newRoom) }
+            }
+        default:
+            break
+        }
+    }
+
 	// MARK: - Top Bar
 
     private var TopBar: some View {
@@ -101,7 +117,7 @@ struct PullListItemDetailView: View {
 					.bold()
 					.foregroundColor(.red)
 
-				Text(viewModel.itemState.name)
+				Text(viewModel.itemState.displayName)
 			}
 		}, trailingView: {
             RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.qrcode) {

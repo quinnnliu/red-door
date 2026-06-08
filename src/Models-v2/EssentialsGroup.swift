@@ -11,12 +11,13 @@ struct EssentialsGroup: AnyGroup {
     static let searchField: String = "name"
     
     var id: String
-    var name: String
+    var displayName: String
     var items: [ItemV2]
     var groupType: GroupType
     
     enum CodingKeys: String, CodingKey {
-        case id, name, items
+        case id, items
+        case displayName = "display_name"
         case groupType = "group_type"
     }
 }

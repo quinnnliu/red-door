@@ -88,6 +88,58 @@ final class PullListItemDetailsViewModel {
         }
     }
 
+    // MARK: - Move Item
+
+    func fetchRoomsForMove() async {
+        guard rooms.isEmpty else { return }
+        do {
+            rooms = try await listRepo.getRooms(listId: room.listId)
+        } catch {
+            alertMessage = "Unable to fetch other rooms: \(error.localizedDescription)"
+            showAlert = true
+        }
+    }
+
+    func moveItemToNewRoom(newRoom: RoomV2) async {
+        let itemRepo = self.itemRepo
+        let roomRepo = self.roomRepo
+        let item = self.itemState
+        let currentRoom = self.room
+
+        do {
+            let _ = try await roomRepo.db.runTransaction { (transaction, errorPointer) -> Any? in
+                do {
+                    let fetchedItem = try itemRepo.get(id: item.id, in: transaction)
+                    let fetchedNewRoom = try roomRepo.get(id: newRoom.id, in: transaction)
+                    let fetchedCurrentRoom = try roomRepo.get(id: currentRoom.id, in: transaction)
+
+                    guard !fetchedNewRoom.itemIds.contains(fetchedItem.id),
+                          fetchedCurrentRoom.itemIds.contains(fetchedItem.id),
+                          fetchedItem.locationId == fetchedCurrentRoom.listId else {
+                        return nil
+                    }
+
+                    var updatedCurrentIds = fetchedCurrentRoom.itemIds
+                    updatedCurrentIds.remove(fetchedItem.id)
+                    var updatedNewIds = fetchedNewRoom.itemIds
+                    updatedNewIds.insert(fetchedItem.id)
+
+                    roomRepo.update(id: fetchedCurrentRoom.id, fields: [RoomV2.CodingKeys.itemIds.stringValue: updatedCurrentIds], in: transaction)
+                    roomRepo.update(id: fetchedNewRoom.id, fields: [RoomV2.CodingKeys.itemIds.stringValue: updatedNewIds], in: transaction)
+                    return true
+                } catch {
+                    errorPointer?.pointee = error as NSError
+                    return nil
+                }
+            }
+            alertMessage = "Moved \(item.displayName) to \(newRoom.displayName)"
+            showAlert = true
+        } catch {
+            alertMessage = "Failed to move item: \(error.localizedDescription)"
+            showAlert = true
+        }
+    }
+
 	// MARK: - Data Fetching
 
 	func fetchPullListForLocation() async {

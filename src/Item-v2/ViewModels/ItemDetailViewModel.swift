@@ -30,7 +30,7 @@ final class ItemDetailViewModel {
         defer { isLoading = false }
         do {
             var updatedItem = item
-            updatedItem.nameLowercased = updatedItem.name.lowercased()
+            updatedItem.nameLowercased = updatedItem.displayName.lowercased()
             if let uploadedImage = try await FirebaseImageManager.shared.updateImage(
                 item.primaryImage,
                 resultImageType: .item
@@ -50,7 +50,7 @@ final class ItemDetailViewModel {
         do {
             try await itemRepo.delete(id: item.id)
         } catch {
-            print("error deleting \(item.name): \(error.localizedDescription)")
+            print("error deleting \(item.displayName): \(error.localizedDescription)")
         }
     }
 }
