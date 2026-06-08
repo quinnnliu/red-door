@@ -25,6 +25,12 @@ struct ContentView: View {
                     .environment(coordinator)
             }
             
+            Tab("Options (V2)", systemImage: "ellipsis.circle", value: NavigationCoordinator.Tab.optionsV2) {
+                OptionsViewV2()
+                    .tint(.blue)
+                    .environment(coordinator)
+            }
+            
             Tab("Pull (v1)", systemImage: "pencil.and.list.clipboard", value: NavigationCoordinator.Tab.pullList) {
                 PullListDocumentView(path: $coordinator.pullListPath)
                     .tint(.blue)

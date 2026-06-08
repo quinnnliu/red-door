@@ -27,6 +27,9 @@ struct PullListV2: AnyRDDocument {
 
     var address: Address
     var addressId: String
+    var displayName: String {
+        self.address.getStreetAddress() ?? self.address.formattedAddress
+    }
 
     var createdDate: String
     var installDate: String

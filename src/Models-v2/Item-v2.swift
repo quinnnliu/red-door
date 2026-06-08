@@ -7,15 +7,18 @@
 import SwiftUI
 
 enum ItemStatus: String, Codable {
-    case inPullList      = "in_pull_list"
-    case inStorage       = "in_storage"
+    case inPullList = "in_pull_list"
+    case inStorage = "in_storage"
     case inInstalledList = "in_installed_list"
 
     var displayTitle: String {
         switch self {
-        case .inPullList:      return "On Pull List"
-        case .inStorage:       return "In Storage"
-        case .inInstalledList: return "Installed"
+        case .inPullList:
+            "In Pull List"
+        case .inStorage:
+            "In Storage"
+        case .inInstalledList:
+            "Installed"
         }
     }
 }
@@ -29,7 +32,7 @@ struct ItemV2: AnyRDDocument {
     var modelId: String
     var groupId: String?
 
-    var name: String
+    var displayName: String
     var nameLowercased: String // for search
     var primaryImage: RDImage
     var secondaryImages: [RDImage]?
@@ -51,7 +54,7 @@ struct ItemV2: AnyRDDocument {
         id: String,
         modelId: String,
         groupId: String? = nil,
-        name: String,
+        displayName: String,
         primaryImage: RDImage,
         secondaryImages: [RDImage]? = nil,
         type: ItemType,
@@ -62,7 +65,7 @@ struct ItemV2: AnyRDDocument {
         purchaseLocation: String? = nil,
         datePurchased: String? = nil,
         status: ItemStatus = .inStorage,
-        locationId: String = Warehouse.warehouse1.id,
+        locationId: String = Warehouse.warehouse1.id, // TODO: non-default warehouse (select where they should be stored)
         attention: Bool,
         attentionDescription: String? = nil,
         description: String,
@@ -71,8 +74,8 @@ struct ItemV2: AnyRDDocument {
         self.id = id
         self.modelId = modelId
         self.groupId = groupId
-        self.name = name
-        self.nameLowercased = name.lowercased()
+        self.displayName = displayName
+        self.nameLowercased = displayName.lowercased()
         self.primaryImage = primaryImage
         self.secondaryImages = secondaryImages
         self.type = type
@@ -94,7 +97,7 @@ struct ItemV2: AnyRDDocument {
         self.id = UUID().uuidString
         self.modelId = item.modelId
         self.groupId = item.groupId
-        self.name = item.name
+        self.displayName = item.displayName
         self.nameLowercased = item.nameLowercased
         self.primaryImage = item.primaryImage
         self.secondaryImages = item.secondaryImages
@@ -117,7 +120,7 @@ struct ItemV2: AnyRDDocument {
         case modelId = "model_id"
         case status = "status"
         case locationId = "location_id"
-        case id, attention, type, color, material, value, brand, description, name
+        case id, attention, type, color, material, value, brand, description
         case attentionDescription = "attention_description"
         case nameLowercased = "name_lowercased"
         case purchaseLocation = "purchase_location"
@@ -125,43 +128,7 @@ struct ItemV2: AnyRDDocument {
         case isEssential = "is_essential"
         case primaryImage = "primary_image"
         case secondaryImages = "secondary_images"
-    }
-
-    // Backwards compatibility: old Firestore documents have `is_available` + `list_id` instead of `status` + `location_id`.
-    private enum LegacyCodingKeys: String, CodingKey {
-        case listId = "list_id"
-    }
-
-    init(from decoder: Decoder) throws {
-        let c = try decoder.container(keyedBy: CodingKeys.self)
-
-        id                = try c.decode(String.self,    forKey: .id)
-        modelId           = try c.decode(String.self,    forKey: .modelId)
-        groupId           = nil
-        name              = try c.decode(String.self,    forKey: .name)
-        nameLowercased    = try c.decode(String.self,    forKey: .nameLowercased)
-        primaryImage      = try c.decode(RDImage.self,   forKey: .primaryImage)
-        secondaryImages   = try c.decodeIfPresent([RDImage].self, forKey: .secondaryImages)
-        type              = try c.decode(ItemType.self,  forKey: .type)
-        color             = try c.decode(ItemColor.self, forKey: .color)
-        material          = try c.decode(ItemMaterial.self, forKey: .material)
-        value             = try c.decodeIfPresent(Double.self,  forKey: .value)
-        brand             = try c.decodeIfPresent(String.self,  forKey: .brand)
-        purchaseLocation  = try c.decodeIfPresent(String.self,  forKey: .purchaseLocation)
-        datePurchased     = try c.decodeIfPresent(String.self,  forKey: .datePurchased)
-        attention         = try c.decode(Bool.self, forKey: .attention)
-        attentionDescription = try c.decodeIfPresent(String.self, forKey: .attentionDescription)
-        description       = try c.decode(String.self, forKey: .description)
-        isEssential       = try c.decode(Bool.self, forKey: .isEssential)
-
-        status = try c.decodeIfPresent(ItemStatus.self, forKey: .status) ?? .inStorage
-
-        if let locationId = try c.decodeIfPresent(String.self, forKey: .locationId) {
-            self.locationId = locationId
-        } else {
-            let legacy = try decoder.container(keyedBy: LegacyCodingKeys.self)
-            self.locationId = try legacy.decodeIfPresent(String.self, forKey: .listId) ?? Warehouse.warehouse1.id
-        }
+        case displayName = "display_name"
     }
 }
 

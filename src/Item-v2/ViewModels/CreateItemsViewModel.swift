@@ -17,7 +17,7 @@ final class CreateItemsViewModel {
 
     private var modelId: String {
         let parts = [
-            itemState.name,
+            itemState.displayName,
             itemState.type.rawValue,
             itemState.color.rawValue,
             itemState.material.rawValue,
@@ -43,7 +43,7 @@ final class CreateItemsViewModel {
         self.itemState = ItemV2(
             id: UUID().uuidString,
             modelId: "",
-            name: "",
+            displayName: "",
             primaryImage: RDImage(),
             type: .misc,
             color: .black,
@@ -61,7 +61,7 @@ final class CreateItemsViewModel {
     func createItems() async {
         let resolvedModelId = modelId
         var items: [ItemV2] = []
-        itemState.nameLowercased = itemState.name.lowercased()
+        itemState.nameLowercased = itemState.displayName.lowercased()
         for _ in (0..<itemCount) {
             var newItem = ItemV2(item: itemState)
             newItem.modelId = resolvedModelId
@@ -98,7 +98,7 @@ final class CreateItemsViewModel {
             try await batch.commit()
 
         } catch {
-            print("error creating items for: \(itemState.name)")
+            print("error creating items for: \(itemState.displayName)")
         }
     }
 }

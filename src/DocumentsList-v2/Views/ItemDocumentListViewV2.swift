@@ -117,7 +117,7 @@ extension ItemDocumentListViewV2 {
             LazyVStack(spacing: 8) {
                 ForEach(viewModel.documents, id: \.id) { item in
                     NavigationLink(value: NavigationDestination.itemDetailView(item)) {
-                        ItemListItemView(item: item)
+                        ItemDocumentListItemView(item: item)
                     }
                     .buttonStyle(PlainButtonStyle())
                 }

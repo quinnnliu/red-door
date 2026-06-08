@@ -60,12 +60,12 @@ extension AddItemToRoomDetailViewModel {
                     return nil
                 }
             })
-            alertMessage = "Added \(item.name) to \(room.displayName)"
+            alertMessage = "Added \(item.displayName) to \(room.displayName)"
             showAlert = true
         } catch {
-            alertMessage = "Failed to add \(item.name) to \(room.displayName)"
+            alertMessage = "Failed to add \(item.displayName) to \(room.displayName)"
             showAlert = true
-            print("[ERROR]: Failed to add \(item.name) to \(room.displayName): \(error.localizedDescription)")
+            print("[ERROR]: Failed to add \(item.displayName) to \(room.displayName): \(error.localizedDescription)")
         }
     }
 }

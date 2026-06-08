@@ -34,7 +34,7 @@ struct MoveItemV2RoomSheet: View {
                                 Button {
                                     Task {
                                         await viewModel.moveItemToNewRoom(newRoom: otherRoom)
-                                        viewModel.alertMessage = "Added \(viewModel.item.name) to \(otherRoom.displayName)"
+                                        viewModel.alertMessage = "Added \(viewModel.item.displayName) to \(otherRoom.displayName)"
                                         viewModel.showAlert = true
                                     }
                                 } label: {

@@ -116,7 +116,7 @@ struct AddItemToRoomDetailView: View {
                 HStack {
                     Text("Name:")
                         .font(.headline)
-                    Text(viewModel.item.name)
+                    Text(viewModel.item.displayName)
                 }
             },
             trailingView: {

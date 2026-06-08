@@ -18,7 +18,7 @@ struct ItemV2LabelGeneratedPDFView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Name: \(item.name)")
+            Text("Name: \(item.displayName)")
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.red)
             

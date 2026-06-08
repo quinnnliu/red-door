@@ -15,26 +15,33 @@ final class InstallPullListSheetViewModel {
     var itemsByRoom: [String: [ItemV2]] = [:] // key: roomId, value: [ItemV2]
     var isLoading: Bool = false
     var itemsCache: [String: ItemV2] = [:] // key: itemId, value: ItemV2
-
+    var itemInstallStates: [String: (status: ItemStatus, locationId: String)] = [:] // key: itemId
+    var warehouses: [WarehouseV2] = []
+    
     private var roomsListener: ListenerRegistration? = nil
 
     private let roomRepo: RoomRepository
     private let itemRepo: ItemRepository
     private let pullListRepo: PullListRepository
+    private let warehouseRepo: WarehouseRepository
 
     var showAlert: Bool = false
     var alertText: String = ""
 
     // MARK: init
 
-    init(from list: PullListV2) {
+    init(from list: PullListV2, rooms: [RoomV2] = [], itemsByRoom: [String: [ItemV2]] = [:]) {
         self.pullListState = list
-        guard let roomRepo = RoomRepository(list: list) else {
-            fatalError("InstallPullListSheetViewModel init failed: list is not a PullListV2")
-        }
-        self.roomRepo = roomRepo
+        self.roomRepo = RoomRepository(list: list)
         self.itemRepo = ItemRepository()
         self.pullListRepo = PullListRepository()
+        self.warehouseRepo = WarehouseRepository()
+        self.rooms = rooms
+        self.itemsByRoom = itemsByRoom
+        for item in itemsByRoom.values.joined() {
+            self.itemInstallStates[item.id] = (status: .inInstalledList, locationId: item.locationId)
+            self.itemsCache[item.id] = item
+        }
     }
 
     deinit {
@@ -96,15 +103,17 @@ final class InstallPullListSheetViewModel {
                 let fetched = try await itemRepo.get(ids: Array(uncachedIds))
                 for item in fetched {
                     itemsCache[item.id] = item
+                    if itemInstallStates[item.id] == nil {
+                        itemInstallStates[item.id] = (status: .inInstalledList, locationId: item.locationId)
+                    }
                 }
             }
 
-            let loadedItems = room.itemIds.compactMap { itemsCache[$0] }.sorted { $0.name < $1.name }
+            let loadedItems = room.itemIds.compactMap { itemsCache[$0] }.sorted { $0.displayName < $1.displayName }
             let allItemsLoaded = room.itemIds.allSatisfy { itemsCache[$0] != nil }
 
             if allItemsLoaded || room.itemIds.isEmpty {
                 itemsByRoom[room.id] = loadedItems
-                alertText = ""
             }
         } catch {
             alertText = error.localizedDescription
@@ -152,5 +161,10 @@ final class InstallPullListSheetViewModel {
             showAlert = true
             print("[ERROR] Failed to clear install session: \(error.localizedDescription)")
         }
+    }
+    
+    // MARK: getWarehouses
+    func getWarehouses() async {
+        warehouses = await warehouseRepo.getWarehouses()
     }
 }

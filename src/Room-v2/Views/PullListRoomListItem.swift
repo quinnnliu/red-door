@@ -1,5 +1,5 @@
 //
-//  RoomListItemView.swift
+//  PullListRoomListItem.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 5/30/26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct RoomListItemView: View {
+struct PullListRoomListItem: View {
     let room: RoomV2
     let items: [ItemV2]
     let action: (Any?) -> Void
@@ -31,7 +31,7 @@ struct RoomListItemView: View {
     }
 }
 
-extension RoomListItemView {
+extension PullListRoomListItem {
     
     // MARK: RoomHeader
     private var RoomPreviewHeader: some View {
@@ -97,10 +97,10 @@ extension RoomListItemView {
         ) {
             HStack(alignment: .center, spacing: 12) {
                 
-                ItemPreviewImageV2(item: item)
+                ItemListItemImage(item.primaryImage)
                 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(item.name)
+                    Text(item.displayName)
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .lineLimit(1)
@@ -125,61 +125,6 @@ extension RoomListItemView {
         }
     }
 }
-
-import CachedAsyncImage
-
-// TODO: make a better version for this that can exist on its own
-struct ItemPreviewImageV2: View {
-    let item: ItemV2
-    var size: CGFloat = 48
-    
-    var body: some View {
-        Group {
-            if item.primaryImage.imageExists, let imageURL = item.primaryImage.imageURL {
-                ItemCachedAsyncImage(imageURL: imageURL)
-            } else {
-                Color.gray
-                    .overlay(
-                        Image(systemName: SFSymbols.photoBadgeExclamationmarkFill)
-                            .foregroundColor(.white)
-                    )
-            }
-        }
-        .frame(size)
-        .cornerRadius(8)
-    }
-    
-    // MARK: Item Cached Async Image
-    
-    @ViewBuilder
-    private func ItemCachedAsyncImage(imageURL: URL) -> some View {
-        CachedAsyncImage(url: imageURL) { phase in
-            switch phase {
-            case .empty:
-                ProgressView()
-                    .frame(maxWidth: .infinity)
-            case let .success(image):
-                image
-                    .resizable()
-                    .scaledToFill()
-            case .failure:
-                Color.gray
-                    .overlay(
-                        Image(systemName: SFSymbols.photoBadgeExclamationmarkFill)
-                            .foregroundColor(.white)
-                    )
-            @unknown default:
-                Color.gray
-                    .overlay(
-                        Image(systemName: SFSymbols.photoBadgeExclamationmarkFill)
-                            .foregroundColor(.white)
-                    )
-            }
-        }
-    }
-}
-
-
 
 enum RoomListItemViewAction {
     case refreshRoom(roomId: String)

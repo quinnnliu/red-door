@@ -31,7 +31,7 @@ final class MoveItemV2RoomSheetViewModel {
     
     func moveItemToNewRoom(newRoom: RoomV2) async {
         do {
-            let success = try await roomRepo.db.runTransaction({ (transaction, errorPointer) -> Any? in
+            let _ = try await roomRepo.db.runTransaction({ (transaction, errorPointer) -> Any? in
                 do {
                     let fetchedItem = try self.itemRepo.get(id: self.item.id, in: transaction)
                     let fetchedNewRoom = try self.roomRepo.get(id: newRoom.id, in: transaction)
@@ -41,9 +41,9 @@ final class MoveItemV2RoomSheetViewModel {
                     guard !fetchedNewRoom.itemIds.contains(fetchedItem.id),
                           fetchedCurrentRoom.itemIds.contains(fetchedItem.id),
                           fetchedItem.locationId == fetchedCurrentRoom.listId else {
-                        self.alertMessage = "Failed to add \(self.item.name) to \(self.room.displayName)"
+                        self.alertMessage = "Failed to add \(self.item.displayName) to \(self.room.displayName)"
                         self.showAlert = true
-                        print("[ERROR]: Failed to add \(self.item.name) to \(self.room.displayName): validation error, item is in stale state")
+                        print("[ERROR]: Failed to add \(self.item.displayName) to \(self.room.displayName): validation error, item is in stale state")
                         return
                     }
                     
@@ -71,9 +71,9 @@ final class MoveItemV2RoomSheetViewModel {
             })
             
         } catch {
-            alertMessage = "Failed to add \(item.name) to \(room.displayName)"
+            alertMessage = "Failed to add \(item.displayName) to \(room.displayName)"
             showAlert = true
-            print("[ERROR]: Failed to add \(item.name) to \(room.displayName): \(error.localizedDescription)")
+            print("[ERROR]: Failed to add \(item.displayName) to \(room.displayName): \(error.localizedDescription)")
         }
     }
     

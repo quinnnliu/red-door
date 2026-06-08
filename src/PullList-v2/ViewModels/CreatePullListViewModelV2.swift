@@ -41,11 +41,7 @@ final class CreatePullListViewModelV2 {
         do {
             try pullListRepo.set(document: pullListState)
             
-            guard let roomRepo = RoomRepository(list: pullListState) else {
-                alertText = "[ERROR] Failed to initialize RoomRepository"
-                showAlert = true
-                return
-            }
+            let roomRepo = RoomRepository(list: pullListState)
             
             let batch = pullListRepo.db.batch()
             for room in rooms {

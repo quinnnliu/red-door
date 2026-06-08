@@ -6,7 +6,7 @@
 //
 
 protocol AnyGroup: AnyRDDocument {
-    var name: String { get set }
+    var displayName: String { get set }
     var items: [ItemV2] { get set }
     var groupType: GroupType { get }
 }

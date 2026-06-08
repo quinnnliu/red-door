@@ -95,7 +95,7 @@ struct PLGeneratedPDFViewV2: View {
                 .frame(width: 130, alignment: .leading)
                 .padding(.leading, 6)
 
-            Text("Location")
+            Text("Location ID")
                 .font(.system(size: 10, weight: .bold))
                 .frame(width: 150, alignment: .leading)
                 .padding(.leading, 6)
@@ -122,7 +122,7 @@ struct PLGeneratedPDFViewV2: View {
                 .frame(width: 50, height: 50, alignment: .center)
                 .padding(.leading, 6)
 
-            Text(item.name)
+            Text(item.displayName)
                 .font(.system(size: 9))
                 .frame(width: 120, alignment: .leading)
                 .padding(.leading, 6)
@@ -140,7 +140,7 @@ struct PLGeneratedPDFViewV2: View {
                 .padding(.leading, 6)
                 .lineLimit(1)
 
-            Text(item.listId ?? "—")
+            Text(item.locationId)
                 .font(.system(size: 9))
                 .frame(width: 150, alignment: .leading)
                 .padding(.leading, 6)

@@ -116,7 +116,7 @@ struct ItemDetailViewV2: View {
                 HStack {
                     Text("Name:")
                         .font(.headline)
-                    Text(viewModel.item.name)
+                    Text(viewModel.item.displayName)
                 }
             },
             trailingView: {
