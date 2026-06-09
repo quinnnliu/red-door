@@ -29,6 +29,7 @@ struct InstallPullListSheet: View {
         }
         .frameTop()
         .frameHorizontalPadding()
+        .frameBottomPadding()
         .task {
             viewModel.startListening()
             await viewModel.getWarehouses()
@@ -176,23 +177,23 @@ struct InstallPullListRoomListItem: View {
                     Text(item.displayName)
                         .font(.headline)
                     
-                    if item.status != .inStorage {
-                        Text("• \(item.status.displayTitle)")
-                            .font(.footnote)
-                            .foregroundStyle(.red)
+                    Group {
+                        Image(systemName: item.type.icon)
+                        Text("•")
+                        Text(item.material.title)
+                        Text("•")
+                        Image(systemName: SFSymbols.circleFill)
+                            .foregroundStyle(item.color.color)
                     }
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
                 }
                 
-                HStack(spacing: 4) {
-                    Image(systemName: item.type.icon)
-                    Text("•")
-                    Text(item.material.title)
-                    Text("•")
-                    Image(systemName: SFSymbols.circleFill)
-                        .foregroundStyle(item.color.color)
+                if let label = installStateLabel(item: item) {
+                    Text(label)
+                        .foregroundStyle(.red)
+                        .lineLimit(1)
                 }
-                .font(.footnote)
-                .foregroundStyle(.secondary)
             }
             
             Spacer()
@@ -207,6 +208,22 @@ struct InstallPullListRoomListItem: View {
         .padding(8)
         .background(Color(.systemGray5))
         .cornerRadius(8)
+    }
+    
+    private func installStateLabel(item: ItemV2) -> String? {
+        guard let state = installStates[item.id] else { return nil }
+        switch state.status {
+        case .inPullList:
+                return "• \(state.status.displayTitle)"
+        case .inStorage:
+            guard let name = warehouses.first(where: { $0.id ==
+                state.locationId })?.displayName else {
+                return nil
+            }
+            return "• Storage: \(name)"
+        default:
+            return nil
+        }
     }
 }
 

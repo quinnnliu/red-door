@@ -93,17 +93,15 @@ extension PullListV2DetailsView {
                         .foregroundStyle(.red)
                     Text(viewModel.pullListState.address.getStreetAddress() ?? viewModel.pullListState.address.formattedAddress)
                 }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color(.separator), lineWidth: 3)
+                )
             },
             trailingView: {
                 HStack(spacing: 8) {
-                    RDButton(
-                        variant: .default,
-                        size: .icon,
-                        leadingIcon: SFSymbols.arrowCounterclockwise
-                    ) {
-                        viewModel.refreshPullListAndRooms()
-                    }.clipShape(.circle)
-
                     TopBarMenu
                 }
             }
@@ -116,6 +114,10 @@ extension PullListV2DetailsView {
             Group {
                 Button("Edit List Details", systemImage: SFSymbols.pencil) {
                     showEditListSheet = true
+                }
+                
+                Button("Refresh List", systemImage: SFSymbols.arrowCounterclockwise) {
+                    viewModel.refreshPullListAndRooms()
                 }
 
                 if viewModel.pullListState.installingSession != nil {
@@ -185,7 +187,7 @@ extension PullListV2DetailsView {
         .padding(8)
         .overlay(
             RoundedRectangle(cornerRadius: 6)
-                .stroke(Color(.systemGray3), lineWidth: 4)
+                .stroke(Color(.systemGray3), lineWidth: 3)
         )
     }
     

@@ -7,8 +7,20 @@
 
 import SwiftUI
 
+struct SegmentedPickerSegment {
+    let label: String
+    let selectedColor: Color
+    let action: () -> Void
+    
+    init(_ label: String, selectedColor: Color = .red, action: @escaping () -> Void) {
+        self.label = label
+        self.selectedColor = selectedColor
+        self.action = action
+    }
+}
+
 struct SegmentedPicker: View {
-    let segments: [(label: String, action: () -> Void)]
+    let segments: [SegmentedPickerSegment]
     let selectedIndex: Int?
     
     var body: some View {
@@ -25,9 +37,11 @@ struct SegmentedPicker: View {
                         .foregroundStyle(isSelected ? .white : Color.primary)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 4)
-                        .background(isSelected ? Color.red : Color(.systemGray4))
+                        .background(isSelected ? segments[index].selectedColor : Color(.systemGray4))
                 }
                 .buttonStyle(.plain)
+                .scaleEffect(isSelected ? 1.05 : 1.0)
+                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
                 
                 if index < segments.count - 1 {
                     Divider()
