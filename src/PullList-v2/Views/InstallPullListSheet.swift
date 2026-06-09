@@ -24,7 +24,7 @@ struct InstallPullListSheet: View {
             Spacer()
             
             RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.plus, iconBold: true, label: "Create Installed List", fullWidth: true) {
-
+                viewModel.showConfirmSheet = true
             }
         }
         .frameTop()
@@ -36,6 +36,16 @@ struct InstallPullListSheet: View {
         }
         .alert(viewModel.alertText, isPresented: $viewModel.showAlert) {
             Button("Ok", role: .cancel) {}
+        }
+        .sheet(isPresented: $viewModel.showConfirmSheet) {
+            ConfirmInstallSheet(summary: viewModel.confirmInstallSummary) {
+                Task {
+                    await viewModel.createInstalledList()
+                    if !viewModel.showAlert {
+                        dismiss()
+                    }
+                }
+            } onCancel: { }
         }
     }
 }

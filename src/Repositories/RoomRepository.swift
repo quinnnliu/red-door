@@ -34,7 +34,7 @@ final class RoomRepository: GenericRepository<RoomV2> {
     }
     
     // MARK: Room init
-    
+
     init(
         db: Firestore = Firestore.firestore(),
         room: RoomV2
@@ -43,6 +43,20 @@ final class RoomRepository: GenericRepository<RoomV2> {
         self.collectionRef = db
             .collection(PullListV2.collectionName)
             .document(room.listId)
+            .collection(RoomV2.collectionName)
+    }
+
+    // MARK: Generic parent collection init
+
+    init(
+        db: Firestore = Firestore.firestore(),
+        parentCollectionName: String,
+        listId: String
+    ) {
+        super.init(db: db)
+        self.collectionRef = db
+            .collection(parentCollectionName)
+            .document(listId)
             .collection(RoomV2.collectionName)
     }
 }

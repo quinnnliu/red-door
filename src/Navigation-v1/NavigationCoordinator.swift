@@ -20,6 +20,7 @@ class NavigationCoordinator {
         case options = 4
         case pullListV2 = 5
         case optionsV2 = 6
+        case installedListV2 = 7
     }
 
     var selectedTab: Tab = .pullList
@@ -30,6 +31,7 @@ class NavigationCoordinator {
     var optionsPath: NavigationPath = NavigationPath()
     var optionsV2Path: NavigationPath = NavigationPath()
     var pullListV2Path: NavigationPath = NavigationPath()
+    var installedListV2Path: NavigationPath = NavigationPath()
 
     var selectedPath: NavigationPath {
         switch selectedTab {
@@ -47,6 +49,8 @@ class NavigationCoordinator {
             return pullListV2Path
         case .optionsV2:
             return optionsV2Path
+        case .installedListV2:
+            return installedListV2Path
         }
     }
 
@@ -70,6 +74,8 @@ class NavigationCoordinator {
             pullListV2Path.append(item)
         case .optionsV2:
             optionsV2Path.append(item)
+        case .installedListV2:
+            installedListV2Path.append(item)
         }
     }
     
@@ -89,6 +95,8 @@ class NavigationCoordinator {
             pullListV2Path.removeLast(k ?? 1)
         case .optionsV2:
             optionsV2Path.removeLast(k ?? 1)
+        case .installedListV2:
+            installedListV2Path.removeLast(k ?? 1)
         }
     }
 
@@ -108,6 +116,8 @@ class NavigationCoordinator {
             pullListV2Path = NavigationPath()
         case .optionsV2:
             optionsV2Path = NavigationPath()
+        case .installedListV2:
+            installedListV2Path = NavigationPath()
         }
     }
 }

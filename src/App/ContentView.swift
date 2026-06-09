@@ -31,6 +31,12 @@ struct ContentView: View {
                     .environment(coordinator)
             }
             
+            Tab("Installed (V2)", systemImage: "list.bullet.clipboard.fill", value: NavigationCoordinator.Tab.installedListV2) {
+                InstalledListDocumentListViewV2(path: $coordinator.installedListV2Path)
+                    .tint(.blue)
+                    .environment(coordinator)
+            }
+
             Tab("Pull (v1)", systemImage: "pencil.and.list.clipboard", value: NavigationCoordinator.Tab.pullList) {
                 PullListDocumentView(path: $coordinator.pullListPath)
                     .tint(.blue)

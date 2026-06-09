@@ -8,6 +8,12 @@
 import Foundation
 import Firebase
 
+struct ConfirmInstallSummary {
+    let address: String
+    let installedCount: Int
+    let storageBreakdown: [(warehouseName: String, count: Int)]
+}
+
 @Observable
 final class InstallPullListSheetViewModel {
     var pullListState: PullListV2
@@ -24,9 +30,12 @@ final class InstallPullListSheetViewModel {
     private let itemRepo: ItemRepository
     private let pullListRepo: PullListRepository
     private let warehouseRepo: WarehouseRepository
+    private let installedListRepo: InstalledListRepository
+    private let installedRoomRepo: RoomRepository
 
     var showAlert: Bool = false
     var alertText: String = ""
+    var showConfirmSheet: Bool = false
 
     // MARK: init
 
@@ -36,6 +45,8 @@ final class InstallPullListSheetViewModel {
         self.itemRepo = ItemRepository()
         self.pullListRepo = PullListRepository()
         self.warehouseRepo = WarehouseRepository()
+        self.installedListRepo = InstalledListRepository()
+        self.installedRoomRepo = RoomRepository(parentCollectionName: InstalledListV2.collectionName, listId: list.id)
         self.rooms = rooms
         self.itemsByRoom = itemsByRoom
         for item in itemsByRoom.values.joined() {
@@ -166,5 +177,79 @@ final class InstallPullListSheetViewModel {
     // MARK: getWarehouses
     func getWarehouses() async {
         warehouses = await warehouseRepo.getWarehouses()
+    }
+
+    // MARK: confirmInstallSummary
+
+    var confirmInstallSummary: ConfirmInstallSummary {
+        let installedCount = itemInstallStates.values.filter { $0.status == .inInstalledList }.count
+        var storageCounts: [String: Int] = [:]
+        for state in itemInstallStates.values where state.status == .inStorage {
+            storageCounts[state.locationId, default: 0] += 1
+        }
+        let breakdown = storageCounts.compactMap { warehouseId, count -> (warehouseName: String, count: Int)? in
+            guard let name = warehouses.first(where: { $0.id == warehouseId })?.displayName else { return nil }
+            return (warehouseName: name, count: count)
+        }.sorted { $0.warehouseName < $1.warehouseName }
+
+        return ConfirmInstallSummary(
+            address: pullListState.address.getStreetAddress() ?? pullListState.address.formattedAddress,
+            installedCount: installedCount,
+            storageBreakdown: breakdown
+        )
+    }
+
+    // MARK: createInstalledList
+
+    func createInstalledList() async {
+        let installedList = InstalledListV2(from: pullListState)
+        let roomSnapshot = rooms
+        let stateSnapshot = itemInstallStates
+        let installedListRepo = self.installedListRepo
+        let installedRoomRepo = self.installedRoomRepo
+        let itemRepo = self.itemRepo
+        let roomRepo = self.roomRepo
+        let pullListRepo = self.pullListRepo
+
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            let batch = installedListRepo.newBatch()
+
+            // 1. Create InstalledListV2 document
+            try installedListRepo.set(document: installedList, id: installedList.id, inBatch: batch)
+
+            // 2. Create room documents under installed list
+            for room in roomSnapshot {
+                try installedRoomRepo.set(document: room, id: room.id, inBatch: batch)
+            }
+
+            // 3. Update item statuses and locations
+            for (itemId, state) in stateSnapshot {
+                itemRepo.update(
+                    id: itemId,
+                    fields: [
+                        ItemV2.CodingKeys.status.stringValue: state.status.rawValue,
+                        ItemV2.CodingKeys.locationId.stringValue: state.locationId
+                    ],
+                    inBatch: batch
+                )
+            }
+
+            // 4. Delete original pull list rooms
+            for room in roomSnapshot {
+                roomRepo.delete(id: room.id, inBatch: batch)
+            }
+
+            // 5. Delete original pull list document
+            pullListRepo.delete(id: installedList.id, inBatch: batch)
+
+            try await batch.commit()
+        } catch {
+            alertText = "Failed to create installed list: \(error.localizedDescription)"
+            showAlert = true
+            print("[ERROR] createInstalledList: \(error.localizedDescription)")
+        }
     }
 }
