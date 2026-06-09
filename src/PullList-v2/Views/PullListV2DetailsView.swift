@@ -94,6 +94,12 @@ extension PullListV2DetailsView {
                         .foregroundStyle(.red)
                     Text(viewModel.pullListState.address.getStreetAddress() ?? viewModel.pullListState.address.formattedAddress)
                 }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 6)
+                        .stroke(Color(.separator), lineWidth: 3)
+                )
             },
             trailingView: {
                 HStack(spacing: 8) {
