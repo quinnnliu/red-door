@@ -13,19 +13,24 @@ import SwiftUI
 
 enum RDImageTypeEnum: String, Codable {
     case model_primary, model_secondary, item, rd_list, dirty, misc, delete
+    case roomBefore, roomAfter, listV2
 
     var objectPath: String? {
         switch self {
+        case .roomAfter, .roomBefore:
+            "rooms"
+        case .listV2:
+            "list_v2"
         case .model_primary, .model_secondary:
-            return "model_images"
+            "model_images"
         case .item:
-            return "item_images"
+            "item_images"
         case .rd_list:
-            return "rd_lists"
+            "rd_lists"
         case .misc:
-            return "misc"
+            "misc"
         case .dirty, .delete:
-            return nil // no path for dirty or delete
+            nil // no path for dirty or delete
         }
     }
 }

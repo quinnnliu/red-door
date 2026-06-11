@@ -107,11 +107,11 @@ extension PullListV2DetailsView {
     var TopBarMenu: some View {
         Menu {
             Group {
-                Button("Edit List Details", systemImage: SFSymbols.pencil) {
+                Button("Edit Details", systemImage: SFSymbols.pencil) {
                     showEditListSheet = true
                 }
                 
-                Button("Refresh List", systemImage: SFSymbols.arrowCounterclockwise) {
+                Button("Refresh", systemImage: SFSymbols.arrowCounterclockwise) {
                     viewModel.refreshPullListAndRooms()
                 }
 
@@ -121,7 +121,7 @@ extension PullListV2DetailsView {
                     }
                 }
 
-                Button("Delete Pull List", systemImage: SFSymbols.trash, role: .destructive) {
+                Button("Delete", systemImage: SFSymbols.trash, role: .destructive) {
                     Task {
                         await viewModel.deletePullList()
                         dismiss()

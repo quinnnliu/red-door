@@ -1,8 +1,8 @@
 //
-//  SingleImagePicker.swift
+//  SingleImagePickerV2.swift
 //  RedDoor
 //
-//  Created by Quinn Liu on 7/30/25.
+//  Created by Quinn Liu on 6/10/26.
 //
 
 import AVFoundation
@@ -10,10 +10,8 @@ import Foundation
 import PhotosUI
 import SwiftUI
 
-// TODO: change primaryRDImage to rdImage (and figure out how this works lol)
-struct SingleCameraPicker: UIViewControllerRepresentable {
-    @Binding var image: RDImage
-    var dismiss: () -> Void
+struct SingleCameraPickerV2: UIViewControllerRepresentable {
+    var action: (RDImage?) -> Void
 
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
@@ -29,29 +27,27 @@ struct SingleCameraPicker: UIViewControllerRepresentable {
     }
 
     class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-        let parent: SingleCameraPicker
+        let parent: SingleCameraPickerV2
 
-        init(_ parent: SingleCameraPicker) {
+        init(_ parent: SingleCameraPickerV2) {
             self.parent = parent
         }
 
         func imagePickerController(_: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
             if let image = info[.originalImage] as? UIImage {
                 let newRDImage = RDImage(uiImage: image)
-                parent.image = newRDImage
+                parent.action(newRDImage)
             }
-            parent.dismiss()
         }
 
         func imagePickerControllerDidCancel(_: UIImagePickerController) {
-            parent.dismiss()
+            parent.action(nil)
         }
     }
 }
 
-struct SingleLibraryPicker: UIViewControllerRepresentable {
-    @Binding var image: RDImage
-    var dismiss: () -> Void
+struct SingleLibraryPickerV2: UIViewControllerRepresentable {
+    var action: (RDImage?) -> Void
 
     func makeUIViewController(context: Context) -> UIViewController {
         var configuration = PHPickerConfiguration(photoLibrary: .shared())
@@ -71,35 +67,34 @@ struct SingleLibraryPicker: UIViewControllerRepresentable {
     }
 
     class Coordinator: NSObject, PHPickerViewControllerDelegate {
-        let parent: SingleLibraryPicker
+        let parent: SingleLibraryPickerV2
 
-        init(_ parent: SingleLibraryPicker) {
+        init(_ parent: SingleLibraryPickerV2) {
             self.parent = parent
         }
 
         func picker(_: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
             if results.isEmpty {
                 // User canceled the selection
-                parent.dismiss()
+                parent.action(nil)
                 return
             }
 
             guard let provider = results.first?.itemProvider, provider.canLoadObject(ofClass: UIImage.self) else {
-                parent.dismiss()
+                parent.action(nil)
                 return
             }
 
             provider.loadObject(ofClass: UIImage.self) { image, _ in
                 DispatchQueue.main.async {
                     let newRDImage = RDImage(uiImage: image as? UIImage)
-                    self.parent.image = newRDImage
-                    self.parent.dismiss()
+                    self.parent.action(newRDImage)
                 }
             }
         }
 
         @objc func didTapCancel() {
-            parent.dismiss()
+            parent.action(nil)
         }
     }
 }

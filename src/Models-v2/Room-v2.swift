@@ -17,17 +17,23 @@ struct RoomV2: AnyRDDocument {
     var displayName: String
     var listId: String
     var itemIds: Set<String>
+    var beforeImage: RDImage?
+    var afterImage: RDImage?
     
     init(
         displayName: String,
         listId: String,
-        itemIds: Set<String> = []
+        itemIds: Set<String> = [],
+        beforeImage: RDImage? = nil,
+        afterimage: RDImage? = nil
     ) {
         self.id = UUID().uuidString
         self.nameId = RoomV2.nameToId(displayName)
         self.displayName = displayName
         self.listId = listId
         self.itemIds = itemIds
+        self.beforeImage = beforeImage
+        self.afterImage = afterimage
     }
     
     enum CodingKeys: String, CodingKey {
@@ -36,6 +42,8 @@ struct RoomV2: AnyRDDocument {
         case listId = "list_id"
         case displayName = "display_name"
         case nameId = "name_id"
+        case beforeImage = "before_image"
+        case afterImage = "after_image"
     }
 }
 

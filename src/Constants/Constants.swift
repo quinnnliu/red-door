@@ -58,5 +58,7 @@ enum SFSymbols {
     static let art = "photo.artframe"
     static let noSign = "nosign"
     static let xmark = "xmark"
+    static let arrowUpLeftAndArrowDownRight = "arrow.up.left.and.arrow.down.right"
+    static let arrowDownLeftAndArrowUpRight = "arrow.down.left.and.arrow.up.right"
     static let richtextPageFill = "richtext.page.fill"
 }

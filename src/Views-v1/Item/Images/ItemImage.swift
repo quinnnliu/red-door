@@ -62,12 +62,12 @@ struct ItemImage: View {
         .sheet(item: $activeSheet) { item in
             switch item {
             case .library:
-                SingleLibraryPicker(primaryRDImage: $editingImage) {
+                SingleLibraryPicker(image: $editingImage) {
                     itemImage = editingImage
                     activeSheet = nil
                 }
             case .camera:
-                SingleCameraPicker(primaryRDImage: $editingImage) {
+                SingleCameraPicker(image: $editingImage) {
                     itemImage = editingImage
                     activeSheet = nil
                 }
