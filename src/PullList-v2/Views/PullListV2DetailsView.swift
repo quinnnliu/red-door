@@ -45,6 +45,7 @@ struct PullListV2DetailsView: View {
         }
         .frameTop()
         .frameHorizontalPadding()
+        .frameBottomPadding()
         .toolbar(.hidden)
         .onAppear {
             viewModel.startListening()
@@ -93,12 +94,6 @@ extension PullListV2DetailsView {
                         .foregroundStyle(.red)
                     Text(viewModel.pullListState.address.getStreetAddress() ?? viewModel.pullListState.address.formattedAddress)
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(Color(.separator), lineWidth: 3)
-                )
             },
             trailingView: {
                 HStack(spacing: 8) {
@@ -194,45 +189,41 @@ extension PullListV2DetailsView {
     // MARK: RoomsListView
     @ViewBuilder
     var RoomsListSection: some View {
-        if !viewModel.rooms.isEmpty {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: .zero) {
-                    SmallCTA(type: .secondary, leadingIcon: SFSymbols.richtextPageFill, text: "Show PDF") {
-                        showPDFSheet = true
-                    }
-                    
-                    Spacer()
-
-                    Text("Rooms")
-                        .foregroundStyle(.red)
-                        .font(.headline)
-                    
-                    Spacer()
-                    
-                    SmallCTA(type: .red, leadingIcon: SFSymbols.plus, text: "Add Room") {
-                        showAddRoomsSheet = true
-                    }
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: .zero) {
+                SmallCTA(type: .secondary, leadingIcon: SFSymbols.richtextPageFill, text: "Show PDF") {
+                    showPDFSheet = true
                 }
                 
-                ScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(viewModel.rooms, id: \.id) { room in
-                            NavigationLink(value: NavigationDestination.pulllistRoomDetailView(
+                Spacer()
+
+                Text("Rooms")
+                    .foregroundStyle(.red)
+                    .font(.headline)
+                
+                Spacer()
+                
+                SmallCTA(type: .red, leadingIcon: SFSymbols.plus, text: "Add Room") {
+                    showAddRoomsSheet = true
+                }
+            }
+            
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    ForEach(viewModel.rooms, id: \.id) { room in
+                        NavigationLink(value: NavigationDestination.pulllistRoomDetailView(
+                            items: viewModel.itemsByRoom[room.id] ?? [],
+                            room: room
+                        )) {
+                            PullListRoomListItem(
+                                room: room,
                                 items: viewModel.itemsByRoom[room.id] ?? [],
-                                room: room
-                            )) {
-                                PullListRoomListItem(
-                                    room: room,
-                                    items: viewModel.itemsByRoom[room.id] ?? [],
-                                    action: handleAction(_:)
-                                )
-                            }
+                                action: handleAction(_:)
+                            )
                         }
                     }
                 }
             }
-        } else {
-            Text("No rooms")
         }
     }
 }

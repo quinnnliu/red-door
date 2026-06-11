@@ -100,12 +100,10 @@ extension InstalledListDocumentListViewV2 {
         ScrollView {
             LazyVStack(spacing: 8) {
                 ForEach(viewModel.documents, id: \.id) { list in
-//                    NavigationLink(value: NavigationDestination.InstalledListDetailView(list)) {
-//                        InstalledListV2ListItem(list: list)
-//                    }
-//                    .buttonStyle(PlainButtonStyle())
-                    
-                    Text(list.displayName)
+                    NavigationLink(value: NavigationDestination.installedListDetailView(list)) {
+                        InstalledListV2ListItem(list: list)
+                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
 
                 LoadMoreButton()

@@ -25,6 +25,8 @@ struct NavigationDestinationsModifierV2: ViewModifier {
                     PullListItemDetailView(item: item, room: room)
                 case .addItemToRoomDetailView(let item, let room):
                     AddItemToRoomDetailView(item: item, room: room)
+                case .installedListDetailView(let list):
+                    Text(list.displayName)
                 default:
                     Text("UNHANDLED NAVIGATION DESTINATION")
                 }

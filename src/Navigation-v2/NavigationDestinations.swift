@@ -6,6 +6,9 @@ enum NavigationDestination: Hashable {
 
         // MARK: PullList
     case pullListDetailView(_ list: PullListV2)
+    
+    // MARK: InstalledList
+    case installedListDetailView(_ list: InstalledListV2)
 
         // MARK: Room
     case pulllistRoomDetailView(items: [ItemV2], room: RoomV2)

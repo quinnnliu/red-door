@@ -9,6 +9,7 @@ import SwiftUI
 
 struct InstallPullListSheet: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(NavigationCoordinator.self) private var coordinator
     @State private var viewModel: InstallPullListSheetViewModel
     
     init(list: PullListV2, rooms: [RoomV2] = [], itemsByRoom: [String: [ItemV2]] = [:]) {
@@ -38,14 +39,7 @@ struct InstallPullListSheet: View {
             Button("Ok", role: .cancel) {}
         }
         .sheet(isPresented: $viewModel.showConfirmSheet) {
-            ConfirmInstallSheet(summary: viewModel.confirmInstallSummary) {
-                Task {
-                    await viewModel.createInstalledList()
-                    if !viewModel.showAlert {
-                        dismiss()
-                    }
-                }
-            } onCancel: { }
+            ConfirmInstallSheet(summary: viewModel.confirmInstallSummary, action: handleAction(_:))
         }
     }
 }
@@ -183,27 +177,30 @@ struct InstallPullListRoomListItem: View {
             ItemListItemImage(item.primaryImage)
             
             VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 4) {
+                HStack(spacing: 6) {
                     Text(item.displayName)
                         .font(.headline)
                     
-                    Group {
-                        Image(systemName: item.type.icon)
-                        Text("•")
-                        Text(item.material.title)
-                        Text("•")
-                        Image(systemName: SFSymbols.circleFill)
-                            .foregroundStyle(item.color.color)
+                    if let label = installStateLabel(item: item) {
+                        HStack(spacing: 4) {
+                            Text("•")
+                            Text(label)
+                                .foregroundStyle(.red)
+                                .lineLimit(1)
+                        }.font(.caption2)
                     }
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
                 }
                 
-                if let label = installStateLabel(item: item) {
-                    Text(label)
-                        .foregroundStyle(.red)
-                        .lineLimit(1)
+                HStack(spacing: 4) {
+                    Image(systemName: item.type.icon)
+                    Text("•")
+                    Text(item.material.title)
+                    Text("•")
+                    Image(systemName: SFSymbols.circleFill)
+                        .foregroundStyle(item.color.color)
                 }
+                .font(.caption2)
+                .foregroundStyle(.secondary)
             }
             
             Spacer()
@@ -224,13 +221,13 @@ struct InstallPullListRoomListItem: View {
         guard let state = installStates[item.id] else { return nil }
         switch state.status {
         case .inPullList:
-                return "• \(state.status.displayTitle)"
+                return "\(state.status.displayTitle)"
         case .inStorage:
             guard let name = warehouses.first(where: { $0.id ==
                 state.locationId })?.displayName else {
                 return nil
             }
-            return "• Storage: \(name)"
+            return "Storage: \(name)"
         default:
             return nil
         }
@@ -260,6 +257,21 @@ extension InstallPullListSheet {
                 viewModel.refreshRoom(roomId)
             case .storeItem(let itemId, let warehouseId):
                 viewModel.itemInstallStates.updateValue((status: .inStorage, locationId: warehouseId), forKey: itemId)
+            }
+        case let confirmAction as ConfirmInstallSheetAction:
+            switch confirmAction {
+            case .confirm:
+                Task { @MainActor in
+                    if let installedList = await viewModel.createInstalledList() {
+                        if !viewModel.showAlert {
+                            coordinator.resetSelectedPath()
+                            try? await Task.sleep(for: .milliseconds(250))
+                            coordinator.setSelectedTab(to: .installedListV2)
+                            try? await Task.sleep(for: .milliseconds(250))
+                            coordinator.appendToSelectedPath(NavigationDestination.installedListDetailView(installedList))
+                        }
+                    }
+                }
             }
         default:
             fatalError("[ERROR] Unhandled action argument: \(action)")

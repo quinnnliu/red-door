@@ -200,8 +200,8 @@ final class InstallPullListSheetViewModel {
     }
 
     // MARK: createInstalledList
-
-    func createInstalledList() async {
+    @MainActor
+    func createInstalledList() async -> InstalledListV2? {
         let installedList = InstalledListV2(from: pullListState)
         let roomSnapshot = rooms
         let stateSnapshot = itemInstallStates
@@ -246,10 +246,12 @@ final class InstallPullListSheetViewModel {
             pullListRepo.delete(id: installedList.id, inBatch: batch)
 
             try await batch.commit()
+            return installedList
         } catch {
             alertText = "Failed to create installed list: \(error.localizedDescription)"
             showAlert = true
             print("[ERROR] createInstalledList: \(error.localizedDescription)")
+            return nil
         }
     }
 }

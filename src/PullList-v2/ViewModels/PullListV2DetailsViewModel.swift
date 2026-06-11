@@ -280,7 +280,5 @@ extension PullListV2DetailsViewModel {
 
         pullListState.roomIds.append(newRoom.id)
         rooms.append(newRoom)
-        alertMessage = "\(newRoom.displayName) successfully created"
-        showAlert = true
     }
 }

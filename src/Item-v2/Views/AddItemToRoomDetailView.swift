@@ -65,27 +65,28 @@ struct AddItemToRoomDetailView: View {
                                     .transition(.opacity.combined(with: .move(edge: .top)))
                             }
                             
-                            Spacer()
                             
-                            RDButton(
-                                variant: .red,
-                                leadingIcon: SFSymbols.plus,
-                                iconBold: true,
-                                label: "Add to \(viewModel.room.displayName)",
-                                fullWidth: true
-                            ) {
-                                Task {
-                                    await viewModel.addItemToRoom()
-                                    dismiss()
-                                }
-                            }
                         }
                     }
                     .padding(.top, 4)
                     .frameHorizontalPadding()
                 }
                 
+                Spacer()
                 
+                RDButton(
+                    variant: .red,
+                    leadingIcon: SFSymbols.plus,
+                    iconBold: true,
+                    label: "Add to \(viewModel.room.displayName)",
+                    fullWidth: true
+                ) {
+                    Task {
+                        await viewModel.addItemToRoom()
+                        dismiss()
+                    }
+                }
+                .frameHorizontalPadding()
             }
             .frameTop()
             .frameBottomPadding()
