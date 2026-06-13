@@ -91,14 +91,14 @@ struct InstallPullListRoomListItem: View {
 
     let items: [ItemV2]
     let room: RoomV2
-    let installStates: [String: (status: ItemStatus, locationId: String)]
+    let installStates: [String: (status: LocationStatus, locationId: String)]
     let warehouses: [WarehouseV2]
     let action: (Any?) -> ()
 
     init(
         _ room: RoomV2,
         items: [ItemV2],
-        installStates: [String: (status: ItemStatus, locationId: String)],
+        installStates: [String: (status: LocationStatus, locationId: String)],
         warehouses: [WarehouseV2],
         action: @escaping (Any?) -> ()
     ) {

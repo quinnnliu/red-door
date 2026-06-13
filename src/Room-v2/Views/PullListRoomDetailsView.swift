@@ -30,21 +30,27 @@ struct PullListRoomDetailsView: View {
         VStack(spacing: 16) {
             TopBar
             
-            RoomImages
-            
-            HStack(spacing: 0) {
-                SmallCTA(type: .secondary, leadingIcon: SFSymbols.arrowCounterclockwise, text: "Refresh") {
-                    viewModel.refreshRoom()
+            ScrollView {
+                VStack(spacing: 16) {
+                    RoomImages
+                    
+                    HStack(spacing: 0) {
+                        SmallCTA(type: .secondary, leadingIcon: SFSymbols.arrowCounterclockwise, text: "Refresh") {
+                            viewModel.refreshRoom()
+                        }
+                        
+                        Spacer()
+                        
+                        SmallCTA(type: .red, leadingIcon: SFSymbols.plus, text: "Add Items") {
+                            showAddItemsSheet = true
+                        }
+                    }
+                    
+                    RoomItemList
                 }
-                
-                Spacer()
-                
-                SmallCTA(type: .red, leadingIcon: SFSymbols.plus, text: "Add Items") {
-                    showAddItemsSheet = true
-                }
+                .frameHorizontalPadding()
             }
             
-            RoomItemList
         }
         .sheet(isPresented: $showAddItemsSheet) {
             RoomAddItemsSheetV2(room: viewModel.roomState)
@@ -109,12 +115,14 @@ struct PullListRoomDetailsView: View {
         HStack(spacing: 8) {
             VStack(spacing: 8) {
                 Text("Before")
+                    .font(.caption2)
                 PrimaryImageEditor(image: viewModel.roomState.beforeImage) { result in
                     handleImageAction(result, isBefore: true)
                 }
             }
             VStack(spacing: 8) {
                 Text("After")
+                    .font(.caption2)
                 PrimaryImageEditor(image: viewModel.roomState.afterImage) { result in
                     handleImageAction(result, isBefore: false)
                 }
@@ -145,15 +153,12 @@ struct PullListRoomDetailsView: View {
     // MARK: - Room Item List
     
     private var RoomItemList: some View {
-        ScrollView {
-            LazyVStack(spacing: 12) {
-                ForEach(viewModel.items, id: \.self) { item in
-                    NavigationLink(value: NavigationDestination.pullListItemDetailView(item: item, room: viewModel.roomState)) {
-                        RoomItemListItemView(item: item)
-                    }
+        LazyVStack(spacing: 12) {
+            ForEach(viewModel.items, id: \.self) { item in
+                NavigationLink(value: NavigationDestination.pullListItemDetailView(item: item, room: viewModel.roomState)) {
+                    RoomItemListItemView(item: item)
                 }
             }
-            .padding(8)
         }
     }
     

@@ -163,7 +163,7 @@ final class PullListV2DetailsViewModel {
                     itemRepo.update(
                         id: itemId,
                         fields: [
-                            ItemV2.CodingKeys.status.stringValue: ItemStatus.inStorage.rawValue,
+                            ItemV2.CodingKeys.status.stringValue: LocationStatus.inStorage.rawValue,
                             ItemV2.CodingKeys.locationId.stringValue: Warehouse.warehouse1.id
                         ],
                         in: transaction

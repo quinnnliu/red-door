@@ -9,7 +9,7 @@ import SwiftUI
 
 struct RoomAddItemsSheetV2: View {
     @State private var viewModel: DocumentListViewModelV2<ItemV2> = DocumentListViewModelV2<ItemV2>(
-        defaultFilters: [ItemV2.CodingKeys.status.rawValue: ItemStatus.inStorage.rawValue]
+        defaultFilters: [ItemV2.CodingKeys.status.rawValue: LocationStatus.inStorage.rawValue]
     )
     
     @State private var path: NavigationPath = NavigationPath()

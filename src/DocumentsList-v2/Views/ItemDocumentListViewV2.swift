@@ -21,7 +21,7 @@ struct ItemDocumentListViewV2: View {
     }
 
     @State private var searchFocused: Bool = false
-    @State private var showCreateItemSheet: Bool = false
+    @State private var createDocumentSheetType: CreateDocumentSheetType? = nil
     @State private var showScannerSheet: Bool = false
     @State private var scannedItemId: String? = nil
 
@@ -37,15 +37,14 @@ struct ItemDocumentListViewV2: View {
                 ItemInventoryFilterView(action: handleAction(_:))
 
                 InventoryList
-                
             }
             .frameTop()
             .frameHorizontalPadding()
             .task {
                 await viewModel.refresh()
             }
-            .fullScreenCover(isPresented: $showCreateItemSheet) {
-                CreateItemsViewV2()
+            .fullScreenCover(item: $createDocumentSheetType) { type in
+                type.view
             }
             .sheet(isPresented: $showScannerSheet) {
                 ItemScannerView(scannedItemId: $scannedItemId)
@@ -57,20 +56,11 @@ struct ItemDocumentListViewV2: View {
             .rootNavigationDestinationsV2(path: $path)
         }
     }
-
-    private func handleScannedItemId(_ id: String) {
-        Task {
-            let item = try await itemRepo.get(id: id)
-            path.append(item)
-        }
-        scannedItemId = nil
-    }
 }
 
 extension ItemDocumentListViewV2 {
-    // MARK: Top Bar
+    // MARK: - TopBar
 
-    @ViewBuilder
     private var TopBar: some View {
         TopAppBar(
             leadingView: {
@@ -88,7 +78,7 @@ extension ItemDocumentListViewV2 {
         ).tint(.red)
     }
 
-    // MARK: Trailing Icons
+    // MARK: - TrailingIconGroup
 
     private var TrailingIconGroup: some View {
         HStack(spacing: 8) {
@@ -101,17 +91,32 @@ extension ItemDocumentListViewV2 {
                     showScannerSheet = true
                 }
 
-                RDButton(variant: .outline, size: .icon, leadingIcon: "plus", iconBold: true, fullWidth: false) {
-                    showCreateItemSheet = true
-                }
+                CreateDocumentMenu
             }
             .foregroundColor(.red)
         }
     }
+    
+    // MARK: - CreateDocumentMenu
+    private var CreateDocumentMenu: some View {
+        Menu {
+            Button("Item", systemImage: SFSymbols.couchFill) {
+                createDocumentSheetType = .item
+            }
+            
+            Button("Essentials", systemImage: SFSymbols.starCircleFill) {
+                createDocumentSheetType = .essentials
+            }
 
-    // MARK: Inventory List
+            Button("Accessories", systemImage: SFSymbols.booksVerticalFill) {
+                createDocumentSheetType = .accessories
+            }
+        } label: {
+            RDButton(variant: .outline, size: .icon, leadingIcon: "plus", iconBold: true, fullWidth: false) { }.allowsHitTesting(false)
+        }
+    }
 
-    @ViewBuilder
+    // MARK: - Inventory List
     private var InventoryList: some View {
         ScrollView {
             LazyVStack(spacing: 8) {
@@ -130,6 +135,7 @@ extension ItemDocumentListViewV2 {
         }
     }
 
+    // MARK: - LoadMoreButton
     @ViewBuilder
     private var LoadMoreButton: some View {
         if viewModel.isLoading {
@@ -144,12 +150,41 @@ extension ItemDocumentListViewV2 {
             ) {
                 Task { await viewModel.loadMore() }
             }
+        } else {
+            RDButton(
+                variant: .outline,
+                label: "No More Items",
+                fullWidth: true
+            ) {
+            }
+            .allowsHitTesting(false)
             .padding(.vertical, 4)
         }
     }
 }
 
 private extension ItemDocumentListViewV2 {
+    enum CreateDocumentSheetType: Identifiable {
+        case item
+        case essentials
+        case accessories
+
+        var id: Self { self }
+
+        var view: AnyView {
+            switch self {
+            case .item:
+                AnyView(CreateItemsViewV2())
+            case .essentials:
+                AnyView(CreateEssentialsGroupView())
+            case .accessories:
+                AnyView(CreateAccessoriesView())
+            }
+        }
+    }
+    
+    // MARK: - handleAction
+    
     func handleAction(_ action: Any?) {
         guard let action else { return }
 
@@ -175,5 +210,15 @@ private extension ItemDocumentListViewV2 {
         default:
             print("ERROR: Untracked action")
         }
+    }
+    
+    // MARK: - handleScannedItemId
+    
+    func handleScannedItemId(_ id: String) {
+        Task {
+            let item = try await itemRepo.get(id: id)
+            path.append(item)
+        }
+        scannedItemId = nil
     }
 }
