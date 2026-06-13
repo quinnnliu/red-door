@@ -12,7 +12,7 @@ import FirebaseFirestore
 class InstalledListViewModel: RDListViewModel {
 
     // MARK: Create Pull List from Installed List
-
+    
     func createPullFromInstalled() async throws -> RDList {
         // Empty Pull List Copy
         var copyPullList = RDList(address: Address(street: "Copy of \(selectedList.address.getStreetAddress() ?? "")"), listType: .pull_list)

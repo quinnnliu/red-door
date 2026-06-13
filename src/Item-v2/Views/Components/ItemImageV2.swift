@@ -60,9 +60,9 @@ struct ItemImageEditor: View {
         .sheet(item: $activeSheet) { item in
             switch item {
             case .library:
-                SingleLibraryPicker(primaryRDImage: $image) { activeSheet = nil }
+                SingleLibraryPicker(image: $image) { activeSheet = nil }
             case .camera:
-                SingleCameraPicker(primaryRDImage: $image) { activeSheet = nil }
+                SingleCameraPicker(image: $image) { activeSheet = nil }
             }
         }
         .frame(width: Constants.screenWidthPadding / 2, height: Constants.screenWidthPadding / 2)

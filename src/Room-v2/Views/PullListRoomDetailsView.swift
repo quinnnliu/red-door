@@ -9,6 +9,8 @@ import SwiftUI
 import CachedAsyncImage
 
 struct PullListRoomDetailsView: View {
+    typealias ImageEditorAction = PrimaryImageEditor.ImageEditorAction
+    
     @Environment(NavigationCoordinator.self) var coordinator
     @State var viewModel: PullListRoomDetailsViewModel
     @State var itemToRemove: ItemV2? = nil
@@ -27,6 +29,8 @@ struct PullListRoomDetailsView: View {
     var body: some View {
         VStack(spacing: 16) {
             TopBar
+            
+            RoomImages
             
             HStack(spacing: 0) {
                 SmallCTA(type: .secondary, leadingIcon: SFSymbols.arrowCounterclockwise, text: "Refresh") {
@@ -79,7 +83,7 @@ struct PullListRoomDetailsView: View {
         .clipShape(RoundedRectangle(cornerRadius: 6))
     }
     
-    // MARK: Top Bar
+    // MARK: - Top Bar
     
     private var TopBar: some View {
         TopAppBar(
@@ -100,7 +104,25 @@ struct PullListRoomDetailsView: View {
         )
     }
     
-    // MARK: Room Details Menu
+    // MARK: - Room Images
+    private var RoomImages: some View {
+        HStack(spacing: 8) {
+            VStack(spacing: 8) {
+                Text("Before")
+                PrimaryImageEditor(image: viewModel.roomState.beforeImage) { result in
+                    handleImageAction(result, isBefore: true)
+                }
+            }
+            VStack(spacing: 8) {
+                Text("After")
+                PrimaryImageEditor(image: viewModel.roomState.afterImage) { result in
+                    handleImageAction(result, isBefore: false)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Room Details Menu
     
     private var RoomDetailsMenu: some View {
         Menu {
@@ -114,13 +136,13 @@ struct PullListRoomDetailsView: View {
                     // }
             }
         } label: {
-            RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.ellipsis, iconBold: true, fullWidth: false, action: {})
+            RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.ellipsis, iconBold: true, fullWidth: false) { }
                 .clipShape(Circle())
         }
         .tint(.red)
     }
     
-    // MARK: Room Item List
+    // MARK: - Room Item List
     
     private var RoomItemList: some View {
         ScrollView {
@@ -135,18 +157,12 @@ struct PullListRoomDetailsView: View {
         }
     }
     
-    // MARK: Room Item List Item
+    // MARK: - Room Item List Item
     
     @ViewBuilder
     private func RoomItemListItemView(item: ItemV2) -> some View {
         HStack(alignment: .center, spacing: 8) {
-            if item.primaryImage.imageExists {
-                ItemImage(image: item.primaryImage)
-            } else {
-                Color.gray
-                    .overlay(Image(systemName: SFSymbols.photoBadgeExclamationmarkFill)
-                        .foregroundColor(.white))
-            }
+            ItemListItemImage(item.primaryImage)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.displayName)
@@ -184,24 +200,21 @@ struct PullListRoomDetailsView: View {
         )
     }
     
-    // MARK: Item Image
-    
-    @ViewBuilder
-    private func ItemImage(image: RDImage, size: CGFloat = 48) -> some View {
-        if let imageURL = image.imageURL {
-            CachedAsyncImage(url: imageURL) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
-                    .frame(size)
-                    .cornerRadius(4)
-            } placeholder: {
-                RoundedRectangle(cornerRadius: 4)
-                    .foregroundColor(Color(.systemGray4))
-                    .frame(size)
-                    .overlay(Image(systemName: SFSymbols.photoBadgeExclamationmarkFill)
-                        .foregroundColor(.secondary))
+    private func handleImageAction(_ actionArgument: Any?, isBefore: Bool) {
+        guard let action = actionArgument else { return }
+        switch action {
+        case let imageAction as ImageEditorAction:
+            if case .newImage(let image) = imageAction {
+                Task {
+                    await viewModel.updateRoomImage(image, isBefore: isBefore)
+                }
+            } else if case .deleteImage(let deletedImage) = imageAction {
+                Task {
+                    await viewModel.updateRoomImage(deletedImage, isBefore: isBefore)
+                }
             }
+        default:
+            print("[ERROR] Unrtacked Action in PullListRoomDetailsView: \(action)")
         }
     }
 }

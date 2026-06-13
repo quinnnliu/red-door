@@ -45,6 +45,7 @@ struct PullListV2DetailsView: View {
         }
         .frameTop()
         .frameHorizontalPadding()
+        .frameBottomPadding()
         .toolbar(.hidden)
         .onAppear {
             viewModel.startListening()
@@ -96,14 +97,6 @@ extension PullListV2DetailsView {
             },
             trailingView: {
                 HStack(spacing: 8) {
-                    RDButton(
-                        variant: .default,
-                        size: .icon,
-                        leadingIcon: SFSymbols.arrowCounterclockwise
-                    ) {
-                        viewModel.refreshPullListAndRooms()
-                    }.clipShape(.circle)
-
                     TopBarMenu
                 }
             }
@@ -114,8 +107,12 @@ extension PullListV2DetailsView {
     var TopBarMenu: some View {
         Menu {
             Group {
-                Button("Edit List Details", systemImage: SFSymbols.pencil) {
+                Button("Edit Details", systemImage: SFSymbols.pencil) {
                     showEditListSheet = true
+                }
+                
+                Button("Refresh", systemImage: SFSymbols.arrowCounterclockwise) {
+                    viewModel.refreshPullListAndRooms()
                 }
 
                 if viewModel.pullListState.installingSession != nil {
@@ -124,7 +121,7 @@ extension PullListV2DetailsView {
                     }
                 }
 
-                Button("Delete Pull List", systemImage: SFSymbols.trash, role: .destructive) {
+                Button("Delete", systemImage: SFSymbols.trash, role: .destructive) {
                     Task {
                         await viewModel.deletePullList()
                         dismiss()
@@ -185,52 +182,48 @@ extension PullListV2DetailsView {
         .padding(8)
         .overlay(
             RoundedRectangle(cornerRadius: 6)
-                .stroke(Color(.systemGray3), lineWidth: 4)
+                .stroke(Color(.systemGray3), lineWidth: 3)
         )
     }
     
     // MARK: RoomsListView
     @ViewBuilder
     var RoomsListSection: some View {
-        if !viewModel.rooms.isEmpty {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: .zero) {
-                    SmallCTA(type: .secondary, leadingIcon: SFSymbols.richtextPageFill, text: "Show PDF") {
-                        showPDFSheet = true
-                    }
-                    
-                    Spacer()
-
-                    Text("Rooms")
-                        .foregroundStyle(.red)
-                        .font(.headline)
-                    
-                    Spacer()
-                    
-                    SmallCTA(type: .red, leadingIcon: SFSymbols.plus, text: "Add Room") {
-                        showAddRoomsSheet = true
-                    }
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: .zero) {
+                SmallCTA(type: .secondary, leadingIcon: SFSymbols.richtextPageFill, text: "Show PDF") {
+                    showPDFSheet = true
                 }
                 
-                ScrollView {
-                    LazyVStack(spacing: 12) {
-                        ForEach(viewModel.rooms, id: \.id) { room in
-                            NavigationLink(value: NavigationDestination.pulllistRoomDetailView(
+                Spacer()
+
+                Text("Rooms")
+                    .foregroundStyle(.red)
+                    .font(.headline)
+                
+                Spacer()
+                
+                SmallCTA(type: .red, leadingIcon: SFSymbols.plus, text: "Add Room") {
+                    showAddRoomsSheet = true
+                }
+            }
+            
+            ScrollView {
+                LazyVStack(spacing: 12) {
+                    ForEach(viewModel.rooms, id: \.id) { room in
+                        NavigationLink(value: NavigationDestination.pulllistRoomDetailView(
+                            items: viewModel.itemsByRoom[room.id] ?? [],
+                            room: room
+                        )) {
+                            PullListRoomListItem(
+                                room: room,
                                 items: viewModel.itemsByRoom[room.id] ?? [],
-                                room: room
-                            )) {
-                                PullListRoomListItem(
-                                    room: room,
-                                    items: viewModel.itemsByRoom[room.id] ?? [],
-                                    action: handleAction(_:)
-                                )
-                            }
+                                action: handleAction(_:)
+                            )
                         }
                     }
                 }
             }
-        } else {
-            Text("No rooms")
         }
     }
 }

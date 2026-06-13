@@ -23,7 +23,7 @@ struct PullListV2: AnyRDDocument {
     static let searchField: String = "address_id"
 
     var id: String
-    var listType: DocumentType
+    var listType: DocumentType // TODO: remove this, not used anymore
 
     var address: Address
     var addressId: String

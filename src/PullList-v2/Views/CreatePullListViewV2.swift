@@ -25,13 +25,6 @@ struct CreatePullListViewV2: View {
     
     var body: some View {
         ZStack {
-            if viewModel.isLoading {
-                ProgressView("Creating Pull List...")
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
-                Color.black.opacity(0.3).ignoresSafeArea()
-            }
-            
             VStack(spacing: 12) {
                 TopBar
                 
@@ -111,8 +104,14 @@ struct CreatePullListViewV2: View {
             .sheet(isPresented: $showAddressSheet) {
                 AddressSheet(selectedAddress: $viewModel.pullListState.address, addressId: $viewModel.pullListState.addressId)
             }
+            
+            if viewModel.isLoading {
+                ProgressView("Creating Pull List...")
+                    .padding()
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
+                Color.black.opacity(0.3).ignoresSafeArea()
+            }
         }
-        
     }
     
     // MARK: TopBar

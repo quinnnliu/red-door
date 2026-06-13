@@ -83,8 +83,7 @@ final class FirebaseImageManager {
             return rdImage
         }
 
-        var storageRef = FirebaseImageManager.storageRef.child(objectPath)
-        storageRef = storageRef.child(objectId).child(rdImage.id)
+        let storageRef = FirebaseImageManager.storageRef.child(objectPath).child(objectId).child(rdImage.id)
 
         let metaData = StorageMetadata()
         metaData.contentType = "image/jpeg"

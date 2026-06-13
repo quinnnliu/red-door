@@ -29,7 +29,7 @@ struct AddItemToRoomDetailView: View {
                 DragIndicator()
                 
                 TopBar
-                    .padding(.horizontal, 16)
+                    .frameHorizontalPadding()
                 
                 ScrollView {
                     VStack(spacing: 12) {
@@ -65,27 +65,31 @@ struct AddItemToRoomDetailView: View {
                                     .transition(.opacity.combined(with: .move(edge: .top)))
                             }
                             
-                            RDButton(
-                                variant: .red,
-                                leadingIcon: SFSymbols.plus,
-                                iconBold: true,
-                                label: "Add to \(viewModel.room.displayName)",
-                                fullWidth: true
-                            ) {
-                                Task {
-                                    await viewModel.addItemToRoom()
-                                    dismiss()
-                                }
-                            }.frame(alignment: .bottom)
+                            
                         }
                     }
                     .padding(.top, 4)
                     .frameHorizontalPadding()
                 }
                 
+                Spacer()
                 
+                RDButton(
+                    variant: .red,
+                    leadingIcon: SFSymbols.plus,
+                    iconBold: true,
+                    label: "Add to \(viewModel.room.displayName)",
+                    fullWidth: true
+                ) {
+                    Task {
+                        await viewModel.addItemToRoom()
+                        dismiss()
+                    }
+                }
+                .frameHorizontalPadding()
             }
             .frameTop()
+            .frameBottomPadding()
             .toolbar(.hidden)
             .overlay(
                 ModelRDImageOverlay(

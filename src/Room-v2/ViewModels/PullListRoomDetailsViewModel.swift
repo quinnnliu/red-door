@@ -35,6 +35,8 @@ final class PullListRoomDetailsViewModel {
             itemsCache[item.id] = item
         }
     }
+    
+    // MARK: - Listeners
 
     deinit {
         stopListening()
@@ -76,6 +78,8 @@ final class PullListRoomDetailsViewModel {
         showAlert = true
     }
 
+    // MARK: - fetchItemsForRoom
+    
     @MainActor
     private func fetchItemsForRoom(_ room: RoomV2) async {
         do {
@@ -105,7 +109,7 @@ final class PullListRoomDetailsViewModel {
 
 
 extension PullListRoomDetailsViewModel {
-    // MARK: removeItemFromRoom
+    // MARK: - removeItemFromRoom
     
     func removeItemFromRoom(item: ItemV2) async {
         let originalItems = roomState.itemIds
@@ -138,7 +142,7 @@ extension PullListRoomDetailsViewModel {
         }
     }
     
-    // MARK: deleteRoom
+    // MARK: - deleteRoom
     
     func deleteRoom() async {
         do {
@@ -149,7 +153,7 @@ extension PullListRoomDetailsViewModel {
         }
     }
     
-    // MARK: renameRoom
+    // MARK: - renameRoom
     func renameRoom(roomId: String, newRoomName: String) async {
         do {
             let newNameId = RoomV2.nameToId(newRoomName)
@@ -162,5 +166,44 @@ extension PullListRoomDetailsViewModel {
             alertMessage = "Failed to rename \(roomState.displayName) to \(newRoomName)"
             showAlert = true
         }
+    }
+}
+
+extension PullListRoomDetailsViewModel {
+        
+    @MainActor
+    func updateRoomImage(_ updatedImage: RDImage, isBefore: Bool) async {
+        isLoading = true
+        defer { isLoading = false }
+
+        var imageToUpdate = updatedImage
+        imageToUpdate.objectId = roomState.id
+        
+        let imageField = isBefore ? RoomV2.CodingKeys.beforeImage.stringValue : RoomV2.CodingKeys.afterImage.stringValue
+        
+        do {
+            if let updatedImage = try await FirebaseImageManager.shared.updateImage(imageToUpdate, resultImageType: .roomBefore) {
+                try await roomRepo.update(id: roomState.id, fields: [
+                    imageField: encodeRDImage(updatedImage)
+                ])
+            } else {
+                try await roomRepo.update(id: roomState.id, fields: [
+                    imageField: NSNull()
+                ])
+            }
+        } catch {
+            alertMessage = "Failed to update \(isBefore ? "before" : "after") image: \(error.localizedDescription)"
+            showAlert = true
+        }
+    }
+
+    private func encodeRDImage(_ image: RDImage) -> [String: AnyHashable] {
+        var dict: [String: AnyHashable] = [
+            "id": image.id,
+            "imageType": image.imageType.rawValue
+        ]
+        if let objectId = image.objectId { dict["objectId"] = objectId }
+        if let url = image.imageURL { dict["imageURL"] = url.absoluteString }
+        return dict
     }
 }

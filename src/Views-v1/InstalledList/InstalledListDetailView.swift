@@ -87,7 +87,7 @@ struct InstalledListDetailView: View {
                     try? await Task.sleep(for: .milliseconds(250))
                     coordinator.setSelectedTab(to:.pullList)
                     try? await Task.sleep(for: .milliseconds(250))
-                    coordinator.pullListPath.append(pullList)
+                    coordinator.appendToSelectedPath(pullList)
                 }
             }
 

@@ -20,8 +20,10 @@ The codebase is mid-refactor. **V1** code lives in `src/Models/`, `src/ViewModel
 ```swift
 protocol AnyRDDocument: Codable, Hashable, Identifiable {
     var id: String { get }
+    var displayName: String { get }
     static var collectionName: String { get }  // Firestore collection path
     static var orderByField: String { get }    // default sort field
+    static var searchByField: String { get }
 }
 ```
 
@@ -31,8 +33,6 @@ protocol AnyRDDocument: Codable, Hashable, Identifiable {
 - **Transaction participatory** — `in transaction: Transaction` overload for read-then-write flows
 
 Concrete repositories subclass and add only collection-specific logic (e.g., `PullListRepository`, `ItemRepository`). Repositories are plain `class`, not `actor` — they hold no mutable state.
-
-**`RoomRepository`** has a failable `init?(list:)` because rooms are a subcollection nested under a parent document (`pull_list_V2/{id}/rooms`), not a top-level collection.
 
 **`FirebaseImageActor`** (`src/Services/FirebaseImageManager.swift`) — standalone `actor` (not a `GenericRepository` subclass — actors cannot inherit from classes). Caches `UIImage` via `NSCache` keyed by storage path to avoid redundant Storage downloads.
 

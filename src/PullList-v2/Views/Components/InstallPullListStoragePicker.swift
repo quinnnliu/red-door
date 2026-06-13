@@ -20,8 +20,12 @@ struct InstallPullListStoragePicker: View {
         let current = installStates[item.id]?.status
         SegmentedPicker(
             segments: [
-                ("Install", { action(InstallPullListRoomAction.installItem(itemId: item.id)) }),
-                ("Store",   { showWarehouseSheet = true })
+                .init("Install", selectedColor: .green) {
+                    action(InstallPullListRoomAction.installItem(itemId: item.id))
+                },
+                .init("Store", selectedColor: .gray) {
+                    showWarehouseSheet = true
+                }
             ],
             selectedIndex: current == .inInstalledList ? 0 : current == .inStorage ? 1 : nil
         )
