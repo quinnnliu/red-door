@@ -61,4 +61,5 @@ enum SFSymbols {
     static let arrowUpLeftAndArrowDownRight = "arrow.up.left.and.arrow.down.right"
     static let arrowDownLeftAndArrowUpRight = "arrow.down.left.and.arrow.up.right"
     static let richtextPageFill = "richtext.page.fill"
+    static let booksVerticalFill = "books.vertical.fill"
 }

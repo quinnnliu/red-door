@@ -6,22 +6,6 @@
 //
 import SwiftUI
 
-enum ItemStatus: String, Codable {
-    case inPullList = "in_pull_list"
-    case inStorage = "in_storage"
-    case inInstalledList = "in_installed_list"
-
-    var displayTitle: String {
-        switch self {
-        case .inPullList:
-            "In Pull List"
-        case .inStorage:
-            "In Storage"
-        case .inInstalledList:
-            "Installed"
-        }
-    }
-}
 
 struct ItemV2: AnyRDDocument {
     static let collectionName: String = "items_v2"
@@ -43,7 +27,7 @@ struct ItemV2: AnyRDDocument {
     var brand: String?
     var purchaseLocation: String?
     var datePurchased: String?
-    var status: ItemStatus
+    var status: LocationStatus
     var locationId: String
     var attention: Bool
     var attentionDescription: String?
@@ -64,7 +48,7 @@ struct ItemV2: AnyRDDocument {
         brand: String? = nil,
         purchaseLocation: String? = nil,
         datePurchased: String? = nil,
-        status: ItemStatus = .inStorage,
+        status: LocationStatus = .inStorage,
         locationId: String = Warehouse.warehouse1.id, // TODO: non-default warehouse (select where they should be stored)
         attention: Bool,
         attentionDescription: String? = nil,

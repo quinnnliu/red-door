@@ -13,17 +13,17 @@ import SwiftUI
 class NavigationCoordinator {
 
     enum Tab: Int {
-        case pullList = 0
-        case installedList = 1
-        case inventory = 2
-        case itemInventory = 3
-        case options = 4
-        case pullListV2 = 5
-        case optionsV2 = 6
-        case installedListV2 = 7
+        case pullListV2 = 0
+        case optionsV2 = 1
+        case installedListV2 = 2
+        case pullList = 3
+        case installedList = 4
+        case inventory = 5
+        case itemInventory = 6
+        case options = 7
     }
 
-    var selectedTab: Tab = .pullList
+    var selectedTab: Tab = .pullListV2
     var inventoryPath: NavigationPath = NavigationPath()
     var pullListPath: NavigationPath = NavigationPath()
     var installedListPath: NavigationPath = NavigationPath()

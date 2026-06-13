@@ -10,7 +10,7 @@ import SwiftUI
 struct InstallPullListStoragePicker: View {
     
     let item: ItemV2
-    let installStates: [String: (status: ItemStatus, locationId: String)]
+    let installStates: [String: (status: LocationStatus, locationId: String)]
     let warehouses: [WarehouseV2]
     let action: (Any?) -> Void
     

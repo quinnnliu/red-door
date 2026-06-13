@@ -21,7 +21,7 @@ final class InstallPullListSheetViewModel {
     var itemsByRoom: [String: [ItemV2]] = [:] // key: roomId, value: [ItemV2]
     var isLoading: Bool = false
     var itemsCache: [String: ItemV2] = [:] // key: itemId, value: ItemV2
-    var itemInstallStates: [String: (status: ItemStatus, locationId: String)] = [:] // key: itemId
+    var itemInstallStates: [String: (status: LocationStatus, locationId: String)] = [:] // key: itemId
     var warehouses: [WarehouseV2] = []
     
     private var roomsListener: ListenerRegistration? = nil
