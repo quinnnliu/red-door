@@ -32,7 +32,7 @@ struct CreateItemsViewV2: View {
                         color: $viewModel.itemState.color,
                         material: $viewModel.itemState.material,
                         type: $viewModel.itemState.type,
-                        isEssential: $viewModel.itemState.isEssential,
+                        essentialGroupId: $viewModel.itemState.essentialGroupId,
                         value: $viewModel.itemState.value,
                         brand: $viewModel.itemState.brand,
                         purchaseLocation: $viewModel.itemState.purchaseLocation,

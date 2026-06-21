@@ -95,42 +95,13 @@ extension PullListDocumentListViewV2 {
 
     // MARK: PullList List
 
-    @ViewBuilder
     private var PullListListSection: some View {
-        ScrollView {
-            LazyVStack(spacing: 8) {
-                ForEach(viewModel.documents, id: \.id) { list in
-                    NavigationLink(value: NavigationDestination.pullListDetailView(list)) {
-                        PullListV2ListItem(list: list)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-
-                LoadMoreButton()
-            }
-            .padding(8)
-        }
-        .refreshable {
-            await viewModel.refresh()
-        }
-    }
-
-    @ViewBuilder
-    private func LoadMoreButton() -> some View {
-        if viewModel.isLoading {
-            ProgressView()
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding()
-        } else if viewModel.hasMore {
-            RDButton(
-                variant: .outline,
-                label: "Load More",
-                fullWidth: true
-            ) {
-                Task { await viewModel.loadMore() }
-            }
-            .padding(.vertical, 4)
-        }
+        DocumentListSection(
+            viewModel: viewModel,
+            noMoreLabel: "No More Pull Lists",
+            destination: { .pullListDetailView($0) },
+            rowContent: { PullListV2ListItem(list: $0) }
+        )
     }
 }
 
@@ -140,12 +111,7 @@ private extension PullListDocumentListViewV2 {
 
         switch action {
         case let searchAction as SearchBarAction:
-            switch searchAction {
-            case .search(let text):
-                Task { await viewModel.search(text: text) }
-            case .cancel:
-                Task { await viewModel.refresh() }
-            }
+            Task { await viewModel.handleSearchAction(searchAction) }
         default:
             print("ERROR: Untracked action")
         }

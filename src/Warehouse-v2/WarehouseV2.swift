@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct WarehouseV2: AnyRDDocument {
+struct WarehouseV2: RDDocument {
     static var collectionName: String = "warehouses"
     static var orderByField: String = "id"
     static var searchField: String = "id"

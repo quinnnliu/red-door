@@ -62,8 +62,12 @@ struct ItemDetailSection: View {
                     HStack {
                         Text("Essential:")
                             .frame(width: 90, alignment: .leading)
-                        Image(systemName: item.isEssential ? SFSymbols.starCircleFill : SFSymbols.circle)
-                            .foregroundColor(item.isEssential ? .yellow : .gray)
+                        if let essentialGroupId = item.essentialGroupId {
+                            Text(essentialGroupId)
+                        } else {
+                            Image(systemName: SFSymbols.circle)
+                                .foregroundColor(.gray)
+                        }
                         
                         Spacer()
                         

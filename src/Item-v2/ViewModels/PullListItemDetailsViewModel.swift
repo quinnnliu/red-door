@@ -58,7 +58,7 @@ final class PullListItemDetailsViewModel {
         do {
             let result = try await itemRepo.db.runTransaction { (transaction, errorPointer) -> Any? in
                 do {
-                    var currentRoom = try roomRepo.get(id: roomId, in: transaction)
+                    var currentRoom = try roomRepo.get(id: roomId, transaction: transaction)
                     currentRoom.itemIds.remove(itemId)
 
                     itemRepo.update(
@@ -67,12 +67,12 @@ final class PullListItemDetailsViewModel {
                             ItemV2.CodingKeys.status.stringValue: LocationStatus.inStorage.rawValue,
                             ItemV2.CodingKeys.locationId.stringValue: Warehouse.warehouse1.id // TODO: should select where it should be stored
                         ],
-                        in: transaction
+                        transaction: transaction
                     )
                     roomRepo.update(
                         id: roomId,
                         fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(currentRoom.itemIds)],
-                        in: transaction
+                        transaction: transaction
                     )
                 } catch {
                     errorPointer?.pointee = error as NSError
@@ -109,9 +109,9 @@ final class PullListItemDetailsViewModel {
         do {
             let _ = try await roomRepo.db.runTransaction { (transaction, errorPointer) -> Any? in
                 do {
-                    let fetchedItem = try itemRepo.get(id: item.id, in: transaction)
-                    let fetchedNewRoom = try roomRepo.get(id: newRoom.id, in: transaction)
-                    let fetchedCurrentRoom = try roomRepo.get(id: currentRoom.id, in: transaction)
+                    let fetchedItem = try itemRepo.get(id: item.id, transaction: transaction)
+                    let fetchedNewRoom = try roomRepo.get(id: newRoom.id, transaction: transaction)
+                    let fetchedCurrentRoom = try roomRepo.get(id: currentRoom.id, transaction: transaction)
 
                     guard !fetchedNewRoom.itemIds.contains(fetchedItem.id),
                           fetchedCurrentRoom.itemIds.contains(fetchedItem.id),
@@ -124,8 +124,8 @@ final class PullListItemDetailsViewModel {
                     var updatedNewIds = fetchedNewRoom.itemIds
                     updatedNewIds.insert(fetchedItem.id)
 
-                    roomRepo.update(id: fetchedCurrentRoom.id, fields: [RoomV2.CodingKeys.itemIds.stringValue: updatedCurrentIds], in: transaction)
-                    roomRepo.update(id: fetchedNewRoom.id, fields: [RoomV2.CodingKeys.itemIds.stringValue: updatedNewIds], in: transaction)
+                    roomRepo.update(id: fetchedCurrentRoom.id, fields: [RoomV2.CodingKeys.itemIds.stringValue: updatedCurrentIds], transaction: transaction)
+                    roomRepo.update(id: fetchedNewRoom.id, fields: [RoomV2.CodingKeys.itemIds.stringValue: updatedNewIds], transaction: transaction)
                     return true
                 } catch {
                     errorPointer?.pointee = error as NSError

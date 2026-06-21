@@ -7,7 +7,7 @@
 
 import Firebase
 
-class GenericRepository<T: AnyRDDocument> {
+class GenericRepository<T: RDDocument> {
     var collectionRef: CollectionReference
     var db: Firestore
     
@@ -36,6 +36,13 @@ class GenericRepository<T: AnyRDDocument> {
     
     func update(id: String, fields: [String: AnyHashable]) async throws {
         try await collectionRef.document(id).updateData(fields)
+    }
+
+    func getAll() async throws -> [T] {
+        let snapshot = try await collectionRef
+            .order(by: T.orderByField)
+            .getDocuments()
+        return try snapshot.documents.map { try $0.data(as: T.self) }
     }
 
     func get(ids: [String]) async throws -> [T] {
@@ -73,26 +80,35 @@ class GenericRepository<T: AnyRDDocument> {
     }
     
     // MARK: - Transaction participatory
-    func get(id: String, in transaction: Transaction) throws -> T {
+    func get(id: String, transaction: Transaction) throws -> T {
         let ref = collectionRef.document(id)
         let snapshot = try transaction.getDocument(ref)
         return try snapshot.data(as: T.self)
     }
+    
+    func get(ids: [String], transaction: Transaction) throws -> [T] {
+        guard !ids.isEmpty else { return [] }
+        return try ids.map { id in
+            let ref = collectionRef.document(id)
+            let snapshot = try transaction.getDocument(ref)
+            return try snapshot.data(as: T.self)
+        }
+    }
 
-    func set(document: T, id: String, in transaction: Transaction) throws {
+    func set(document: T, id: String, transaction: Transaction) throws {
         try transaction.setData(
             from: document,
             forDocument: collectionRef.document(id)
         )
     }
 
-    func delete(id: String, in transaction: Transaction) {
+    func delete(id: String, transaction: Transaction) {
         transaction.deleteDocument(
             collectionRef.document(id)
         )
     }
 
-    func update(id: String, fields: [String: AnyHashable], in transaction: Transaction) {
+    func update(id: String, fields: [String: AnyHashable], transaction: Transaction) {
         let documentRef = collectionRef.document(id)
         transaction.updateData(fields, forDocument: documentRef)
     }

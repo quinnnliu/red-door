@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct SelectDocumentSheet<T: AnyRDDocument>: View {
+struct SelectDocumentSheet<T: RDDocument>: View {
     @Environment(\.dismiss) private var dismiss
 
     let title: String
@@ -48,6 +48,6 @@ struct SelectDocumentSheet<T: AnyRDDocument>: View {
     }
 }
 
-enum SelectDocumentSheetAction<T: AnyRDDocument> {
+enum SelectDocumentSheetAction<T: RDDocument> {
     case selected(T)
 }

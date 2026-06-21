@@ -33,9 +33,9 @@ final class MoveItemV2RoomSheetViewModel {
         do {
             let _ = try await roomRepo.db.runTransaction({ (transaction, errorPointer) -> Any? in
                 do {
-                    let fetchedItem = try self.itemRepo.get(id: self.item.id, in: transaction)
-                    let fetchedNewRoom = try self.roomRepo.get(id: newRoom.id, in: transaction)
-                    let fetchedCurrentRoom = try self.roomRepo.get(id: self.room.id, in: transaction)
+                    let fetchedItem = try self.itemRepo.get(id: self.item.id, transaction: transaction)
+                    let fetchedNewRoom = try self.roomRepo.get(id: newRoom.id, transaction: transaction)
+                    let fetchedCurrentRoom = try self.roomRepo.get(id: self.room.id, transaction: transaction)
                     
                     // TODO: better error handling
                     guard !fetchedNewRoom.itemIds.contains(fetchedItem.id),
@@ -56,12 +56,12 @@ final class MoveItemV2RoomSheetViewModel {
                     self.roomRepo.update(
                         id: fetchedCurrentRoom.id,
                         fields: [RoomV2.CodingKeys.itemIds.stringValue: updatedCurrentRoomItemIds],
-                        in: transaction
+                        transaction: transaction
                     )
                     self.roomRepo.update(
                         id: fetchedNewRoom.id,
                         fields: [RoomV2.CodingKeys.itemIds.stringValue: updatedNewRoomItemIds],
-                        in: transaction
+                        transaction: transaction
                     )
                     return true
                 } catch {

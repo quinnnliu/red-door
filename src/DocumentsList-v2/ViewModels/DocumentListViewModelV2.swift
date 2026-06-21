@@ -10,7 +10,7 @@ import Foundation
 
 @Observable
 @MainActor
-final class DocumentListViewModelV2<T: AnyRDDocument> {
+final class DocumentListViewModelV2<T: RDDocument> {
 
     // MARK: - Public State
 
@@ -61,6 +61,16 @@ final class DocumentListViewModelV2<T: AnyRDDocument> {
     func search(text: String) async {
         if !text.isEmpty {
             await updateFilter(key: T.searchField, value: text.lowercased())
+        }
+    }
+
+    /// Handle a SearchBarAction by dispatching to search or refresh.
+    func handleSearchAction(_ action: SearchBarAction) async {
+        switch action {
+        case .search(let text):
+            await search(text: text)
+        case .cancel:
+            await refresh()
         }
     }
 

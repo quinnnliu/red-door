@@ -73,21 +73,6 @@ extension InstalledListDocumentListViewV2 {
                 RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", iconBold: true, fullWidth: false) {
                     searchFocused = true
                 }
-
-                Menu {
-//                    NavigationLink(destination: CreateInstalledListViewV2()) {
-//                        Text("From Scratch")
-//                        Image(systemName: SFSymbols.checklist)
-//                    }
-//                    Button {
-//                        showFromInstalledCover = true
-//                    } label: {
-//                        Text("From Installed List")
-//                        Image(systemName: SFSymbols.documentOnDocument)
-//                    }
-                } label: {
-                    RDButton(variant: .outline, size: .icon, leadingIcon: "plus", iconBold: true, fullWidth: false, action: { })
-                }
             }
             .foregroundColor(.red)
         }
@@ -95,42 +80,13 @@ extension InstalledListDocumentListViewV2 {
 
     // MARK: InstalledList List
 
-    @ViewBuilder
     private var InstalledListListSection: some View {
-        ScrollView {
-            LazyVStack(spacing: 8) {
-                ForEach(viewModel.documents, id: \.id) { list in
-                    NavigationLink(value: NavigationDestination.installedListDetailView(list)) {
-                        InstalledListV2ListItem(list: list)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-
-                LoadMoreButton()
-            }
-            .padding(8)
-        }
-        .refreshable {
-            await viewModel.refresh()
-        }
-    }
-
-    @ViewBuilder
-    private func LoadMoreButton() -> some View {
-        if viewModel.isLoading {
-            ProgressView()
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding()
-        } else if viewModel.hasMore {
-            RDButton(
-                variant: .outline,
-                label: "Load More",
-                fullWidth: true
-            ) {
-                Task { await viewModel.loadMore() }
-            }
-            .padding(.vertical, 4)
-        }
+        DocumentListSection(
+            viewModel: viewModel,
+            noMoreLabel: "No More Installed Lists",
+            destination: { .installedListDetailView($0) },
+            rowContent: { InstalledListV2ListItem(list: $0) }
+        )
     }
 }
 
@@ -140,12 +96,7 @@ private extension InstalledListDocumentListViewV2 {
 
         switch action {
         case let searchAction as SearchBarAction:
-            switch searchAction {
-            case .search(let text):
-                Task { await viewModel.search(text: text) }
-            case .cancel:
-                Task { await viewModel.refresh() }
-            }
+            Task { await viewModel.handleSearchAction(searchAction) }
         default:
             print("ERROR: Untracked action")
         }

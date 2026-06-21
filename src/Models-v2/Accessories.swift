@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct AccessoriesType: AnyRDDocument{
+struct AccessoriesType: RDDocument{
     static let collectionName: String = "accessories_types"
     static let orderByField: String = AccessoriesType.CodingKeys.displayName.stringValue
     static let searchField: String = AccessoriesType.CodingKeys.displayName.stringValue
@@ -26,7 +26,7 @@ struct AccessoriesType: AnyRDDocument{
     }
 }
 
-struct Accessories: AnyRDDocument {
+struct Accessories: RDDocument {
     static let collectionName: String = "accessories"
     static let orderByField: String = Accessories.CodingKeys.displayName.stringValue
     static let searchField: String = Accessories.CodingKeys.displayNameLowercased.stringValue

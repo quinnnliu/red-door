@@ -8,7 +8,7 @@
 import CachedAsyncImage
 import SwiftUI
 
-struct PullListItemDetailView: View {
+struct PullListItemDetailsView: View {
 	@Environment(NavigationCoordinator.self) var coordinator
 	@Environment(\.dismiss) private var dismiss
 
@@ -33,7 +33,7 @@ struct PullListItemDetailView: View {
 		ZStack {
 			VStack(spacing: 12) {
 				TopBar
-					.padding(.horizontal, 16)
+                    .frameHorizontalPadding()
 
 				ScrollView {
 					VStack(spacing: 12) {

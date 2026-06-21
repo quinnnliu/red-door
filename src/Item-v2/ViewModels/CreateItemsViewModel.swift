@@ -50,7 +50,7 @@ final class CreateItemsViewModel {
             material: .none,
             attention: false,
             description: "",
-            isEssential: false
+            essentialGroupId: "" // TODO: use a custom binding like the other optional fields
         )
         self.itemCount = 1
         self.selectedRDImage = nil

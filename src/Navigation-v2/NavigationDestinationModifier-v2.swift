@@ -22,11 +22,15 @@ struct NavigationDestinationsModifierV2: ViewModifier {
                 case .pulllistRoomDetailView(let items, let room):
                     PullListRoomDetailsView(items: items, room: room)
                 case .pullListItemDetailView(let item, let room):
-                    PullListItemDetailView(item: item, room: room)
+                    PullListItemDetailsView(item: item, room: room)
                 case .addItemToRoomDetailView(let item, let room):
                     AddItemToRoomDetailView(item: item, room: room)
                 case .installedListDetailView(let list):
                     Text(list.displayName)
+                case .essentialsGroupDetailView(let group):
+                    Text(group.displayName)
+                case .accessoriesDetailView(let accessories):
+                    Text(accessories.displayName)
                 default:
                     Text("UNHANDLED NAVIGATION DESTINATION")
                 }

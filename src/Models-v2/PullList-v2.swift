@@ -17,7 +17,7 @@ struct InstallingSession: Codable, Hashable {
     }
 }
 
-struct PullListV2: AnyRDDocument {
+struct PullListV2: RDDocument {
     static let collectionName: String = "pull_list_V2"
     static let orderByField: String = "created_date"
     static let searchField: String = "address_id"

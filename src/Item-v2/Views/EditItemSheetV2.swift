@@ -42,7 +42,7 @@ struct EditItemSheetV2: View {
                         color: $editingItem.color,
                         material: $editingItem.material,
                         type: $editingItem.type,
-                        isEssential: $editingItem.isEssential,
+                        essentialGroupId: $editingItem.essentialGroupId,
                         value: $editingItem.value,
                         brand: $editingItem.brand,
                         purchaseLocation: $editingItem.purchaseLocation,

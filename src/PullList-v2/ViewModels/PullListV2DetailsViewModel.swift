@@ -166,17 +166,17 @@ final class PullListV2DetailsViewModel {
                             ItemV2.CodingKeys.status.stringValue: LocationStatus.inStorage.rawValue,
                             ItemV2.CodingKeys.locationId.stringValue: Warehouse.warehouse1.id
                         ],
-                        in: transaction
+                        transaction: transaction
                     )
                 }
 
                 // Delete all rooms
                 for room in roomSnapshot {
-                    roomRepo.delete(id: room.id, in: transaction)
+                    roomRepo.delete(id: room.id, transaction: transaction)
                 }
 
                 // Delete the pull list
-                pullListRepo.delete(id: pullListId, in: transaction)
+                pullListRepo.delete(id: pullListId, transaction: transaction)
 
                 return true
             }

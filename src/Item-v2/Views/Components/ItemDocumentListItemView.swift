@@ -44,7 +44,7 @@ struct ItemDocumentListItemView: View {
 
             Spacer()
 
-            if item.isEssential {
+            if let _ = item.essentialGroupId {
                 Image(systemName: SFSymbols.starCircleFill)
                     .foregroundStyle(.yellow)
                     .padding(.trailing, 6)

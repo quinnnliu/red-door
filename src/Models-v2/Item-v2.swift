@@ -7,7 +7,7 @@
 import SwiftUI
 
 
-struct ItemV2: AnyRDDocument {
+struct ItemV2: RDDocument {
     static let collectionName: String = "items_v2"
     static let orderByField: String = "name_lowercased"
     static let searchField: String = "name_lowercased"
@@ -32,7 +32,7 @@ struct ItemV2: AnyRDDocument {
     var attention: Bool
     var attentionDescription: String?
     var description: String
-    var isEssential: Bool
+    var essentialGroupId: String?
 
     init(
         id: String,
@@ -53,7 +53,7 @@ struct ItemV2: AnyRDDocument {
         attention: Bool,
         attentionDescription: String? = nil,
         description: String,
-        isEssential: Bool
+        essentialGroupId: String? = nil
     ) {
         self.id = id
         self.modelId = modelId
@@ -74,7 +74,7 @@ struct ItemV2: AnyRDDocument {
         self.attention = attention
         self.attentionDescription = attentionDescription
         self.description = description
-        self.isEssential = isEssential
+        self.essentialGroupId = essentialGroupId
     }
 
     init(item: ItemV2) {
@@ -97,7 +97,7 @@ struct ItemV2: AnyRDDocument {
         self.attention = item.attention
         self.attentionDescription = item.attentionDescription
         self.description = item.description
-        self.isEssential = item.isEssential
+        self.essentialGroupId = item.essentialGroupId
     }
 
     enum CodingKeys: String, CodingKey {
@@ -109,7 +109,7 @@ struct ItemV2: AnyRDDocument {
         case nameLowercased = "name_lowercased"
         case purchaseLocation = "purchase_location"
         case datePurchased = "date_purchased"
-        case isEssential = "is_essential"
+        case essentialGroupId = "essential_group_id"
         case primaryImage = "primary_image"
         case secondaryImages = "secondary_images"
         case displayName = "display_name"

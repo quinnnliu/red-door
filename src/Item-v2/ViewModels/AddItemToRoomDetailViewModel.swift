@@ -38,13 +38,13 @@ extension AddItemToRoomDetailViewModel {
         do {
             let _ = try await roomRepo.db.runTransaction({ (transaction, errorPointer) -> Any? in
                 do {
-                    let currentRoom = try self.roomRepo.get(id: self.room.id, in: transaction)
+                    let currentRoom = try self.roomRepo.get(id: self.room.id, transaction: transaction)
                     let newItemIds: [String] = Array(currentRoom.itemIds.union([self.item.id]))
                     
                     self.roomRepo.update(
                         id: self.room.id,
                         fields: [RoomV2.CodingKeys.itemIds.stringValue: newItemIds],
-                        in: transaction
+                        transaction: transaction
                     )
                     self.itemRepo.update(
                         id: self.item.id,
@@ -52,7 +52,7 @@ extension AddItemToRoomDetailViewModel {
                             ItemV2.CodingKeys.status.stringValue: LocationStatus.inPullList.rawValue,
                             ItemV2.CodingKeys.locationId.stringValue: self.room.listId
                         ],
-                        in: transaction
+                        transaction: transaction
                     )
                     return nil
                 } catch {

@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct InstalledListV2: AnyRDDocument {
+struct InstalledListV2: RDDocument {
     static let collectionName: String = "installed_list_V2"
     static let orderByField: String = "uninstall_date"
     static let searchField: String = "address_id"

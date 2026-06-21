@@ -8,7 +8,7 @@
 import Foundation
 
 // MARK: - EssentialsGroupType
-struct EssentialsGroupType: AnyRDDocument {
+struct EssentialsGroupType: RDDocument {
     static let collectionName = "essentials_group_types"
     static let orderByField = EssentialsGroupType.CodingKeys.displayName.stringValue
     static let searchField = EssentialsGroupType.CodingKeys.displayName.stringValue
@@ -29,7 +29,7 @@ struct EssentialsGroupType: AnyRDDocument {
 
 // MARK: - EssentialsGroup
 
-struct EssentialsGroup: AnyRDDocument {
+struct EssentialsGroup: RDDocument {
     static let collectionName: String = "essentials"
     static let orderByField: String = EssentialsGroup.CodingKeys.displayName.stringValue
     static let searchField: String = EssentialsGroup.CodingKeys.displayNameLowercased.stringValue

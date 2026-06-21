@@ -29,6 +29,7 @@ struct PullListRoomDetailsView: View {
     var body: some View {
         VStack(spacing: 16) {
             TopBar
+                .frameHorizontalPadding()
             
             ScrollView {
                 VStack(spacing: 16) {

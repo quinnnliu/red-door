@@ -12,7 +12,7 @@ struct EditItemDetailSection: View {
     @Binding var color: ItemColor
     @Binding var material: ItemMaterial
     @Binding var type: ItemType
-    @Binding var isEssential: Bool
+    @Binding var essentialGroupId: String?
     @Binding var value: Double?
     @Binding var brand: String?
     @Binding var purchaseLocation: String?
@@ -130,8 +130,7 @@ struct EditItemDetailSection: View {
                             .foregroundColor(.red)
                             .bold()
                         
-                        Toggle("", isOn: $isEssential)
-                            .labelsHidden()
+                        Text(essentialGroupId ?? "")
                     }
                 }
             }
@@ -202,15 +201,16 @@ struct EditItemDetailSection: View {
     }
     
     // MARK: Section Title
+    
     func SectionTitle(_ title: String) -> some View {
         Text(title)
-            .font(.title3)
+            .font(.title)
             .foregroundStyle(.red)
             .bold()
     }
     
     // MARK: MaterialPickerToggle
-    @ViewBuilder
+    
     func MaterialPickerToggleV2(
         isActive: Binding<Bool>,
         selectedMaterial: ItemMaterial
@@ -236,7 +236,6 @@ struct EditItemDetailSection: View {
 
     // MARK: ColorPickerToggle
     
-    @ViewBuilder
     func ColorPickerToggleV2(
         isActive: Binding<Bool>,
         selectedColor: ItemColor

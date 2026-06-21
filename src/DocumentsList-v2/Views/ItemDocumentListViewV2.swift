@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct ItemDocumentListViewV2: View {
-    @State private var viewModel: DocumentListViewModelV2<ItemV2> = DocumentListViewModelV2<ItemV2>()
     @Binding var path: NavigationPath
     let itemRepo: ItemRepository
 
@@ -20,8 +19,18 @@ struct ItemDocumentListViewV2: View {
         self.itemRepo = itemRepo
     }
 
+    // MARK: - Segment State
+
+    @State private var selectedSegment: InventorySegment = .items
+
+    @State private var itemsVM: DocumentListViewModelV2<ItemV2> = DocumentListViewModelV2<ItemV2>()
+    @State private var essentialsVM: DocumentListViewModelV2<EssentialsGroup> = DocumentListViewModelV2<EssentialsGroup>(pageSize: 50)
+    @State private var accessoriesVM: DocumentListViewModelV2<Accessories> = DocumentListViewModelV2<Accessories>(pageSize: 50)
+
+    // MARK: - UI State
+
     @State private var searchFocused: Bool = false
-    @State private var createDocumentSheetType: CreateDocumentSheetType? = nil
+    @State private var createDocumentSheetType: InventorySegment? = nil
     @State private var showScannerSheet: Bool = false
     @State private var scannedItemId: String? = nil
 
@@ -34,17 +43,44 @@ struct ItemDocumentListViewV2: View {
                     TopBar
                 }
 
-                ItemInventoryFilterView(action: handleAction(_:))
+                HStack(spacing: 8) {
+                    RDButton(
+                        variant: .red,
+                        size: .icon,
+                        leadingIcon: SFSymbols.sliderHorizontal3,
+                        iconBold: true
+                    ) {
+                        
+                    }.clipShape(.circle)
+                    
+                    Picker("Inventory", selection: $selectedSegment) {
+                        ForEach(InventorySegment.allCases, id: \.self) { segment in
+                            Text(segment.title).tag(segment)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                }
 
-                InventoryList
+                if selectedSegment == .items {
+                    ItemInventoryFilterView(action: handleAction(_:))
+                }
+
+                switch selectedSegment {
+                case .items:
+                    ItemsListContent
+                case .essentials:
+                    EssentialsListContent
+                case .accessories:
+                    AccessoriesListContent
+                }
             }
             .frameTop()
             .frameHorizontalPadding()
             .task {
-                await viewModel.refresh()
+                await itemsVM.refresh()
             }
             .fullScreenCover(item: $createDocumentSheetType) { type in
-                type.view
+                type.CreateDocumentSheet
             }
             .sheet(isPresented: $showScannerSheet) {
                 ItemScannerView(scannedItemId: $scannedItemId)
@@ -96,14 +132,14 @@ extension ItemDocumentListViewV2 {
             .foregroundColor(.red)
         }
     }
-    
+
     // MARK: - CreateDocumentMenu
     private var CreateDocumentMenu: some View {
         Menu {
             Button("Item", systemImage: SFSymbols.couchFill) {
-                createDocumentSheetType = .item
+                createDocumentSheetType = .items
             }
-            
+
             Button("Essentials", systemImage: SFSymbols.starCircleFill) {
                 createDocumentSheetType = .essentials
             }
@@ -116,64 +152,74 @@ extension ItemDocumentListViewV2 {
         }
     }
 
-    // MARK: - Inventory List
-    private var InventoryList: some View {
-        ScrollView {
-            LazyVStack(spacing: 8) {
-                ForEach(viewModel.documents, id: \.id) { item in
-                    NavigationLink(value: NavigationDestination.itemDetailView(item)) {
-                        ItemDocumentListItemView(item: item)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
+    // MARK: - Items List
 
-                LoadMoreButton
+    private var ItemsListContent: some View {
+        DocumentListSection(
+            viewModel: itemsVM,
+            noMoreLabel: "No More Items",
+            destination: { .itemDetailView($0) },
+            rowContent: { ItemDocumentListItemView(item: $0) }
+        )
+    }
+
+    // MARK: - Essentials List
+
+    private var EssentialsListContent: some View {
+        DocumentListSection(
+            viewModel: essentialsVM,
+            noMoreLabel: "No More Essentials",
+            destination: { .essentialsGroupDetailView($0) },
+            rowContent: { EssentialsGroupListItemView(group: $0) }
+        )
+        .task {
+            if essentialsVM.documents.isEmpty {
+                await essentialsVM.refresh()
             }
-        }
-        .refreshable {
-            await viewModel.refresh()
         }
     }
 
-    // MARK: - LoadMoreButton
-    @ViewBuilder
-    private var LoadMoreButton: some View {
-        if viewModel.isLoading {
-            ProgressView()
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding()
-        } else if viewModel.hasMore {
-            RDButton(
-                variant: .outline,
-                label: "Load More",
-                fullWidth: true
-            ) {
-                Task { await viewModel.loadMore() }
+    // MARK: - Accessories List
+
+    private var AccessoriesListContent: some View {
+        DocumentListSection(
+            viewModel: accessoriesVM,
+            noMoreLabel: "No More Accessories",
+            destination: { .accessoriesDetailView($0) },
+            rowContent: { AccessoriesListItemView(accessories: $0) }
+        )
+        .task {
+            if accessoriesVM.documents.isEmpty {
+                await accessoriesVM.refresh()
             }
-        } else {
-            RDButton(
-                variant: .outline,
-                label: "No More Items",
-                fullWidth: true
-            ) {
-            }
-            .allowsHitTesting(false)
-            .padding(.vertical, 4)
         }
     }
 }
 
 private extension ItemDocumentListViewV2 {
-    enum CreateDocumentSheetType: Identifiable {
-        case item
-        case essentials
-        case accessories
 
-        var id: Self { self }
+    // MARK: - InventorySegment
 
-        var view: AnyView {
+    enum InventorySegment: Int, CaseIterable, Identifiable {
+        case items = 0
+        case essentials = 1
+        case accessories = 2
+
+        var title: String {
             switch self {
-            case .item:
+            case .items: "Items"
+            case .essentials: "Essentials"
+            case .accessories: "Accessories"
+            }
+        }
+        
+        var id: String {
+            "\(self)"
+        }
+        
+        var CreateDocumentSheet: AnyView {
+            switch self {
+            case .items:
                 AnyView(CreateItemsViewV2())
             case .essentials:
                 AnyView(CreateEssentialsGroupView())
@@ -181,29 +227,44 @@ private extension ItemDocumentListViewV2 {
                 AnyView(CreateAccessoriesView())
             }
         }
+        
+        var FilterSheetView: AnyView {
+            switch self {
+            case .items:
+                AnyView(Text("FilterSheetView for \(self.title)"))
+            case .essentials:
+                AnyView(Text("FilterSheetView for \(self.title)"))
+            case .accessories:
+                AnyView(Text("FilterSheetView for \(self.title)"))
+            }
+        }
     }
-    
+
     // MARK: - handleAction
-    
+
     func handleAction(_ action: Any?) {
         guard let action else { return }
 
         switch action {
         case let searchAction as SearchBarAction:
-            switch searchAction {
-            case .search(let text):
-                Task { await viewModel.search(text: text) }
-            case .cancel:
-                Task { await viewModel.refresh() }
+            Task {
+                switch selectedSegment {
+                case .items:
+                    await itemsVM.handleSearchAction(searchAction)
+                case .essentials:
+                    await essentialsVM.handleSearchAction(searchAction)
+                case .accessories:
+                    await accessoriesVM.handleSearchAction(searchAction)
+                }
             }
         case let filterAction as ItemInventoryFilterViewAction:
             switch filterAction {
             case .selectItemType(let newType):
                 Task {
                     if let newType {
-                        await viewModel.updateFilter(key: "type", value: newType.rawValue)
+                        await itemsVM.updateFilter(key: "type", value: newType.rawValue)
                     } else {
-                        await viewModel.removeFilter(key: "type")
+                        await itemsVM.removeFilter(key: "type")
                     }
                 }
             }
@@ -211,9 +272,9 @@ private extension ItemDocumentListViewV2 {
             print("ERROR: Untracked action")
         }
     }
-    
+
     // MARK: - handleScannedItemId
-    
+
     func handleScannedItemId(_ id: String) {
         Task {
             let item = try await itemRepo.get(id: id)

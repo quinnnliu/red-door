@@ -1,11 +1,11 @@
 //
-//  GenericDocument.swift
+//  RDDocument.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 4/25/26.
 //
 
-protocol AnyRDDocument: Codable, Hashable, Identifiable {
+protocol RDDocument: Codable, Hashable, Identifiable {
     var id: String { get }
     var displayName: String { get }
 

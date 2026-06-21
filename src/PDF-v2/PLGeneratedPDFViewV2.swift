@@ -146,9 +146,8 @@ struct PLGeneratedPDFViewV2: View {
                 .padding(.leading, 6)
                 .lineLimit(2)
 
-            Image(systemName: item.isEssential ? "checkmark.circle.fill" : "circle")
+            Text(item.essentialGroupId ?? "")
                 .font(.system(size: 12))
-                .foregroundColor(item.isEssential ? .green : .gray)
                 .frame(width: 80, alignment: .center)
 
             if let qrCodeImage = item.id.generateQRCode() {
