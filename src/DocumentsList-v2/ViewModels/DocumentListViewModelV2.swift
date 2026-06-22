@@ -25,6 +25,9 @@ final class DocumentListViewModelV2<T: RDDocument> {
     private var cursor: DocumentSnapshot? = nil
     private var activeFilters: [String: AnyHashable] = [:]
     private var defaultFilters: [String: AnyHashable]?
+    var activeFiltersApplied: Bool {
+        !activeFilters.isEmpty
+    }
     /// Incremented on every reload. After a Firestore await resumes, a fetch
     /// checks that its captured generation still matches — if not, it was
     /// superseded and discards its results without touching shared state.
