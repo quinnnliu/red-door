@@ -204,7 +204,7 @@ struct EditItemDetailSection: View {
     
     func SectionTitle(_ title: String) -> some View {
         Text(title)
-            .font(.title)
+            .font(.title3)
             .foregroundStyle(.red)
             .bold()
     }

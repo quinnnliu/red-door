@@ -23,8 +23,11 @@ final class DocumentListViewModelV2<T: RDDocument> {
     private let collectionRef: CollectionReference
     private let pageSize: Int
     private var cursor: DocumentSnapshot? = nil
-    private var activeFilters: [String: AnyHashable] = [:]
+    private(set) var activeFilters: [String: AnyHashable] = [:]
     private var defaultFilters: [String: AnyHashable]?
+    var activeFiltersApplied: Bool {
+        !activeFilters.isEmpty
+    }
     /// Incremented on every reload. After a Firestore await resumes, a fetch
     /// checks that its captured generation still matches — if not, it was
     /// superseded and discards its results without touching shared state.
@@ -72,6 +75,11 @@ final class DocumentListViewModelV2<T: RDDocument> {
         case .cancel:
             await refresh()
         }
+    }
+
+    /// Replace all active filters and reload.
+    func setFilters(_ filters: [String: AnyHashable]) async {
+        await startReload(filters: filters)
     }
 
     /// Append the next page. No-op if already loading or no more pages exist.
@@ -143,9 +151,6 @@ final class DocumentListViewModelV2<T: RDDocument> {
             if key == T.searchField, let text = value as? String {
                 q = q.whereField(key, isGreaterThanOrEqualTo: text)
                      .whereField(key, isLessThan: text + "\u{f8ff}")
-            } else if key == "address_id", let text = value as? String {
-                q = q.whereField("address_id", isGreaterThanOrEqualTo: text)
-                     .whereField("address_id", isLessThan: text + "\u{f8ff}")
             } else {
                 q = q.whereField(key, isEqualTo: value)
             }

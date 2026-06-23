@@ -116,7 +116,7 @@ struct ItemV2: RDDocument {
     }
 }
 
-enum ItemType: String, Codable, CaseIterable {
+enum ItemType: String, Filterable {
     case chair = "Chair"
     case desk = "Desk"
     case table = "Table"
@@ -125,8 +125,7 @@ enum ItemType: String, Codable, CaseIterable {
     case misc = "Miscellaneous"
 
     var title: String { rawValue }
-
-    var icon: String {
+    var icon: String? {
         switch self {
         case .chair:
             SFSymbols.chairFill
@@ -141,11 +140,11 @@ enum ItemType: String, Codable, CaseIterable {
         case .misc:
             SFSymbols.ellipsis
         }
-
     }
+    var color: Color? { nil }
 }
 
-enum ItemColor: String, Codable, CaseIterable {
+enum ItemColor: String, Filterable {
     case black = "Black"
     case blue = "Blue"
     case brown = "Brown"
@@ -164,8 +163,7 @@ enum ItemColor: String, Codable, CaseIterable {
     case clear = "Clear"
 
     var title: String { rawValue }
-
-    var color: Color {
+    var color: Color? {
         switch self {
         case .black: return .black
         case .blue: return .blue
@@ -185,9 +183,10 @@ enum ItemColor: String, Codable, CaseIterable {
         case .clear: return .clear
         }
     }
+    var icon: String? { nil }
 }
 
-enum ItemMaterial: String, Codable, CaseIterable {
+enum ItemMaterial: String, Codable, Filterable {
     case acrylic = "Acrylic"
     case bamboo = "Bamboo"
     case cane = "Cane"
@@ -212,4 +211,7 @@ enum ItemMaterial: String, Codable, CaseIterable {
     case other = "Other"
 
     var title: String { rawValue }
+    
+    var icon: String? { nil }
+    var color: Color? { nil }
 }

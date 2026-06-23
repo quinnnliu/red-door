@@ -32,9 +32,11 @@ struct TopAppBar<LeadingView: View, Header: View, TrailingView: View>: View {
 struct BackButton: View {
     @Environment(\.dismiss) private var dismiss
     
+    let icon: String
     let action: (() -> ())?
     
-    init(action: (() -> ())? = nil) {
+    init(icon: String = SFSymbols.chevronLeft, action: (() -> ())? = nil) {
+        self.icon = icon
         self.action = action
     }
 
@@ -42,7 +44,7 @@ struct BackButton: View {
         RDButton(
             variant: .red,
             size: .icon,
-            leadingIcon: SFSymbols.chevronLeft, // TODO: consider the environment variable injection instead of UIKit (isModallyPresented)
+            leadingIcon: icon, // TODO: consider the environment variable injection instead of UIKit (isModallyPresented)
             iconBold: true,
             fullWidth: false
         ) {

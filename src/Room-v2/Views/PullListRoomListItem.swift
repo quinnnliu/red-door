@@ -107,11 +107,13 @@ extension PullListRoomListItem {
                         .truncationMode(.tail)
                     
                     HStack(spacing: 4) {
-                        Image(systemName: item.type.icon)
+                        Image(systemName: item.type.icon ?? SFSymbols.ellipsis)
                             .foregroundColor(.secondary)
                         
-                        Image(systemName: SFSymbols.circleFill)
-                            .foregroundColor(item.color.color)
+                        if let color = item.color.color {
+                            Image(systemName: SFSymbols.circleFill)
+                                .foregroundColor(color)
+                        }
                     }
                     .font(.caption)
                 }

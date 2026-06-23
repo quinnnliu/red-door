@@ -31,6 +31,7 @@ struct ItemDocumentListViewV2: View {
 
     @State private var searchFocused: Bool = false
     @State private var createDocumentSheetType: InventorySegment? = nil
+    @State private var filterDocumentSheetType: InventorySegment? = nil
     @State private var showScannerSheet: Bool = false
     @State private var scannedItemId: String? = nil
 
@@ -44,25 +45,14 @@ struct ItemDocumentListViewV2: View {
                 }
 
                 HStack(spacing: 8) {
-                    RDButton(
-                        variant: .red,
-                        size: .icon,
-                        leadingIcon: SFSymbols.sliderHorizontal3,
-                        iconBold: true
-                    ) {
-                        
-                    }.clipShape(.circle)
-                    
                     Picker("Inventory", selection: $selectedSegment) {
                         ForEach(InventorySegment.allCases, id: \.self) { segment in
                             Text(segment.title).tag(segment)
                         }
                     }
                     .pickerStyle(.segmented)
-                }
-
-                if selectedSegment == .items {
-                    ItemInventoryFilterView(action: handleAction(_:))
+                    
+                    FilterButton(filtersActive)
                 }
 
                 switch selectedSegment {
@@ -80,7 +70,11 @@ struct ItemDocumentListViewV2: View {
                 await itemsVM.refresh()
             }
             .fullScreenCover(item: $createDocumentSheetType) { type in
-                type.CreateDocumentSheet
+                type.createDocumentSheet
+            }
+            .sheet(item: $filterDocumentSheetType) { type in
+                type.filterSheet(action: handleAction(_:), initialFilters: activeFilters(for: type))
+                    .presentationDetents([.large])
             }
             .sheet(isPresented: $showScannerSheet) {
                 ItemScannerView(scannedItemId: $scannedItemId)
@@ -130,6 +124,34 @@ extension ItemDocumentListViewV2 {
                 CreateDocumentMenu
             }
             .foregroundColor(.red)
+        }
+    }
+    
+    // MARK: - FilterButton
+    private func FilterButton(_ filtersActive: Bool = false) -> some View {
+        RDButton(
+            variant: filtersActive ? .red : .secondary,
+            size: .icon,
+            leadingIcon: SFSymbols.sliderHorizontal3,
+            iconBold: true
+        ) {
+            filterDocumentSheetType = selectedSegment
+        }
+    }
+    
+    private var filtersActive: Bool {
+        switch selectedSegment {
+        case .items: itemsVM.activeFiltersApplied
+        case .essentials: essentialsVM.activeFiltersApplied
+        case .accessories: accessoriesVM.activeFiltersApplied
+        }
+    }
+
+    private func activeFilters(for segment: InventorySegment) -> [String: AnyHashable] {
+        switch segment {
+        case .items:       itemsVM.activeFilters
+        case .essentials:  essentialsVM.activeFilters
+        case .accessories: accessoriesVM.activeFilters
         }
     }
 
@@ -217,25 +239,27 @@ private extension ItemDocumentListViewV2 {
             "\(self)"
         }
         
-        var CreateDocumentSheet: AnyView {
+        @ViewBuilder
+        var createDocumentSheet: some View {
             switch self {
             case .items:
-                AnyView(CreateItemsViewV2())
+                CreateItemsViewV2()
             case .essentials:
-                AnyView(CreateEssentialsGroupView())
+                CreateEssentialsGroupView()
             case .accessories:
-                AnyView(CreateAccessoriesView())
+                CreateAccessoriesView()
             }
         }
         
-        var FilterSheetView: AnyView {
+        @ViewBuilder
+        func filterSheet(action: @escaping (Any?) -> Void, initialFilters: [String: AnyHashable] = [:]) -> some View {
             switch self {
             case .items:
-                AnyView(Text("FilterSheetView for \(self.title)"))
+                ItemV2DocumentFilterSheet(action: action, initialFilters: initialFilters)
             case .essentials:
-                AnyView(Text("FilterSheetView for \(self.title)"))
+                Text("FilterSheetView for \(self.title)")
             case .accessories:
-                AnyView(Text("FilterSheetView for \(self.title)"))
+                Text("FilterSheetView for \(self.title)")
             }
         }
     }
@@ -265,6 +289,17 @@ private extension ItemDocumentListViewV2 {
                         await itemsVM.updateFilter(key: "type", value: newType.rawValue)
                     } else {
                         await itemsVM.removeFilter(key: "type")
+                    }
+                }
+            }
+        case let filterAction as DocumentFilterSheetAction:
+            Task {
+                switch filterAction {
+                case .applyFilters(let filters):
+                    switch selectedSegment {
+                    case .items: await itemsVM.setFilters(filters)
+                    case .essentials: await essentialsVM.setFilters(filters)
+                    case .accessories: await accessoriesVM.setFilters(filters)
                     }
                 }
             }
