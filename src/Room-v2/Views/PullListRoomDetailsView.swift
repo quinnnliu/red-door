@@ -176,16 +176,14 @@ struct PullListRoomDetailsView: View {
                     .bold()
                 
                 HStack(spacing: 4) {
-                    Image(systemName: item.type.icon)
-                    
+                    Image(systemName: item.type.icon ?? SFSymbols.ellipsis)
                     Text("•")
-                    
-                    Image(systemName: SFSymbols.circleFill)
-                        .foregroundColor(item.color.color)
-                    
-                    Text("•")
-                    
                     Text(item.material.title)
+                    if let color = item.color.color {
+                        Text("•")
+                        Image(systemName: SFSymbols.circleFill)
+                            .foregroundColor(item.color.color ?? .gray)
+                    }
                 }
                 .font(.caption)
                 .foregroundColor(.secondary)

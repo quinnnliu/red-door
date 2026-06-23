@@ -31,12 +31,14 @@ struct ItemDocumentListItemView: View {
                 }
 
                 HStack(spacing: 4) {
-                    Image(systemName: item.type.icon)
+                    Image(systemName: item.type.icon ?? SFSymbols.ellipsis)
                     Text("•")
                     Text(item.material.title)
-                    Text("•")
-                    Image(systemName: SFSymbols.circleFill)
-                        .foregroundStyle(item.color.color)
+                    if let color = item.color.color {
+                        Text("•")
+                        Image(systemName: SFSymbols.circleFill)
+                            .foregroundStyle(color)
+                    }
                 }
                 .font(.footnote)
                 .foregroundStyle(.secondary)

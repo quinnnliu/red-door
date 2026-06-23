@@ -64,4 +64,6 @@ enum SFSymbols {
     static let booksVerticalFill = "books.vertical.fill"
     static let line3HorizontalDecrease = "line.3.horizontal.decrease"
     static let sliderHorizontal3 = "slider.horizontal.3"
+    static let listBulletClipboardFill = "list.bullet.clipboard.fill"
+    static let houseFill = "house.fill"
 }

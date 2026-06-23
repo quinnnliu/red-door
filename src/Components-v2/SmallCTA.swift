@@ -81,6 +81,7 @@ struct SmallCTA: View {
 
     var buttonColor: Color?
 
+    var fullWidth: Bool = false
     var semibold: Bool = true
     var action: () -> Void = {}
 
@@ -112,7 +113,7 @@ struct SmallCTA: View {
                     }
                     .multilineTextAlignment(.center)
                     .foregroundColor(textColor ?? type.foregroundColor)
-                    .if(leadingIcon == nil) { view in
+                    .if(fullWidth) { view in
                         view.frame(maxWidth: .infinity)
                     }
             }

@@ -31,24 +31,30 @@ struct ItemDetailSection: View {
                     HStack {
                         Text("Type:")
                             .frame(width: 90, alignment: .leading)
-                        Text(item.type.title)
-                            .padding(6)
-                            .background(Color(.systemGray4))
-                            .cornerRadius(6)
-                    }
-                    
-                    HStack {
-                        Text("Color:")
-                            .frame(width: 90, alignment: .leading)
                         HStack(spacing: 6) {
-                            Image(systemName: SFSymbols.circleFill)
-                                .foregroundStyle(item.color.color)
-                            Text(item.color.title)
+                            Image(systemName: item.type.icon ?? SFSymbols.ellipsis)
+                            Text(item.type.title)
                         }
                         .padding(6)
                         .background(Color(.systemGray4))
                         .cornerRadius(6)
                     }
+                    
+                    if let color = item.color.color {
+                        HStack {
+                            Text("Color:")
+                                .frame(width: 90, alignment: .leading)
+                            HStack(spacing: 6) {
+                                Image(systemName: SFSymbols.circleFill)
+                                    .foregroundStyle(color)
+                                Text(item.color.title)
+                            }
+                            .padding(6)
+                            .background(Color(.systemGray4))
+                            .cornerRadius(6)
+                        }
+                    }
+                    
                     
                     HStack {
                         Text("Material:")

@@ -122,7 +122,7 @@ private extension AddItemToDocumentSheetV2 {
                 Task { await viewModel.refresh() }
             }
         default:
-            print("ERROR: Untracked action")
+            print("[ERROR]: Untracked action")
         }
     }
 }

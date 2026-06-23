@@ -55,10 +55,6 @@ struct ItemDocumentListViewV2: View {
                     FilterButton(filtersActive)
                 }
 
-                if selectedSegment == .items {
-                    ItemInventoryFilterView(action: handleAction(_:))
-                }
-
                 switch selectedSegment {
                 case .items:
                     ItemsListContent
@@ -77,8 +73,8 @@ struct ItemDocumentListViewV2: View {
                 type.createDocumentSheet
             }
             .sheet(item: $filterDocumentSheetType) { type in
-                type.filterSheet
-                    .presentationDetents([.medium])
+                type.filterSheet(action: handleAction(_:), initialFilters: activeFilters(for: type))
+                    .presentationDetents([.large])
             }
             .sheet(isPresented: $showScannerSheet) {
                 ItemScannerView(scannedItemId: $scannedItemId)
@@ -148,6 +144,14 @@ extension ItemDocumentListViewV2 {
         case .items: itemsVM.activeFiltersApplied
         case .essentials: essentialsVM.activeFiltersApplied
         case .accessories: accessoriesVM.activeFiltersApplied
+        }
+    }
+
+    private func activeFilters(for segment: InventorySegment) -> [String: AnyHashable] {
+        switch segment {
+        case .items:       itemsVM.activeFilters
+        case .essentials:  essentialsVM.activeFilters
+        case .accessories: accessoriesVM.activeFilters
         }
     }
 
@@ -247,10 +251,11 @@ private extension ItemDocumentListViewV2 {
             }
         }
         
-        var filterSheet: some View {
+        @ViewBuilder
+        func filterSheet(action: @escaping (Any?) -> Void, initialFilters: [String: AnyHashable] = [:]) -> some View {
             switch self {
             case .items:
-                Text("FilterSheetView for \(self.title)")
+                ItemV2DocumentFilterSheet(action: action, initialFilters: initialFilters)
             case .essentials:
                 Text("FilterSheetView for \(self.title)")
             case .accessories:
@@ -284,6 +289,17 @@ private extension ItemDocumentListViewV2 {
                         await itemsVM.updateFilter(key: "type", value: newType.rawValue)
                     } else {
                         await itemsVM.removeFilter(key: "type")
+                    }
+                }
+            }
+        case let filterAction as DocumentFilterSheetAction:
+            Task {
+                switch filterAction {
+                case .applyFilters(let filters):
+                    switch selectedSegment {
+                    case .items: await itemsVM.setFilters(filters)
+                    case .essentials: await essentialsVM.setFilters(filters)
+                    case .accessories: await accessoriesVM.setFilters(filters)
                     }
                 }
             }
