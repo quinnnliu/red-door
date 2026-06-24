@@ -44,16 +44,12 @@ struct ItemDocumentListViewV2: View {
                     TopBar
                 }
 
-                HStack(spacing: 8) {
-                    Picker("Inventory", selection: $selectedSegment) {
-                        ForEach(InventorySegment.allCases, id: \.self) { segment in
-                            Text(segment.title).tag(segment)
-                        }
+                Picker("Inventory", selection: $selectedSegment) {
+                    ForEach(InventorySegment.allCases, id: \.self) { segment in
+                        Text(segment.title).tag(segment)
                     }
-                    .pickerStyle(.segmented)
-                    
-                    FilterButton(filtersActive)
                 }
+                .pickerStyle(.segmented)
 
                 switch selectedSegment {
                 case .items:
@@ -94,10 +90,14 @@ extension ItemDocumentListViewV2 {
     private var TopBar: some View {
         TopAppBar(
             leadingView: {
-                Text("Inventory")
-                    .font(.system(.title2, design: .default))
-                    .bold()
-                    .foregroundStyle(.red)
+                HStack(spacing: 8) {
+                    Text("Inventory")
+                        .font(.system(.title2, design: .default))
+                        .bold()
+                        .foregroundStyle(.red)
+                    
+                    FilterButton(filtersActive)
+                }
             },
             header: {
                 EmptyView()
@@ -137,6 +137,7 @@ extension ItemDocumentListViewV2 {
         ) {
             filterDocumentSheetType = selectedSegment
         }
+        .clipShape(.circle)
     }
     
     private var filtersActive: Bool {

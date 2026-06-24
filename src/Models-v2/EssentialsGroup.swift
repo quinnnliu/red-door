@@ -40,6 +40,7 @@ struct EssentialsGroup: RDDocument {
     let essentialsTypeId: String // maps to EssentialsGroupType
     
     let status: LocationStatus
+    let locationId: String
     let itemIds: [String]
     let accessoriesId: String?
     
@@ -50,12 +51,14 @@ struct EssentialsGroup: RDDocument {
         case displayName = "display_name"
         case displayNameLowercased = "display_name_lowercased"
         case essentialsTypeId = "essentials_type_id"
+        case locationId = "location_id"
     }
     
     init(
         id: String = UUID().uuidString,
         displayName: String,
         status: LocationStatus = .inStorage,
+        locationId: String = Warehouse.warehouse1.id,
         essentialsTypeId: String,
         itemIds: [String] = [],
         accessoriesId: String? = nil
@@ -67,5 +70,6 @@ struct EssentialsGroup: RDDocument {
         self.essentialsTypeId = essentialsTypeId
         self.itemIds = itemIds
         self.accessoriesId = accessoriesId
+        self.locationId = locationId
     }
 }

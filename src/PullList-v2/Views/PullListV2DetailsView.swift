@@ -22,15 +22,20 @@ struct PullListV2DetailsView: View {
     var body: some View {
         VStack(spacing: 16) {
             TopBar
-
-            if viewModel.isLoading && viewModel.rooms.isEmpty {
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
-            }
             
-            PullListDetailsSection(viewModel.pullListState)
+            ScrollView {
+                if viewModel.isLoading && viewModel.rooms.isEmpty {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                }
 
-            RoomsListSection
+                PrimaryImageView(image: viewModel.pullListState.image)
+
+                PullListDetailsSection(viewModel.pullListState)
+                    .padding(4)
+                
+                RoomsListSection
+            }
             
             Spacer()
             
@@ -94,12 +99,6 @@ extension PullListV2DetailsView {
                         .foregroundStyle(.red)
                     Text(viewModel.pullListState.address.getStreetAddress() ?? viewModel.pullListState.address.formattedAddress)
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 6)
-                        .stroke(Color(.separator), lineWidth: 3)
-                )
             },
             trailingView: {
                 HStack(spacing: 8) {
@@ -214,19 +213,17 @@ extension PullListV2DetailsView {
                 }
             }
             
-            ScrollView {
-                LazyVStack(spacing: 12) {
-                    ForEach(viewModel.rooms, id: \.id) { room in
-                        NavigationLink(value: NavigationDestination.pulllistRoomDetailView(
+            LazyVStack(spacing: 12) {
+                ForEach(viewModel.rooms, id: \.id) { room in
+                    NavigationLink(value: NavigationDestination.pulllistRoomDetailView(
+                        items: viewModel.itemsByRoom[room.id] ?? [],
+                        room: room
+                    )) {
+                        PullListRoomListItem(
+                            room: room,
                             items: viewModel.itemsByRoom[room.id] ?? [],
-                            room: room
-                        )) {
-                            PullListRoomListItem(
-                                room: room,
-                                items: viewModel.itemsByRoom[room.id] ?? [],
-                                action: handleAction(_:)
-                            )
-                        }
+                            action: handleAction(_:)
+                        )
                     }
                 }
             }

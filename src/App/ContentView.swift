@@ -19,20 +19,20 @@ struct ContentView: View {
                     .environment(coordinator)
             }
             
-            Tab("Item Inventory (V2)", systemImage: "chair.lounge.fill", value: NavigationCoordinator.Tab.itemInventory) {
+            Tab("Inventory (V2)", systemImage: "chair.lounge.fill", value: NavigationCoordinator.Tab.itemInventory) {
                 ItemDocumentListViewV2(path: $coordinator.itemInventoryPath)
-                    .tint(.blue)
-                    .environment(coordinator)
-            }
-            
-            Tab("Options (V2)", systemImage: "ellipsis.circle", value: NavigationCoordinator.Tab.optionsV2) {
-                OptionsViewV2()
                     .tint(.blue)
                     .environment(coordinator)
             }
             
             Tab("Installed (V2)", systemImage: "list.bullet.clipboard.fill", value: NavigationCoordinator.Tab.installedListV2) {
                 InstalledListDocumentListViewV2(path: $coordinator.installedListV2Path)
+                    .tint(.blue)
+                    .environment(coordinator)
+            }
+            
+            Tab("Options (V2)", systemImage: "ellipsis.circle", value: NavigationCoordinator.Tab.optionsV2) {
+                OptionsViewV2()
                     .tint(.blue)
                     .environment(coordinator)
             }

@@ -6,6 +6,20 @@
 //
 
 import Foundation
+import SwiftUI
+
+enum NewEnglandState: String, Filterable, CaseIterable, Codable {
+    case ct = "CT"
+    case ma = "MA"
+    case me = "ME"
+    case nh = "NH"
+    case ri = "RI"
+    case vt = "VT"
+
+    var title: String { rawValue }
+    var icon: String? { nil }
+    var color: Color? { nil }
+}
 
 struct InstallingSession: Codable, Hashable {
     let userId: String
@@ -38,6 +52,7 @@ struct PullListV2: RDDocument {
 
     var roomIds: [String]
     var installingSession: InstallingSession?
+    var image: RDImage?
 
     init(
         id: String = UUID().uuidString,
@@ -52,7 +67,8 @@ struct PullListV2: RDDocument {
         clientId: String,
 
         roomIds: [String] = [],
-        installingSession: InstallingSession? = nil
+        installingSession: InstallingSession? = nil,
+        image: RDImage? = nil
     ) {
         self.id = id
         self.listType = listType
@@ -67,6 +83,7 @@ struct PullListV2: RDDocument {
         self.clientId = clientId
         self.roomIds = roomIds
         self.installingSession = installingSession
+        self.image = image
     }
     
     // TODO: - Init from Existing List (need to re-implement for InstalledListV2
@@ -99,5 +116,6 @@ struct PullListV2: RDDocument {
         case clientId = "client_id"
         case roomIds = "room_ids"
         case installingSession = "installing_session"
+        case image
     }
 }

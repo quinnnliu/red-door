@@ -13,6 +13,7 @@ struct PullListDocumentListViewV2: View {
 
     @State private var searchFocused: Bool = false
     @State private var showFromInstalledCover: Bool = false
+    @State private var showFilterSheet: Bool = false
 
     init(
         path: Binding<NavigationPath>
@@ -39,6 +40,12 @@ struct PullListDocumentListViewV2: View {
             .fullScreenCover(isPresented: $showFromInstalledCover) {
                 // TODO: add from installed list functionality
             }
+            .sheet(isPresented: $showFilterSheet) {
+                PullListV2DocumentFilterSheet(
+                    initialFilters: viewModel.activeFilters,
+                    action: handleAction(_:)
+                )
+            }
             .rootNavigationDestinationsV2(path: $path)
         }
     }
@@ -51,10 +58,14 @@ extension PullListDocumentListViewV2 {
     private var TopBar: some View {
         TopAppBar(
             leadingView: {
-                Text("Pull Lists")
-                    .font(.system(.title2, design: .default))
-                    .bold()
-                    .foregroundStyle(.red)
+                HStack(spacing: 8) {
+                    Text("Pull Lists")
+                        .font(.system(.title2, design: .default))
+                        .bold()
+                        .foregroundStyle(.red)
+                    
+                    FilterButton(viewModel.activeFiltersApplied)
+                }
             },
             header: {
                 EmptyView()
@@ -93,6 +104,20 @@ extension PullListDocumentListViewV2 {
         }
     }
 
+    // MARK: FilterButton
+
+    private func FilterButton(_ filtersActive: Bool = false) -> some View {
+        RDButton(
+            variant: filtersActive ? .red : .secondary,
+            size: .icon,
+            leadingIcon: SFSymbols.sliderHorizontal3,
+            iconBold: true
+        ) {
+            showFilterSheet = true
+        }
+        .clipShape(.circle)
+    }
+
     // MARK: PullList List
 
     private var PullListListSection: some View {
@@ -112,6 +137,12 @@ private extension PullListDocumentListViewV2 {
         switch action {
         case let searchAction as SearchBarAction:
             Task { await viewModel.handleSearchAction(searchAction) }
+        case let filterAction as DocumentFilterSheetAction:
+            Task {
+                switch filterAction {
+                case .applyFilters(let filters): await viewModel.setFilters(filters)
+                }
+            }
         default:
             print("ERROR: Untracked action")
         }

@@ -198,7 +198,7 @@ struct InstallPullListRoomListItem: View {
                     if let color = item.color.color {
                         Text("•")
                         Image(systemName: SFSymbols.circleFill)
-                            .foregroundStyle(item.color.color ?? .gray)
+                            .foregroundStyle(color)
                     }
                 }
                 .font(.caption2)

@@ -39,7 +39,15 @@ final class CreatePullListViewModelV2 {
         isLoading = true
         defer { isLoading = false }
         do {
-            try pullListRepo.set(document: pullListState)
+            if let image = pullListState.image {
+                var imageToUpload = image
+                imageToUpload.objectId = pullListState.id
+                pullListState.image = try await FirebaseImageManager.shared.updateImage(imageToUpload, resultImageType: .listV2)
+            }
+
+            var updatedPullList = pullListState
+            updatedPullList.address.town = pullListState.address.town.lowercased()
+            try pullListRepo.set(document: updatedPullList)
             
             let roomRepo = RoomRepository(list: pullListState)
             

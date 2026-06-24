@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct CreatePullListViewV2: View {
+    typealias ImageEditorAction = PrimaryImageEditor.ImageEditorAction
+
     @Environment(\.dismiss) private var dismiss
-    
+
     @State private var viewModel: CreatePullListViewModelV2 = .init()
     
     @State private var showAddressSheet: Bool = false
@@ -27,7 +29,11 @@ struct CreatePullListViewV2: View {
         ZStack {
             VStack(spacing: 12) {
                 TopBar
-                
+
+                PrimaryImageEditor(image: viewModel.pullListState.image) { result in
+                    handleImageAction(result)
+                }
+
                 DatePicker(
                     selection: $installDate,
                     displayedComponents: [.date]
@@ -106,10 +112,10 @@ struct CreatePullListViewV2: View {
             }
             
             if viewModel.isLoading {
+                Color.black.opacity(0.3).ignoresSafeArea()
                 ProgressView("Creating Pull List...")
                     .padding()
                     .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
-                Color.black.opacity(0.3).ignoresSafeArea()
             }
         }
     }
@@ -189,9 +195,14 @@ struct CreatePullListViewV2: View {
 }
 
 extension CreatePullListViewV2 {
-    func handleAction(_ actionArgument: Any?) {
-        guard actionArgument != nil else { return }
-        
+    func handleImageAction(_ actionArgument: Any?) {
+        guard let action = actionArgument as? ImageEditorAction else { return }
+        switch action {
+        case .newImage(let image):
+            viewModel.pullListState.image = image
+        case .deleteImage:
+            viewModel.pullListState.image = nil
+        }
     }
 }
 

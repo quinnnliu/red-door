@@ -182,7 +182,7 @@ struct PullListRoomDetailsView: View {
                     if let color = item.color.color {
                         Text("•")
                         Image(systemName: SFSymbols.circleFill)
-                            .foregroundColor(item.color.color ?? .gray)
+                            .foregroundColor(color)
                     }
                 }
                 .font(.caption)
