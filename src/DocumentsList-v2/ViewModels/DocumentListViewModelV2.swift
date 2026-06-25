@@ -63,7 +63,7 @@ final class DocumentListViewModelV2<T: RDDocument> {
     /// Search by text and reload from page 1.
     func search(text: String) async {
         if !text.isEmpty {
-            await updateFilter(key: T.searchField, value: text.lowercased())
+            await updateFilter(key: T.searchField, value: T.normalizeSearchText(text))
         }
     }
 
@@ -73,7 +73,7 @@ final class DocumentListViewModelV2<T: RDDocument> {
         case .search(let text):
             await search(text: text)
         case .cancel:
-            await refresh()
+            await removeFilter(key: T.searchField)
         }
     }
 
