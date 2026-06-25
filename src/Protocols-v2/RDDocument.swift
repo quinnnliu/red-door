@@ -12,4 +12,12 @@ protocol RDDocument: Codable, Hashable, Identifiable {
     static var collectionName: String { get }
     static var orderByField: String { get }
     static var searchField: String { get }
+
+    static func normalizeSearchText(_ text: String) -> String
+}
+
+extension RDDocument {
+    static func normalizeSearchText(_ text: String) -> String {
+        text.lowercased()
+    }
 }

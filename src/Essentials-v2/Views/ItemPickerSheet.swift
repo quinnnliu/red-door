@@ -10,6 +10,8 @@ import SwiftUI
 struct ItemPickerSheet: View {
     @State private var listViewModel: DocumentListViewModelV2<ItemV2>
     @State private var searchFocused: Bool = false
+    @State private var showFilterSheet: Bool = false
+    @State private var activeFilters: [String: AnyHashable] = [:]
 
     private let title: String
     private let selectedIds: Set<String>
@@ -47,6 +49,9 @@ struct ItemPickerSheet: View {
         .task {
             await listViewModel.refresh()
         }
+        .sheet(isPresented: $showFilterSheet) {
+            ItemV2DocumentFilterSheet(action: handleAction(_:), initialFilters: activeFilters)
+        }
     }
 }
 
@@ -57,17 +62,25 @@ private extension ItemPickerSheet {
     var TopBar: some View {
         TopAppBar(
             leadingView: {
-                Text(title)
-                    .font(.system(.title2, design: .default))
-                    .bold()
-                    .foregroundStyle(.red)
+                HStack(spacing: 8) {
+                    Text(title)
+                        .font(.system(.title2, design: .default))
+                        .bold()
+                        .foregroundStyle(.red)
+                    
+                    RDButton(variant: activeFilters.isEmpty ? .secondary : .red, size: .icon, leadingIcon: SFSymbols.sliderHorizontal3, iconBold: true, fullWidth: false) {
+                        showFilterSheet = true
+                    }
+                }
             },
             header: {
                 EmptyView()
             },
             trailingView: {
                 RDButton(variant: .outline, size: .icon, leadingIcon: SFSymbols.magnifyingglass, iconBold: true, fullWidth: false) {
-                    searchFocused = true
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        searchFocused = true
+                    }
                 }
             }
         )
@@ -130,6 +143,12 @@ private extension ItemPickerSheet {
         switch action {
         case let searchAction as SearchBarAction:
             Task { await listViewModel.handleSearchAction(searchAction) }
+        case let filterAction as DocumentFilterSheetAction:
+            switch filterAction {
+            case .applyFilters(let filters):
+                activeFilters = filters
+                Task { await listViewModel.setFilters(filters) }
+            }
         default:
             print("ERROR: Untracked action")
         }

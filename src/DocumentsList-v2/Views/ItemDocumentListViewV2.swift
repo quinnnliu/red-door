@@ -114,7 +114,9 @@ extension ItemDocumentListViewV2 {
         HStack(spacing: 8) {
             Group {
                 RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", iconBold: true, fullWidth: false) {
-                    searchFocused = true
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        searchFocused = true
+                    }
                 }
 
                 RDButton(variant: .outline, size: .icon, leadingIcon: "qrcode.viewfinder", iconBold: true, fullWidth: false) {

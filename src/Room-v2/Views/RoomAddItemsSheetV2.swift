@@ -66,7 +66,9 @@ extension RoomAddItemsSheetV2 {
             },
             trailingView: {
                 RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", iconBold: true, fullWidth: false) {
-                    searchFocused = true
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        searchFocused = true
+                    }
                 }
             }
         )
@@ -124,7 +126,7 @@ private extension RoomAddItemsSheetV2 {
             case .search(let text):
                 Task { await viewModel.search(text: text) }
             case .cancel:
-                Task { await viewModel.refresh() }
+                Task { await viewModel.removeFilter(key: ItemV2.searchField) }
             }
         case let filterAction as ItemInventoryFilterViewAction:
             switch filterAction {

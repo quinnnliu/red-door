@@ -36,6 +36,10 @@ struct PullListV2: RDDocument {
     static let orderByField: String = "created_date"
     static let searchField: String = "address_id"
 
+    static func normalizeSearchText(_ text: String) -> String {
+        Address.normalize(text)
+    }
+
     var id: String
     var listType: DocumentType // TODO: remove this, not used anymore
 

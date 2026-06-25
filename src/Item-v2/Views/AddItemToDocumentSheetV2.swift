@@ -64,7 +64,9 @@ extension AddItemToDocumentSheetV2 {
             },
             trailingView: {
                 RDButton(variant: .outline, size: .icon, leadingIcon: SFSymbols.magnifyingglass, iconBold: true, fullWidth: false) {
-                    searchFocused = true
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        searchFocused = true
+                    }
                 }
             }
         )
@@ -119,7 +121,7 @@ private extension AddItemToDocumentSheetV2 {
             case .search(let text):
                 Task { await viewModel.search(text: text) }
             case .cancel:
-                Task { await viewModel.refresh() }
+                Task { await viewModel.removeFilter(key: ItemV2.searchField) }
             }
         default:
             print("[ERROR]: Untracked action")
