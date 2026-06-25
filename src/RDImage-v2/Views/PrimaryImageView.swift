@@ -22,14 +22,14 @@ enum ImageSourceEnum: String, Identifiable {
 struct PrimaryImageView: View {
     let image: RDImage?
     
-    @State private var selectedImage: RDImage?
+    @State private var expandedImage: RDImage?
 
     var body: some View {
         Button {
             if let uiImage = image?.uiImage {
-                selectedImage = RDImage(uiImage: uiImage)
+                expandedImage = RDImage(uiImage: uiImage)
             } else if image?.imageURL != nil {
-                selectedImage = image
+                expandedImage = image
             }
         } label: {
             PrimaryImageContent(image, editable: false)
@@ -37,8 +37,8 @@ struct PrimaryImageView: View {
         .frame(width: Constants.screenWidthPadding / 2, height: Constants.screenWidthPadding / 2)
         .clipped()
         .expandImageOverlay(image)
-        .fullScreenCover(item: $selectedImage) { _ in
-            PrimaryImageOverlay(selectedImage)
+        .sheet(item: $expandedImage) { image in
+            PrimaryImageOverlay(image)
         }
         .contentShape(Rectangle())
         .cornerRadius(12)
@@ -227,7 +227,7 @@ private struct PrimaryImageOverlay: View {
                 }
             }
             
-            BackButton()
+            BackButton(icon: SFSymbols.xmark)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .frameTopPadding()
                 .frameHorizontalPadding()

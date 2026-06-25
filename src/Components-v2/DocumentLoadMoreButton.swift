@@ -29,6 +29,7 @@ struct DocumentLoadMoreButton: View {
                 }
             } else {
                 Text(noMoreLabel)
+                    .padding(.top, 12)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

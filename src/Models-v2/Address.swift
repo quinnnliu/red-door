@@ -12,7 +12,21 @@ import MapKit
 struct Address: Codable, Hashable {
     var id: String // address string that's lowercased, trimmed, not punctuation
     var formattedAddress: String
+    var state: String
+    var town: String
     var isWarehouse: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case formattedAddress
+        case state
+        case town
+        case isWarehouse
+    }
+
+    static func firestoreKey(_ key: CodingKeys) -> String {
+        "address.\(key.stringValue)"
+    }
 //    var coordinates: GeoPoint?
 
     // MARK: Init
@@ -32,6 +46,8 @@ struct Address: Codable, Hashable {
 
         formattedAddress = Address.formattedAddress(street: street, city: city, state: state, zipcode: zipcode, country: country, unit: unit)
 
+        self.state = state
+        self.town = city
         self.isWarehouse = isWarehouse
     }
 
@@ -42,6 +58,8 @@ struct Address: Codable, Hashable {
         if let unit = unit {
             formattedAddress += ", " + unit
         }
+        self.state = ""
+        self.town = ""
         self.isWarehouse = isWarehouse
     }
 
@@ -61,6 +79,8 @@ struct Address: Codable, Hashable {
         id = Address.normalize([street, city, state, zipcode, country].joined())
 
         formattedAddress = Address.formattedAddress(street: street, city: city, state: state, zipcode: zipcode, country: country, unit: unit)
+        self.state = state
+        self.town = city
         self.isWarehouse = isWarehouse
     }
 

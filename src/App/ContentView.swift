@@ -13,31 +13,43 @@ struct ContentView: View {
 
     var body: some View {
         TabView(selection: $coordinator.selectedTab) {
-            Tab("Pull Lists (V2)", systemImage: "pencil.and.list.clipboard", value: NavigationCoordinator.Tab.pullListV2) {
+            Tab("Pull Lists",
+                systemImage: "pencil.and.list.clipboard",
+                value: NavigationCoordinator.Tab.pullListV2
+            ) {
                 PullListDocumentListViewV2(path: $coordinator.pullListV2Path)
                     .tint(.blue)
                     .environment(coordinator)
             }
             
-            Tab("Item Inventory (V2)", systemImage: "chair.lounge.fill", value: NavigationCoordinator.Tab.itemInventory) {
+            Tab("Inventory",
+                systemImage: "chair.lounge.fill",
+                value: NavigationCoordinator.Tab.itemInventory
+            ) {
                 ItemDocumentListViewV2(path: $coordinator.itemInventoryPath)
                     .tint(.blue)
                     .environment(coordinator)
             }
             
-            Tab("Options (V2)", systemImage: "ellipsis.circle", value: NavigationCoordinator.Tab.optionsV2) {
-                OptionsViewV2()
-                    .tint(.blue)
-                    .environment(coordinator)
-            }
-            
-            Tab("Installed (V2)", systemImage: "list.bullet.clipboard.fill", value: NavigationCoordinator.Tab.installedListV2) {
+            Tab("Installed",
+                systemImage: "list.bullet.clipboard.fill",
+                value: NavigationCoordinator.Tab.installedListV2
+            ) {
                 InstalledListDocumentListViewV2(path: $coordinator.installedListV2Path)
                     .tint(.blue)
                     .environment(coordinator)
             }
+            
+            Tab("Options",
+                systemImage: "ellipsis.circle",
+                value: NavigationCoordinator.Tab.optionsV2
+            ) {
+                OptionsViewV2()
+                    .tint(.blue)
+                    .environment(coordinator)
+            }
 
-            Tab("Pull (v1)", systemImage: "pencil.and.list.clipboard", value: NavigationCoordinator.Tab.pullList) {
+            Tab("Pull (V1)", systemImage: "pencil.and.list.clipboard", value: NavigationCoordinator.Tab.pullList) {
                 PullListDocumentView(path: $coordinator.pullListPath)
                     .tint(.blue)
                     .environment(coordinator)
