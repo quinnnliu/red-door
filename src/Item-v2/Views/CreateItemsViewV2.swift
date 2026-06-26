@@ -40,20 +40,22 @@ struct CreateItemsViewV2: View {
                     )
 
                     ItemCountPicker
-                    
-                    RDButton(
-                        variant: .default,
-                        size: .default,
-                        leadingIcon: "plus",
-                        label: "Add Items to Inventory"
-                    ) {
-                        Task {
-                            await viewModel.createItems()
-                            dismiss()
-                        }
-                    }
                 }
                 .ignoresSafeArea(.keyboard)
+                
+                Spacer()
+                
+                RDButton(
+                    variant: .default,
+                    size: .default,
+                    leadingIcon: "plus",
+                    label: "Add Items to Inventory"
+                ) {
+                    Task {
+                        await viewModel.createItems()
+                        dismiss()
+                    }
+                }
             }
             .toolbar(.hidden)
             .frameTop()

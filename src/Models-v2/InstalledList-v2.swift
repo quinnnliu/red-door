@@ -8,12 +8,11 @@
 import Foundation
 
 struct InstalledListV2: RDDocument {
-    static let collectionName: String = "installed_list_V2"
+    static let collectionName: String = "installed_list_v2"
     static let orderByField: String = "uninstall_date"
     static let searchField: String = "address_id"
 
     var id: String
-    var listType: DocumentType // TODO: get rid of this field
     var address: Address
     var addressId: String
     var displayName: String {
@@ -27,7 +26,6 @@ struct InstalledListV2: RDDocument {
 
     init(from pullList: PullListV2) {
         self.id = pullList.id
-        self.listType = .installedListV2
         self.address = pullList.address
         self.addressId = pullList.addressId
         self.createdDate = pullList.createdDate
@@ -39,7 +37,6 @@ struct InstalledListV2: RDDocument {
 
     enum CodingKeys: String, CodingKey {
         case id, address
-        case listType = "list_type"
         case addressId = "address_id"
         case createdDate = "created_date"
         case installDate = "install_date"

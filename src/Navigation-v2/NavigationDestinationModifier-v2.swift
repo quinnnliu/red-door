@@ -28,11 +28,11 @@ struct NavigationDestinationsModifierV2: ViewModifier {
                 case .installedListDetailView(let list):
                     Text(list.displayName)
                 case .essentialsGroupDetailView(let group):
-                    Text(group.displayName)
+                    EssentialsGroupDetailView(group: group)
                 case .accessoriesDetailView(let accessories):
                     Text(accessories.displayName)
-                default:
-                    Text("UNHANDLED NAVIGATION DESTINATION")
+                case .addItemToDocumentDetailView(let context):
+                    AddItemToDocumentDetailView(context: context)
                 }
             }
     }

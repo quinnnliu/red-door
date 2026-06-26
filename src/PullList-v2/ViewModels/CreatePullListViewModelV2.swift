@@ -22,7 +22,6 @@ final class CreatePullListViewModelV2 {
     init() {
         self.pullListState = PullListV2(
             id: UUID().uuidString,
-            listType: .pullListV2,
             address: Address(),
             addressId: "",
             createdDate: "",

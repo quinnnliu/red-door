@@ -33,6 +33,8 @@ struct ItemV2: RDDocument {
     var attentionDescription: String?
     var description: String
     var essentialGroupId: String?
+    var itemNumber: Int
+    var nickname: String?
 
     init(
         id: String,
@@ -53,7 +55,9 @@ struct ItemV2: RDDocument {
         attention: Bool,
         attentionDescription: String? = nil,
         description: String,
-        essentialGroupId: String? = nil
+        essentialGroupId: String? = nil,
+        itemNumber: Int = 0,
+        nickname: String? = nil
     ) {
         self.id = id
         self.modelId = modelId
@@ -75,6 +79,8 @@ struct ItemV2: RDDocument {
         self.attentionDescription = attentionDescription
         self.description = description
         self.essentialGroupId = essentialGroupId
+        self.itemNumber = itemNumber
+        self.nickname = nickname
     }
 
     init(item: ItemV2) {
@@ -98,6 +104,8 @@ struct ItemV2: RDDocument {
         self.attentionDescription = item.attentionDescription
         self.description = item.description
         self.essentialGroupId = item.essentialGroupId
+        self.itemNumber = item.itemNumber
+        self.nickname = item.nickname
     }
 
     enum CodingKeys: String, CodingKey {
@@ -110,6 +118,8 @@ struct ItemV2: RDDocument {
         case purchaseLocation = "purchase_location"
         case datePurchased = "date_purchased"
         case essentialGroupId = "essential_group_id"
+        case itemNumber = "item_number"
+        case nickname
         case primaryImage = "primary_image"
         case secondaryImages = "secondary_images"
         case displayName = "display_name"

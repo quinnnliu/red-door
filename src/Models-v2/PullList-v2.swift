@@ -8,31 +8,10 @@
 import Foundation
 import SwiftUI
 
-enum NewEnglandState: String, Filterable, CaseIterable, Codable {
-    case ct = "CT"
-    case ma = "MA"
-    case me = "ME"
-    case nh = "NH"
-    case ri = "RI"
-    case vt = "VT"
 
-    var title: String { rawValue }
-    var icon: String? { nil }
-    var color: Color? { nil }
-}
-
-struct InstallingSession: Codable, Hashable {
-    let userId: String
-    let startedAt: Date
-
-    enum CodingKeys: String, CodingKey {
-        case userId = "user_id"
-        case startedAt = "started_at"
-    }
-}
 
 struct PullListV2: RDDocument {
-    static let collectionName: String = "pull_list_V2"
+    static let collectionName: String = "pull_list_v2"
     static let orderByField: String = "created_date"
     static let searchField: String = "address_id"
 
@@ -41,7 +20,6 @@ struct PullListV2: RDDocument {
     }
 
     var id: String
-    var listType: DocumentType // TODO: remove this, not used anymore
 
     var address: Address
     var addressId: String
@@ -60,7 +38,6 @@ struct PullListV2: RDDocument {
 
     init(
         id: String = UUID().uuidString,
-        listType: DocumentType = .pullListV2,
 
         address: Address,
         addressId: String,
@@ -75,7 +52,6 @@ struct PullListV2: RDDocument {
         image: RDImage? = nil
     ) {
         self.id = id
-        self.listType = listType
 
         self.address = address
         self.addressId = address.id
@@ -112,7 +88,6 @@ struct PullListV2: RDDocument {
     
     enum CodingKeys: String, CodingKey {
         case id, address
-        case listType = "list_type"
         case addressId = "address_id"
         case createdDate = "created_date"
         case installDate = "install_date"
@@ -121,5 +96,28 @@ struct PullListV2: RDDocument {
         case roomIds = "room_ids"
         case installingSession = "installing_session"
         case image
+    }
+}
+
+enum NewEnglandState: String, Filterable, CaseIterable, Codable {
+    case ct = "CT"
+    case ma = "MA"
+    case me = "ME"
+    case nh = "NH"
+    case ri = "RI"
+    case vt = "VT"
+
+    var title: String { rawValue }
+    var icon: String? { nil }
+    var color: Color? { nil }
+}
+
+struct InstallingSession: Codable, Hashable {
+    let userId: String
+    let startedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case userId = "user_id"
+        case startedAt = "started_at"
     }
 }

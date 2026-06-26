@@ -34,6 +34,7 @@ struct ItemDocumentListViewV2: View {
     @State private var filterDocumentSheetType: InventorySegment? = nil
     @State private var showScannerSheet: Bool = false
     @State private var scannedItemId: String? = nil
+    @State private var showCopyItemSheet: Bool = false
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -71,6 +72,9 @@ struct ItemDocumentListViewV2: View {
             .sheet(item: $filterDocumentSheetType) { type in
                 type.filterSheet(action: handleAction(_:), initialFilters: activeFilters(for: type))
                     .presentationDetents([.large])
+            }
+            .fullScreenCover(isPresented: $showCopyItemSheet) {
+                Text("Item picker coming soon")
             }
             .sheet(isPresented: $showScannerSheet) {
                 ItemScannerView(scannedItemId: $scannedItemId)
@@ -123,7 +127,7 @@ extension ItemDocumentListViewV2 {
                     showScannerSheet = true
                 }
 
-                CreateDocumentMenu
+                CreateButton
             }
             .foregroundColor(.red)
         }
@@ -158,22 +162,30 @@ extension ItemDocumentListViewV2 {
         }
     }
 
-    // MARK: - CreateDocumentMenu
-    private var CreateDocumentMenu: some View {
-        Menu {
-            Button("Item", systemImage: SFSymbols.couchFill) {
-                createDocumentSheetType = .items
+    // MARK: - CreateButton
+    @ViewBuilder
+    private var CreateButton: some View {
+        switch selectedSegment {
+        case .items:
+            Menu {
+                Button("New Item", systemImage: SFSymbols.couchFill) {
+                    createDocumentSheetType = .items
+                }
+                Button("Create from Existing", systemImage: "doc.on.doc") {
+                    showCopyItemSheet = true
+                }
+            } label: {
+                RDButton(variant: .outline, size: .icon, leadingIcon: "plus", iconBold: true, fullWidth: false) { }
+                    .allowsHitTesting(false)
             }
-
-            Button("Essentials", systemImage: SFSymbols.starCircleFill) {
+        case .essentials:
+            RDButton(variant: .outline, size: .icon, leadingIcon: "plus", iconBold: true, fullWidth: false) {
                 createDocumentSheetType = .essentials
             }
-
-            Button("Accessories", systemImage: SFSymbols.booksVerticalFill) {
+        case .accessories:
+            RDButton(variant: .outline, size: .icon, leadingIcon: "plus", iconBold: true, fullWidth: false) {
                 createDocumentSheetType = .accessories
             }
-        } label: {
-            RDButton(variant: .outline, size: .icon, leadingIcon: "plus", iconBold: true, fullWidth: false) { }.allowsHitTesting(false)
         }
     }
 

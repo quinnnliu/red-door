@@ -11,7 +11,6 @@ import SwiftUI
 final class CreateEssentialsGroupViewModel {
     private let essentialsRepo: EssentialsRepository = .init()
     private let essentialsGroupTypeRepo: EssentialsGroupTypeRepository = .init()
-    private let itemRepo: ItemRepository = .init()
 
     // MARK: - Group Type
     var groupTypes: [EssentialsGroupType] = []
@@ -20,16 +19,12 @@ final class CreateEssentialsGroupViewModel {
     var showNewTypeField: Bool = false
     var showGroupTypePicker: Bool = false
 
-    var selectedItemIds: Set<String> = []
-    var selectedItems: [ItemV2] = []
-    var showItemPickerSheet: Bool = false
-
+    // MARK: - Accessories
     var selectedAccessory: Accessories? = nil
-    var showAccessoriesPickerSheet: Bool = false
-
-    var isLoading: Bool = false
     var showAddAccessoriesSheet: Bool = false
-    
+
+    // MARK: - State
+    var isLoading: Bool = false
     var showAlert: Bool = false
     var alertText: String = ""
 
@@ -70,7 +65,6 @@ final class CreateEssentialsGroupViewModel {
         let group = EssentialsGroup(
             displayName: groupType.displayName,
             essentialsTypeId: groupType.id,
-            itemIds: Array(selectedItemIds),
             accessoriesId: selectedAccessory?.id
         )
 
@@ -78,70 +72,17 @@ final class CreateEssentialsGroupViewModel {
         defer { isLoading = false }
 
         do {
-            let _ = try await essentialsRepo.db.runTransaction({ (transaction, errorPointer) -> Any? in
-                do {
-                    let groupItems = try self.itemRepo.get(
-                        ids: group.itemIds,
-                        transaction: transaction
-                    )
-
-                    if let installedItem = groupItems.first(where: { $0.status == .inInstalledList }) {
-                        throw CreateEssentialsError.itemInstalled(installedItem.displayName)
-                    }
-
-                    for item in groupItems {
-                        self.itemRepo.update(
-                            id: item.id,
-                            fields: [ItemV2.CodingKeys.essentialGroupId.stringValue: group.id],
-                            transaction: transaction
-                        )
-                    }
-
-                    try self.essentialsRepo.set(
-                        document: group,
-                        id: group.id,
-                        transaction: transaction
-                    )
-
-                    return nil
-                } catch {
-                    errorPointer?.pointee = error as NSError
-                    return nil
-                }
-            })
+            try essentialsRepo.set(document: group)
             return true
-        } catch let error as CreateEssentialsError {
-            if case .itemInstalled(let name) = error {
-                alertText = "Item \"\(name)\" is currently installed and cannot be added to an essentials group."
-                showAlert = true
-            }
-            return false
         } catch {
             print("Error creating essentials group: \(error)")
             return false
         }
     }
 
-    // MARK: - Selection Helpers
-
-    func addItem(_ item: ItemV2) {
-        guard !selectedItemIds.contains(item.id) else { return }
-        selectedItemIds.insert(item.id)
-        selectedItems.append(item)
-    }
-
-    func removeItem(_ item: ItemV2) {
-        selectedItemIds.remove(item.id)
-        selectedItems.removeAll { $0.id == item.id }
-    }
+    // MARK: - Accessories
 
     func clearAccessory() {
         selectedAccessory = nil
-    }
-}
-
-extension CreateEssentialsGroupViewModel {
-    enum CreateEssentialsError: Error {
-        case itemInstalled(String)
     }
 }

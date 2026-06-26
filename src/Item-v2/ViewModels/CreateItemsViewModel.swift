@@ -59,18 +59,27 @@ final class CreateItemsViewModel {
     }
     
     func createItems() async {
+        guard !isLoading else { return }
+        isLoading = true
+        defer { isLoading = false }
+
         let resolvedModelId = modelId
         var items: [ItemV2] = []
         itemState.nameLowercased = itemState.displayName.lowercased()
-        for _ in (0..<itemCount) {
-            var newItem = ItemV2(item: itemState)
-            newItem.modelId = resolvedModelId
-            newItem.primaryImage.objectId = newItem.id
-            items.append(newItem)
-        }
 
-        isLoading = true
-        defer { isLoading = false }
+        do {
+            let startingNumber = try await itemRepo.maxItemNumber(forModelId: resolvedModelId)
+            for i in 0..<itemCount {
+                var newItem = ItemV2(item: itemState)
+                newItem.modelId = resolvedModelId
+                newItem.itemNumber = startingNumber + i + 1
+                newItem.primaryImage.objectId = newItem.id
+                items.append(newItem)
+            }
+        } catch {
+            print("error fetching max item number for modelId \(resolvedModelId): \(error.localizedDescription)")
+            return
+        }
 
         do {
             let updatedItems: [ItemV2] = try await withThrowingTaskGroup(of: ItemV2.self) { group in

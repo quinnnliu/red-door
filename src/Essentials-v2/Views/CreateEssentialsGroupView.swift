@@ -21,7 +21,6 @@ struct CreateEssentialsGroupView: View {
                 ScrollView {
                     VStack(spacing: 16) {
                         GroupTypeSection
-                        SelectedItemsSection
                         SelectedAccessoriesSection
 
                         RDButton(
@@ -60,11 +59,6 @@ struct CreateEssentialsGroupView: View {
                 documents: viewModel.groupTypes,
                 action: handleAction(_:)
             )
-        }
-        .sheet(isPresented: $viewModel.showItemPickerSheet) {
-            ItemPickerSheet(selectedIds: viewModel.selectedItemIds) { item in
-                viewModel.addItem(item)
-            }
         }
         .sheet(isPresented: $viewModel.showAddAccessoriesSheet) {
             // TODO: AddAccessoriesToEssentialsSheet
@@ -117,8 +111,41 @@ private extension CreateEssentialsGroupView {
 private extension CreateEssentialsGroupView {
     var GroupTypeSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Group Type")
-                .foregroundStyle(.red)
+            HStack {
+                Text("Group Type")
+                    .foregroundStyle(.red)
+
+                Spacer()
+
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        viewModel.showNewTypeField.toggle()
+                        if !viewModel.showNewTypeField { viewModel.newGroupTypeName = "" }
+                    }
+                } label: {
+                    Label(
+                        viewModel.showNewTypeField ? "Cancel" : "New Type",
+                        systemImage: viewModel.showNewTypeField ? "xmark" : "plus"
+                    )
+                    .font(.subheadline)
+                    .foregroundStyle(.red)
+                }
+                .buttonStyle(.plain)
+            }
+
+            if viewModel.showNewTypeField {
+                HStack(spacing: 8) {
+                    TextField("New type name", text: $viewModel.newGroupTypeName)
+                        .padding(10)
+                        .background(Color(.systemGray5))
+                        .cornerRadius(8)
+
+                    RDButton(variant: .default, size: .sm, label: "Create", fullWidth: false) {
+                        Task { await viewModel.createAndSelectNewGroupType() }
+                    }
+                    .disabled(viewModel.newGroupTypeName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
 
             if let selected = viewModel.selectedGroupType {
                 HStack {
@@ -137,79 +164,6 @@ private extension CreateEssentialsGroupView {
                 RDButton(variant: .outline, size: .default, label: "Select Type", fullWidth: true) {
                     viewModel.showGroupTypePicker = true
                 }
-            }
-
-            if viewModel.showNewTypeField {
-                HStack(spacing: 8) {
-                    TextField("New type name", text: $viewModel.newGroupTypeName)
-                        .padding(10)
-                        .background(Color(.systemGray5))
-                        .cornerRadius(8)
-
-                    RDButton(variant: .default, size: .sm, label: "Create", fullWidth: false) {
-                        Task { await viewModel.createAndSelectNewGroupType() }
-                    }
-                    .disabled(viewModel.newGroupTypeName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-            }
-
-            Button {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    viewModel.showNewTypeField.toggle()
-                    if !viewModel.showNewTypeField { viewModel.newGroupTypeName = "" }
-                }
-            } label: {
-                Label(
-                    viewModel.showNewTypeField ? "Cancel" : "New Type",
-                    systemImage: viewModel.showNewTypeField ? "xmark" : "plus"
-                )
-                .font(.subheadline)
-                .foregroundStyle(.red)
-            }
-            .buttonStyle(.plain)
-        }
-    }
-}
-
-// MARK: - Selected Items Section
-
-private extension CreateEssentialsGroupView {
-    var SelectedItemsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("Items")
-                    .foregroundStyle(.red)
-                Spacer()
-                Text("\(viewModel.selectedItemIds.count) selected")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            if !viewModel.selectedItems.isEmpty {
-                VStack(spacing: 4) {
-                    ForEach(viewModel.selectedItems, id: \.id) { item in
-                        HStack {
-                            Text(item.displayName)
-                                .font(.body)
-                            Spacer()
-                            Button {
-                                viewModel.removeItem(item)
-                            } label: {
-                                Image(systemName: "xmark")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                        .padding(10)
-                        .background(Color(.systemGray5))
-                        .cornerRadius(8)
-                    }
-                }
-            }
-
-            RDButton(variant: .outline, size: .default, leadingIcon: "plus", label: "Add Items", fullWidth: true) {
-                viewModel.showItemPickerSheet = true
             }
         }
     }
@@ -242,7 +196,7 @@ private extension CreateEssentialsGroupView {
                 .cornerRadius(8)
             } else {
                 RDButton(variant: .outline, size: .default, leadingIcon: "plus", label: "Add Accessories", fullWidth: true) {
-                    viewModel.showAccessoriesPickerSheet = true
+                    viewModel.showAddAccessoriesSheet = true
                 }
             }
         }
