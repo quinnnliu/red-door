@@ -57,7 +57,7 @@ struct EssentialsGroupDetailView: View {
             }
         } message: {
             if let item = itemToRemove {
-                Text("Remove \(item.displayName) from \(viewModel.groupState.displayName)?")
+                Text("Remove \(item.displayName) from \(viewModel.groupState.label)?")
             }
         }
         .onAppear {
@@ -77,7 +77,7 @@ private extension EssentialsGroupDetailView {
                 BackButton()
             },
             header: {
-                Text(viewModel.groupState.displayName)
+                Text(viewModel.groupState.label)
                     .font(.headline)
                     .bold()
             },

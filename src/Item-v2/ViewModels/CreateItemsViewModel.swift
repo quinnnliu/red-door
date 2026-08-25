@@ -13,9 +13,11 @@ final class CreateItemsViewModel {
     
     // MARK: itemState
     var itemState: ItemV2
+    let templateState: ItemV2?
     private let modelUUID: String
 
     private var modelId: String {
+        if let templateState { return templateState.modelId }
         let parts = [
             itemState.displayName,
             itemState.type.rawValue,
@@ -38,9 +40,10 @@ final class CreateItemsViewModel {
     var selectedRDImage: RDImage?
     var isImageSelected: Bool
     
-    init() {
+    init(template: ItemV2? = nil) {
         self.modelUUID = UUID().uuidString
-        self.itemState = ItemV2(
+        self.templateState = template
+        self.itemState = template.map { ItemV2(item: $0) } ?? ItemV2(
             id: UUID().uuidString,
             modelId: "",
             displayName: "",

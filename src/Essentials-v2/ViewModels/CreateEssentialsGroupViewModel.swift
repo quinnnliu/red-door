@@ -23,6 +23,9 @@ final class CreateEssentialsGroupViewModel {
     var selectedAccessory: Accessories? = nil
     var showAddAccessoriesSheet: Bool = false
 
+    // MARK: - Nickname
+    var nickname: String = ""
+
     // MARK: - State
     var isLoading: Bool = false
     var showAlert: Bool = false
@@ -62,16 +65,18 @@ final class CreateEssentialsGroupViewModel {
     func createEssentialsGroup() async -> Bool {
         guard let groupType = selectedGroupType else { return false }
 
-        let group = EssentialsGroup(
-            displayName: groupType.displayName,
-            essentialsTypeId: groupType.id,
-            accessoriesId: selectedAccessory?.id
-        )
-
         isLoading = true
         defer { isLoading = false }
 
         do {
+            let maxNumber = try await essentialsRepo.maxGroupNumber(forTypeId: groupType.id)
+            let group = EssentialsGroup(
+                displayName: groupType.displayName,
+                essentialsTypeId: groupType.id,
+                accessoriesId: selectedAccessory?.id,
+                groupNumber: maxNumber + 1,
+                nickname: nickname.isEmpty ? nil : nickname
+            )
             try essentialsRepo.set(document: group)
             return true
         } catch {

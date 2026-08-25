@@ -66,7 +66,6 @@ struct ItemDetailView: View {
 
                         ModelInformation()
                     }
-                    .padding(.top, 4)
                     .frameHorizontalPadding()
                 }
             }

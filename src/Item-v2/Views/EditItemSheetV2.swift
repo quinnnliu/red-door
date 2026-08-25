@@ -97,7 +97,10 @@ struct EditItemSheetV2: View {
                 .clipShape(Circle())
             },
             header: {
-                ItemNameEntry()
+                VStack(alignment: .center, spacing: 6) {
+                    ItemNameEntry
+                    NicknameEntry
+                }
             },
             trailingView: {
                 RDButton(variant: .red, size: .icon, leadingIcon: "checkmark", iconBold: true, fullWidth: false) {
@@ -110,13 +113,22 @@ struct EditItemSheetV2: View {
 
     // MARK: - Item Name Entry
 
-    @ViewBuilder
-    private func ItemNameEntry() -> some View {
+    var ItemNameEntry: some View {
         TextField("Item Name", text: $editingItem.displayName)
             .padding(6)
             .background(isImageSelected ? Color.clear : Color(.systemGray5))
             .cornerRadius(8)
             .multilineTextAlignment(.center)
+    }
+    
+    var NicknameEntry: some View {
+        TextField("Nickname (optional)", text: Binding(
+            get: { editingItem.nickname ?? "" },
+            set: { editingItem.nickname = $0.isEmpty ? nil : $0 }
+        ))
+        .font(.caption)
+        .foregroundStyle(.secondary)
+        .multilineTextAlignment(.center)
     }
 
     // MARK: - Helper Functions

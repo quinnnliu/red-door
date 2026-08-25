@@ -12,9 +12,13 @@ import PhotosUI
 
 struct CreateItemsViewV2: View {
     // Environment variables
-    @State private var viewModel: CreateItemsViewModel = CreateItemsViewModel()
+    @State private var viewModel: CreateItemsViewModel
     @Environment(\.dismiss) var dismiss
     @State private var isEditing: Bool = true
+
+    init(template: ItemV2? = nil) {
+        _viewModel = State(initialValue: CreateItemsViewModel(template: template))
+    }
     
     // MARK: - Body
     var body: some View {
@@ -38,6 +42,7 @@ struct CreateItemsViewV2: View {
                         purchaseLocation: $viewModel.itemState.purchaseLocation,
                         datePurchased: $viewModel.itemState.datePurchased
                     )
+                    .disabled(viewModel.templateState != nil)
 
                     ItemCountPicker
                 }
@@ -87,7 +92,10 @@ struct CreateItemsViewV2: View {
                 .clipShape(Circle())
             },
             header: {
-                ModelNameEntry()
+                VStack(alignment: .center, spacing: 6) {
+                    ModelNameEntry
+                    NicknameEntry
+                }
             },
             trailingView: {
                 Spacer().frame(24)
@@ -97,13 +105,21 @@ struct CreateItemsViewV2: View {
     
     // MARK: Model Name Entry
     
-    @ViewBuilder
-    private func ModelNameEntry() -> some View {
+    var ModelNameEntry: some View {
         TextField("Items Name", text: $viewModel.itemState.displayName)
             .padding(6)
             .background(viewModel.isImageSelected ? Color.clear : Color(.systemGray5))
             .cornerRadius(8)
             .multilineTextAlignment(.center)
+            .disabled(viewModel.templateState != nil)
+    }
+    
+    var NicknameEntry: some View {
+        TextField("Nickname (optional)", text: nicknameBinding)
+            .font(.caption)
+            .multilineTextAlignment(.center)
+            .foregroundStyle(.secondary)
+            .disabled(viewModel.templateState != nil)
     }
     
     // MARK: Item Count Picker
@@ -112,6 +128,15 @@ struct CreateItemsViewV2: View {
         Stepper("Number of Items: \(viewModel.itemCount)",
             value: $viewModel.itemCount,
             in: 1...1000
+        )
+    }
+}
+
+extension CreateItemsViewV2 {
+    private var nicknameBinding: Binding<String> {
+        Binding(
+            get: { viewModel.itemState.nickname ?? "" },
+            set: { viewModel.itemState.nickname = $0.isEmpty ? nil : $0 }
         )
     }
 }

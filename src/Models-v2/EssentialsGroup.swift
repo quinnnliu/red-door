@@ -43,17 +43,25 @@ struct EssentialsGroup: RDDocument {
     let locationId: String
     let itemIds: [String]
     let accessoriesId: String?
-    
+    let groupNumber: Int
+    let nickname: String?
+
     enum CodingKeys: String, CodingKey {
-        case id, status
+        case id, status, nickname
         case accessoriesId = "accessories_id"
         case itemIds = "item_ids"
         case displayName = "display_name"
         case displayNameLowercased = "display_name_lowercased"
         case essentialsTypeId = "essentials_type_id"
         case locationId = "location_id"
+        case groupNumber = "group_number"
     }
-    
+
+    var label: String {
+        if let nickname { return "\"\(nickname)\"" }
+        return displayName
+    }
+
     init(
         id: String = UUID().uuidString,
         displayName: String,
@@ -61,7 +69,9 @@ struct EssentialsGroup: RDDocument {
         locationId: String = Warehouse.warehouse1.id,
         essentialsTypeId: String,
         itemIds: [String] = [],
-        accessoriesId: String? = nil
+        accessoriesId: String? = nil,
+        groupNumber: Int = 0,
+        nickname: String? = nil
     ) {
         self.id = id
         self.displayName = displayName
@@ -71,5 +81,7 @@ struct EssentialsGroup: RDDocument {
         self.itemIds = itemIds
         self.accessoriesId = accessoriesId
         self.locationId = locationId
+        self.groupNumber = groupNumber
+        self.nickname = nickname
     }
 }

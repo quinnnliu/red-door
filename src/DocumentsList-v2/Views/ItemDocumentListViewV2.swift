@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ItemDocumentListViewV2: View {
+    @Environment(\.dismiss) var dismiss
     @Binding var path: NavigationPath
     let itemRepo: ItemRepository
 
@@ -22,7 +23,6 @@ struct ItemDocumentListViewV2: View {
     // MARK: - Segment State
 
     @State private var selectedSegment: InventorySegment = .items
-
     @State private var itemsVM: DocumentListViewModelV2<ItemV2> = DocumentListViewModelV2<ItemV2>()
     @State private var essentialsVM: DocumentListViewModelV2<EssentialsGroup> = DocumentListViewModelV2<EssentialsGroup>(pageSize: 50)
     @State private var accessoriesVM: DocumentListViewModelV2<Accessories> = DocumentListViewModelV2<Accessories>(pageSize: 50)
@@ -35,6 +35,7 @@ struct ItemDocumentListViewV2: View {
     @State private var showScannerSheet: Bool = false
     @State private var scannedItemId: String? = nil
     @State private var showCopyItemSheet: Bool = false
+    @State private var itemToCopy: ItemV2? = nil
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -70,11 +71,19 @@ struct ItemDocumentListViewV2: View {
                 type.createDocumentSheet
             }
             .sheet(item: $filterDocumentSheetType) { type in
-                type.filterSheet(action: handleAction(_:), initialFilters: activeFilters(for: type))
+                type.filterSheet(action: handleAction(_:), initialFilters: activeFilters(for: type), availableGroups: essentialsVM.documents)
                     .presentationDetents([.large])
             }
             .fullScreenCover(isPresented: $showCopyItemSheet) {
-                Text("Item picker coming soon")
+                VStack {
+                    Text("coming soon")
+                    Button("Dismiss") {
+                        dismiss()
+                    }
+                }
+            }
+            .fullScreenCover(item: $itemToCopy) { item in
+                CreateItemsViewV2(template: item)
             }
             .sheet(isPresented: $showScannerSheet) {
                 ItemScannerView(scannedItemId: $scannedItemId)
@@ -196,7 +205,9 @@ extension ItemDocumentListViewV2 {
             viewModel: itemsVM,
             noMoreLabel: "No More Items",
             destination: { .itemDetailView($0) },
-            rowContent: { ItemDocumentListItemView(item: $0) }
+            rowContent: { item in
+                ItemDocumentListItemView(item: item, action: handleAction(_:))
+            }
         )
     }
 
@@ -267,10 +278,10 @@ private extension ItemDocumentListViewV2 {
         }
         
         @ViewBuilder
-        func filterSheet(action: @escaping (Any?) -> Void, initialFilters: [String: AnyHashable] = [:]) -> some View {
+        func filterSheet(action: @escaping (Any?) -> Void, initialFilters: [String: AnyHashable] = [:], availableGroups: [EssentialsGroup] = []) -> some View {
             switch self {
             case .items:
-                ItemV2DocumentFilterSheet(action: action, initialFilters: initialFilters)
+                ItemV2DocumentFilterSheet(action: action, initialFilters: initialFilters, availableGroups: availableGroups)
             case .essentials:
                 Text("FilterSheetView for \(self.title)")
             case .accessories:
@@ -317,6 +328,11 @@ private extension ItemDocumentListViewV2 {
                     case .accessories: await accessoriesVM.setFilters(filters)
                     }
                 }
+            }
+        case let rowAction as ItemDocumentListItemAction:
+            switch rowAction {
+            case .copyItem(let item):
+                itemToCopy = item
             }
         default:
             print("ERROR: Untracked action")

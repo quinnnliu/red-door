@@ -8,8 +8,21 @@
 import CachedAsyncImage
 import SwiftUI
 
+enum ItemListItemStyle {
+    case inventoryList
+    case addItemToDocument
+    case addItemToRoom
+}
+
+enum ItemDocumentListItemAction {
+    case copyItem(ItemV2)
+}
+
 struct ItemDocumentListItemView: View {
     let item: ItemV2
+    var style: ItemListItemStyle = .inventoryList
+    var action: ((Any) -> Void)? = nil
+
     private let imageSize: CGFloat = Constants.screenWidth / 7
 
     // MARK: Body
@@ -50,6 +63,18 @@ struct ItemDocumentListItemView: View {
                 Image(systemName: SFSymbols.starCircleFill)
                     .foregroundStyle(.yellow)
                     .padding(.trailing, 6)
+            }
+
+            if style == .inventoryList, let action {
+                Menu {
+                    Button("Create Copy", systemImage: "doc.on.doc") {
+                        action(ItemDocumentListItemAction.copyItem(item))
+                    }
+                } label: {
+                    RDButton(variant: .secondary, size: .icon, leadingIcon: SFSymbols.ellipsis, fullWidth: false) { }
+                        .allowsHitTesting(false)
+                }
+                .clipShape(Circle())
             }
         }
         .padding(8)

@@ -18,16 +18,24 @@ struct ItemV2DocumentFilterSheet: View {
     @State private var selectedMaterial: ItemMaterial?
     @State private var selectedStatus: LocationStatus?
     @State private var selectedAttention: Bool?
+    @State private var selectedGroup: EssentialsGroup?
+
+    // MARK: - Data
+
+    let availableGroups: [EssentialsGroup]
 
     // MARK: - Init
 
-    init(action: @escaping (Any?) -> Void, initialFilters: [String: AnyHashable] = [:]) {
+    init(action: @escaping (Any?) -> Void, initialFilters: [String: AnyHashable] = [:], availableGroups: [EssentialsGroup] = []) {
         self.action = action
+        self.availableGroups = availableGroups
         _selectedType      = State(initialValue: (initialFilters[ItemV2.CodingKeys.type.stringValue] as? String).flatMap(ItemType.init(rawValue:)))
         _selectedColor     = State(initialValue: (initialFilters[ItemV2.CodingKeys.color.stringValue] as? String).flatMap(ItemColor.init(rawValue:)))
         _selectedMaterial  = State(initialValue: (initialFilters[ItemV2.CodingKeys.material.stringValue] as? String).flatMap(ItemMaterial.init(rawValue:)))
         _selectedStatus    = State(initialValue: (initialFilters[ItemV2.CodingKeys.status.stringValue] as? String).flatMap(LocationStatus.init(rawValue:)))
         _selectedAttention = State(initialValue: initialFilters[ItemV2.CodingKeys.attention.stringValue] as? Bool)
+        let groupId = initialFilters[ItemV2.CodingKeys.essentialGroupId.stringValue] as? String
+        _selectedGroup     = State(initialValue: availableGroups.first { $0.id == groupId })
     }
 
     // MARK: - Body
@@ -46,6 +54,9 @@ struct ItemV2DocumentFilterSheet: View {
                     FilterPickerRow(selectedItem: $selectedColor, items: ItemColor.allCases, title: "Color")
                     FilterPickerRow(selectedItem: $selectedMaterial, items: ItemMaterial.allCases, title: "Material")
                     AttentionRow
+                    if !availableGroups.isEmpty {
+                        EssentialsGroupRow
+                    }
                 }
             }
 
@@ -116,6 +127,28 @@ private extension ItemV2DocumentFilterSheet {
         }
     }
 
+    var EssentialsGroupRow: some View {
+        HStack {
+            Text("Essentials Group")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(.primary)
+            Spacer()
+            Picker("", selection: $selectedGroup) {
+                Text("Any").tag(Optional<EssentialsGroup>.none)
+                ForEach(availableGroups) { group in
+                    Text(group.displayName).tag(Optional(group))
+                }
+            }
+            .pickerStyle(.menu)
+            .tint(selectedGroup != nil ? .red : .secondary)
+        }
+        .padding(.vertical, 12)
+        .overlay(alignment: .bottom) {
+            Divider()
+        }
+    }
+
     var ApplyButton: some View {
         RDButton(variant: .red, label: "Apply Filters", fullWidth: true) {
             applyFilters()
@@ -133,6 +166,7 @@ private extension ItemV2DocumentFilterSheet {
         || selectedMaterial != nil
         || selectedStatus != nil
         || selectedAttention != nil
+        || selectedGroup != nil
     }
 
     func buildFilterDictionary() -> [String: AnyHashable] {
@@ -142,6 +176,7 @@ private extension ItemV2DocumentFilterSheet {
         if let material = selectedMaterial { filters[ItemV2.CodingKeys.material.stringValue] = material.rawValue }
         if let status = selectedStatus { filters[ItemV2.CodingKeys.status.stringValue] = status.rawValue }
         if let attention = selectedAttention { filters[ItemV2.CodingKeys.attention.stringValue] = attention }
+        if let group = selectedGroup { filters[ItemV2.CodingKeys.essentialGroupId.stringValue] = group.id }
         return filters
     }
 
@@ -156,6 +191,7 @@ private extension ItemV2DocumentFilterSheet {
         selectedMaterial = nil
         selectedStatus = nil
         selectedAttention = nil
+        selectedGroup = nil
     }
 }
 
