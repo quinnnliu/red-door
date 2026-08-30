@@ -8,8 +8,12 @@
 import SwiftUI
 
 struct CreateEssentialsGroupView: View {
-    @State private var viewModel: CreateEssentialsGroupViewModel = CreateEssentialsGroupViewModel()
+    @State private var viewModel: CreateEssentialsGroupViewModel
     @Environment(\.dismiss) var dismiss
+
+    init(configurationService: ConfigurationService) {
+        _viewModel = State(initialValue: CreateEssentialsGroupViewModel(configurationService: configurationService))
+    }
 
     // MARK: - Body
 
@@ -37,7 +41,6 @@ struct CreateEssentialsGroupView: View {
                         }
                         .disabled(viewModel.selectedGroupType == nil)
                     }
-                    .padding(.top, 4)
                 }
                 .ignoresSafeArea(.keyboard)
             }
@@ -125,7 +128,7 @@ private extension CreateEssentialsGroupView {
                 } label: {
                     Label(
                         viewModel.showNewTypeField ? "Cancel" : "New Type",
-                        systemImage: viewModel.showNewTypeField ? "xmark" : "plus"
+                        systemImage: viewModel.showNewTypeField ? SFSymbols.xmark : SFSymbols.plus
                     )
                     .font(.subheadline)
                     .foregroundStyle(.red)
@@ -141,7 +144,9 @@ private extension CreateEssentialsGroupView {
                         .cornerRadius(8)
 
                     RDButton(variant: .default, size: .sm, label: "Create", fullWidth: false) {
-                        Task { await viewModel.createAndSelectNewGroupType() }
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            viewModel.createAndSelectNewGroupType()
+                        }
                     }
                     .disabled(viewModel.newGroupTypeName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
@@ -201,8 +206,4 @@ private extension CreateEssentialsGroupView {
             }
         }
     }
-}
-
-#Preview {
-    CreateEssentialsGroupView()
 }

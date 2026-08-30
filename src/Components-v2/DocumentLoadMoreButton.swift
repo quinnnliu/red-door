@@ -17,6 +17,7 @@ struct DocumentLoadMoreButton: View {
         Group {
             if isLoading {
                 ProgressView()
+                    .tint(.red)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding()
             } else if hasMore {

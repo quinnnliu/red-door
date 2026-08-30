@@ -9,8 +9,13 @@ import SwiftUI
 
 @Observable
 final class CreateEssentialsGroupViewModel {
+    private let configurationService: ConfigurationService
     private let essentialsRepo: EssentialsRepository = .init()
     private let essentialsGroupTypeRepo: EssentialsGroupTypeRepository = .init()
+
+    init(configurationService: ConfigurationService) {
+        self.configurationService = configurationService
+    }
 
     // MARK: - Group Type
     var groupTypes: [EssentialsGroupType] = []
@@ -35,7 +40,7 @@ final class CreateEssentialsGroupViewModel {
 
     func loadGroupTypes() async {
         do {
-            groupTypes = try await essentialsGroupTypeRepo.getAll()
+            groupTypes = try await configurationService.getAll(using: essentialsGroupTypeRepo)
         } catch {
             print("Error loading group types: \(error)")
         }
@@ -43,7 +48,7 @@ final class CreateEssentialsGroupViewModel {
 
     // MARK: - Create Group Type
 
-    func createAndSelectNewGroupType() async {
+    func createAndSelectNewGroupType() {
         let name = newGroupTypeName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
 
@@ -51,6 +56,7 @@ final class CreateEssentialsGroupViewModel {
 
         do {
             try essentialsGroupTypeRepo.set(document: newType)
+            configurationService.invalidate(EssentialsGroupType.self)
             groupTypes.append(newType)
             selectedGroupType = newType
             newGroupTypeName = ""
@@ -69,7 +75,7 @@ final class CreateEssentialsGroupViewModel {
         defer { isLoading = false }
 
         do {
-            let maxNumber = try await essentialsRepo.maxGroupNumber(forTypeId: groupType.id)
+            let maxNumber =  await essentialsRepo.maxGroupNumber(forTypeId: groupType.id)
             let group = EssentialsGroup(
                 displayName: groupType.displayName,
                 essentialsTypeId: groupType.id,

@@ -113,10 +113,17 @@ struct ItemDetailViewV2: View {
                 BackButton()
             },
             header: {
-                HStack {
-                    Text("Name:")
-                        .font(.headline)
-                    Text(viewModel.item.displayName)
+                VStack(alignment: .center, spacing: 6) {
+                    HStack {
+                        Text("Name:")
+                            .font(.headline)
+                        Text(viewModel.item.displayName)
+                    }
+                    if let nickname = viewModel.item.nickname {
+                        Text("Nickname: \(nickname)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             },
             trailingView: {

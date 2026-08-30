@@ -9,6 +9,7 @@ import SwiftUI
 
 struct ItemDocumentListViewV2: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(ConfigurationService.self) var configurationService
     @Binding var path: NavigationPath
     let itemRepo: ItemRepository
 
@@ -68,7 +69,7 @@ struct ItemDocumentListViewV2: View {
                 await itemsVM.refresh()
             }
             .fullScreenCover(item: $createDocumentSheetType) { type in
-                type.createDocumentSheet
+                type.createDocumentSheet(configurationService: configurationService)
             }
             .sheet(item: $filterDocumentSheetType) { type in
                 type.filterSheet(action: handleAction(_:), initialFilters: activeFilters(for: type), availableGroups: essentialsVM.documents)
@@ -266,12 +267,12 @@ private extension ItemDocumentListViewV2 {
         }
         
         @ViewBuilder
-        var createDocumentSheet: some View {
+        func createDocumentSheet(configurationService: ConfigurationService) -> some View {
             switch self {
             case .items:
                 CreateItemsViewV2()
             case .essentials:
-                CreateEssentialsGroupView()
+                CreateEssentialsGroupView(configurationService: configurationService)
             case .accessories:
                 CreateAccessoriesView()
             }

@@ -20,6 +20,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct RedDoorApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    @State private var configurationService = ConfigurationService()
+    @State private var isReady = false
 
     init() {
         FirebaseApp.configure()
@@ -29,7 +31,16 @@ struct RedDoorApp: App {
     var body: some Scene {
         WindowGroup {
             NavigationView {
-                ContentView()
+                if isReady {
+                    ContentView()
+                        .environment(configurationService)
+                } else {
+                    ProgressView("Loading...")
+                        .task {
+                            await configurationService.preload()
+                            isReady = true
+                        }
+                }
             }
         }
     }

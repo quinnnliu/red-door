@@ -8,7 +8,8 @@
 import Foundation
 
 // MARK: - EssentialsGroupType
-struct EssentialsGroupType: RDDocument {
+struct EssentialsGroupType: ConfigurationOption {
+    static let configurationType: String = EssentialsGroup.collectionName
     static let collectionName = "essentials_group_types"
     static let orderByField = EssentialsGroupType.CodingKeys.displayName.stringValue
     static let searchField = EssentialsGroupType.CodingKeys.displayName.stringValue

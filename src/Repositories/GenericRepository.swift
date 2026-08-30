@@ -13,7 +13,7 @@ class GenericRepository<T: RDDocument> {
     
     init(db: Firestore = Firestore.firestore()) {
         self.db = db
-        self.collectionRef = db.collection(T.collectionName)
+        self.collectionRef = db.collection(T.collectionPath)
     }
     
     func newBatch() -> WriteBatch {
