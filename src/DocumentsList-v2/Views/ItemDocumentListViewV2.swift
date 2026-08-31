@@ -9,7 +9,6 @@ import SwiftUI
 
 struct ItemDocumentListViewV2: View {
     @Environment(\.dismiss) var dismiss
-    @Environment(ConfigurationService.self) var configurationService
     @Binding var path: NavigationPath
     let itemRepo: ItemRepository
 
@@ -69,11 +68,10 @@ struct ItemDocumentListViewV2: View {
                 await itemsVM.refresh()
             }
             .fullScreenCover(item: $createDocumentSheetType) { type in
-                type.createDocumentSheet(configurationService: configurationService)
+                CreateCover(for: type)
             }
             .sheet(item: $filterDocumentSheetType) { type in
-                type.filterSheet(action: handleAction(_:), initialFilters: activeFilters(for: type), availableGroups: essentialsVM.documents)
-                    .presentationDetents([.large])
+                FilterSheet(for: type)
             }
             .fullScreenCover(isPresented: $showCopyItemSheet) {
                 VStack {
@@ -143,7 +141,26 @@ extension ItemDocumentListViewV2 {
         }
     }
     
+    // MARK: - FilterSheet
+    
+    @ViewBuilder
+    private func FilterSheet(for type: InventorySegment) -> some View {
+        switch type {
+        case .items:
+            ItemV2DocumentFilterSheet(
+                action: handleAction(_:),
+                initialFilters: activeFilters(for: type),
+                availableGroups: essentialsVM.documents
+            )
+        case .essentials:
+            Text("FilterSheetView for \(type.title)")
+        case .accessories:
+            Text("FilterSheetView for \(type.title)")
+        }
+    }
+    
     // MARK: - FilterButton
+    
     private func FilterButton(_ filtersActive: Bool = false) -> some View {
         RDButton(
             variant: filtersActive ? .red : .secondary,
@@ -169,6 +186,19 @@ extension ItemDocumentListViewV2 {
         case .items:       itemsVM.activeFilters
         case .essentials:  essentialsVM.activeFilters
         case .accessories: accessoriesVM.activeFilters
+        }
+    }
+    
+    // MARK: - CreateCover
+    @ViewBuilder
+    private func CreateCover(for type: InventorySegment) -> some View {
+        switch type {
+        case .items:
+            CreateItemsViewV2()
+        case .essentials:
+            EssentialsViewFactory().makeCreateEssentialsGroupView()
+        case .accessories:
+            CreateAccessoriesView()
         }
     }
 
@@ -265,30 +295,6 @@ private extension ItemDocumentListViewV2 {
         var id: String {
             "\(self)"
         }
-        
-        @ViewBuilder
-        func createDocumentSheet(configurationService: ConfigurationService) -> some View {
-            switch self {
-            case .items:
-                CreateItemsViewV2()
-            case .essentials:
-                CreateEssentialsGroupView(configurationService: configurationService)
-            case .accessories:
-                CreateAccessoriesView()
-            }
-        }
-        
-        @ViewBuilder
-        func filterSheet(action: @escaping (Any?) -> Void, initialFilters: [String: AnyHashable] = [:], availableGroups: [EssentialsGroup] = []) -> some View {
-            switch self {
-            case .items:
-                ItemV2DocumentFilterSheet(action: action, initialFilters: initialFilters, availableGroups: availableGroups)
-            case .essentials:
-                Text("FilterSheetView for \(self.title)")
-            case .accessories:
-                Text("FilterSheetView for \(self.title)")
-            }
-        }
     }
 
     // MARK: - handleAction
@@ -345,7 +351,7 @@ private extension ItemDocumentListViewV2 {
     func handleScannedItemId(_ id: String) {
         Task {
             let item = try await itemRepo.get(id: id)
-            path.append(item)
+            path.append(NavigationDestination.itemDetailView(item))
         }
         scannedItemId = nil
     }

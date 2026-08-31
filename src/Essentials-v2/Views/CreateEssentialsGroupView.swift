@@ -11,8 +11,8 @@ struct CreateEssentialsGroupView: View {
     @State private var viewModel: CreateEssentialsGroupViewModel
     @Environment(\.dismiss) var dismiss
 
-    init(configurationService: ConfigurationService) {
-        _viewModel = State(initialValue: CreateEssentialsGroupViewModel(configurationService: configurationService))
+    init(viewModel: CreateEssentialsGroupViewModel) {
+        _viewModel = State(initialValue: viewModel)
     }
 
     // MARK: - Body

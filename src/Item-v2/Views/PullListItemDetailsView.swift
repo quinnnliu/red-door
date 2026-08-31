@@ -9,7 +9,6 @@ import CachedAsyncImage
 import SwiftUI
 
 struct PullListItemDetailsView: View {
-	@Environment(NavigationCoordinator.self) var coordinator
 	@Environment(\.dismiss) private var dismiss
 
 	@State var viewModel: PullListItemDetailsViewModel

@@ -10,6 +10,9 @@ import Observation
 
 @Observable
 final class ConfigurationService {
+    static let shared = ConfigurationService()
+    private init() { }
+
     private struct CacheEntry {
         let values: Any
         let fetchedAt: Date

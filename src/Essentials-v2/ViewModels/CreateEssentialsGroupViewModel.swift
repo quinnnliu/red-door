@@ -9,12 +9,18 @@ import SwiftUI
 
 @Observable
 final class CreateEssentialsGroupViewModel {
-    private let configurationService: ConfigurationService
-    private let essentialsRepo: EssentialsRepository = .init()
-    private let essentialsGroupTypeRepo: EssentialsGroupTypeRepository = .init()
+    private let essentialsRepo: EssentialsRepository
+    private let essentialsGroupTypeRepo: EssentialsGroupTypeRepository
+    private let configService: ConfigurationService
 
-    init(configurationService: ConfigurationService) {
-        self.configurationService = configurationService
+    init(
+        essentialsRepo: EssentialsRepository,
+        essentialsGroupTypeRepo: EssentialsGroupTypeRepository,
+        configService: ConfigurationService = .shared
+    ) {
+        self.essentialsRepo = essentialsRepo
+        self.essentialsGroupTypeRepo = essentialsGroupTypeRepo
+        self.configService = configService
     }
 
     // MARK: - Group Type
@@ -40,7 +46,7 @@ final class CreateEssentialsGroupViewModel {
 
     func loadGroupTypes() async {
         do {
-            groupTypes = try await configurationService.getAll(using: essentialsGroupTypeRepo)
+            groupTypes = try await configService.getAll(using: essentialsGroupTypeRepo)
         } catch {
             print("Error loading group types: \(error)")
         }
@@ -56,7 +62,7 @@ final class CreateEssentialsGroupViewModel {
 
         do {
             try essentialsGroupTypeRepo.set(document: newType)
-            configurationService.invalidate(EssentialsGroupType.self)
+            configService.invalidate(EssentialsGroupType.self)
             groupTypes.append(newType)
             selectedGroupType = newType
             newGroupTypeName = ""

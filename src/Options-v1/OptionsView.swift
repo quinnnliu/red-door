@@ -9,7 +9,6 @@ import SwiftUI
 
 struct OptionsView: View {
     // MARK: init Variables
-    @Environment(NavigationCoordinator.self) var coordinator
     @State private var warehouseViewModel: WarehouseViewModel = WarehouseViewModel()
 
     @State private var showWarehouseSection: Bool = false

@@ -20,7 +20,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 @main
 struct RedDoorApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
-    @State private var configurationService = ConfigurationService()
     @State private var isReady = false
 
     init() {
@@ -33,11 +32,10 @@ struct RedDoorApp: App {
             NavigationView {
                 if isReady {
                     ContentView()
-                        .environment(configurationService)
                 } else {
                     ProgressView("Loading...")
                         .task {
-                            await configurationService.preload()
+                            await ConfigurationService.shared.preload()
                             isReady = true
                         }
                 }

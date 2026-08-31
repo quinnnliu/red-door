@@ -11,7 +11,6 @@ import CachedAsyncImage
 struct PullListRoomDetailsView: View {
     typealias ImageEditorAction = PrimaryImageEditor.ImageEditorAction
     
-    @Environment(NavigationCoordinator.self) var coordinator
     @State var viewModel: PullListRoomDetailsViewModel
     @State var itemToRemove: ItemV2? = nil
 
