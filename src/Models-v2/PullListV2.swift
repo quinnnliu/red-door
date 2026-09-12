@@ -8,8 +8,6 @@
 import Foundation
 import SwiftUI
 
-
-
 struct PullListV2: RDDocument {
     static let collectionName: String = "pull_list_v2"
     static let orderByField: String = "created_date"

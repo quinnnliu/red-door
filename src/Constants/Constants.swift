@@ -67,4 +67,5 @@ enum SFSymbols {
     static let listBulletClipboardFill = "list.bullet.clipboard.fill"
     static let houseFill = "house.fill"
     static let lockFill = "lock.fill"
+    static let infoCircleFill = "info.circle.fill"
 }

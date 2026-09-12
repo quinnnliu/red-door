@@ -68,6 +68,14 @@ extension View {
     }
 }
 
+// MARK: String
+
+extension String {
+    var isSingleEmoji: Bool {
+        count == 1 && unicodeScalars.allSatisfy { $0.properties.isEmoji }
+    }
+}
+
 // MARK: UIWindow
 
 extension UIWindow {

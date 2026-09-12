@@ -9,12 +9,14 @@ import SwiftUI
 
 struct EssentialsGroupListItemView: View {
     let group: EssentialsGroup
+    var emoji: String? = "⭐️"
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: SFSymbols.starCircleFill)
-                .font(.title2)
-                .foregroundStyle(.yellow)
+            if let emoji = emoji {
+                Text(emoji)
+                    .font(.title2)
+            }
 
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 4) {

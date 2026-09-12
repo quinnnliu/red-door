@@ -26,6 +26,7 @@ struct ItemDocumentListViewV2: View {
     @State private var itemsVM: DocumentListViewModelV2<ItemV2> = DocumentListViewModelV2<ItemV2>()
     @State private var essentialsVM: DocumentListViewModelV2<EssentialsGroup> = DocumentListViewModelV2<EssentialsGroup>(pageSize: 50)
     @State private var accessoriesVM: DocumentListViewModelV2<Accessories> = DocumentListViewModelV2<Accessories>(pageSize: 50)
+    @State private var groupTypesLookup: [String: EssentialsGroupType] = [:]
 
     // MARK: - UI State
 
@@ -248,13 +249,24 @@ extension ItemDocumentListViewV2 {
         DocumentListSection(
             viewModel: essentialsVM,
             noMoreLabel: "No More Essentials",
-            destination: { .essentialsGroupDetailView($0) },
-            rowContent: { EssentialsGroupListItemView(group: $0) }
+            destination: { group in
+                let emoji = groupTypesLookup[group.essentialsTypeId]?.emoji ?? "⭐️"
+                return .essentialsGroupDetailView(group, emoji: emoji)
+            },
+            rowContent: { group in
+                let emoji = groupTypesLookup[group.essentialsTypeId]?.emoji
+                EssentialsGroupListItemView(
+                    group: group,
+                    emoji: groupTypesLookup[group.essentialsTypeId]?.emoji
+                )
+            }
         )
         .task {
             if essentialsVM.documents.isEmpty {
                 await essentialsVM.refresh()
             }
+            let types = (try? await ConfigurationService.shared.getAll(using: EssentialsGroupTypeRepository())) ?? []
+            groupTypesLookup = Dictionary(uniqueKeysWithValues: types.map { ($0.id, $0) })
         }
     }
 

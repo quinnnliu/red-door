@@ -24,7 +24,12 @@ struct CreateItemsViewV2: View {
     var body: some View {
         ZStack {
             VStack(spacing: 12) {
-                TopBar()
+                VStack(spacing: 4) {
+                    TopBar()
+                    
+                    NicknameEntry
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
                 
                 ScrollView {
                     ItemImageEditor(
@@ -92,10 +97,7 @@ struct CreateItemsViewV2: View {
                 .clipShape(Circle())
             },
             header: {
-                VStack(alignment: .center, spacing: 6) {
-                    ModelNameEntry
-                    NicknameEntry
-                }
+                ModelNameEntry
             },
             trailingView: {
                 Spacer().frame(24)

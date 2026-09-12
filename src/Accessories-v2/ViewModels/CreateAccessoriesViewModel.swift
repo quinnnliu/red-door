@@ -51,6 +51,11 @@ final class CreateAccessoriesViewModel {
         }
     }
 
+    func refreshTypes() async {
+        configService.invalidate(AccessoriesType.self)
+        await loadTypes()
+    }
+
     // MARK: - Create Type
 
     func createAndSelectNewType() {

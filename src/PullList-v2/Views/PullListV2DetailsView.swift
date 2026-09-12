@@ -14,30 +14,27 @@ struct PullListV2DetailsView: View {
     @State private var showEditListSheet: Bool = false // TODO: implement this
     @State private var showPDFSheet: Bool = false
     @State private var showInstallListSheet: Bool = false
+    @State private var showDetails: Bool = false
 
     init(list: PullListV2) {
         viewModel = PullListV2DetailsViewModel(from: list)
     }
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             TopBar
             
             ScrollView {
-                if viewModel.isLoading && viewModel.rooms.isEmpty {
-                    ProgressView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                VStack(spacing: 12) {
+                    PrimaryImageView(image: viewModel.pullListState.image)
+
+                    RoomsListSection
                 }
-
-                PrimaryImageView(image: viewModel.pullListState.image)
-
-                PullListDetailsSection(viewModel.pullListState)
-                    .padding(4)
-                
-                RoomsListSection
             }
             
             Spacer()
+            
+            CollapsibleDetailsHeader
             
             RDButton(
                 variant: viewModel.canOpenInstallSheet ? .red : .secondary,
@@ -86,6 +83,45 @@ struct PullListV2DetailsView: View {
 
 extension PullListV2DetailsView {
     
+    // MARK: CollapsibleDetailsHeader
+    var CollapsibleDetailsHeader: some View {
+        Button {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                showDetails.toggle()
+            }
+        } label: {
+            VStack {
+                HStack(spacing: 6) {
+                    Text("Details")
+                        .bold()
+                    if showDetails {
+                        Spacer()
+                    }
+                    Image(systemName: SFSymbols.chevronDown)
+                        .frame(24)
+                        .bold()
+                        .rotationEffect(.degrees(showDetails ? 0 : -90))
+                        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: showDetails)
+                }
+                .foregroundStyle(showDetails ? Color(.systemGray) : Color(.systemGray3))
+                
+                if showDetails {
+                    PullListDetailsSection(viewModel.pullListState)
+                        .transition(.asymmetric(
+                            insertion: .opacity.combined(with: .scale(scale: 0.97, anchor: .top)),
+                            removal:   .opacity.combined(with: .scale(scale: 0.97, anchor: .top))
+                        ))
+                }
+            }
+            .padding(showDetails ? 12 : 8)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(showDetails ? .red : Color(.systemGray3), lineWidth: 6)
+            )
+            .cornerRadius(12)
+        }
+    }
+
     // MARK: TopBar
     var TopBar: some View {
         TopAppBar(
@@ -184,47 +220,50 @@ extension PullListV2DetailsView {
             )
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(8)
-        .overlay(
-            RoundedRectangle(cornerRadius: 6)
-                .stroke(Color(.systemGray3), lineWidth: 3)
-        )
     }
     
     // MARK: RoomsListView
     @ViewBuilder
     var RoomsListSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: .zero) {
-                SmallCTA(type: .secondary, leadingIcon: SFSymbols.richtextPageFill, text: "Show PDF") {
-                    showPDFSheet = true
-                }
-                
-                Spacer()
-
-                Text("Rooms")
-                    .foregroundStyle(.red)
-                    .font(.headline)
-                
-                Spacer()
-                
-                SmallCTA(type: .red, leadingIcon: SFSymbols.plus, text: "Add Room") {
-                    showAddRoomsSheet = true
-                }
-            }
-            
-            LazyVStack(spacing: 12) {
-                ForEach(viewModel.rooms, id: \.id) { room in
-                    NavigationLink(value: NavigationDestination.pulllistRoomDetailView(
-                        items: viewModel.itemsByRoom[room.id] ?? [],
-                        room: room
-                    )) {
-                        PullListRoomListItem(
-                            room: room,
-                            items: viewModel.itemsByRoom[room.id] ?? [],
-                            action: handleAction(_:)
-                        )
+        if viewModel.isLoading && viewModel.rooms.isEmpty {
+            ProgressView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+        } else {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack(spacing: .zero) {
+                    SmallCTA(type: .secondary, leadingIcon: SFSymbols.richtextPageFill, text: "Show PDF") {
+                        showPDFSheet = true
                     }
+                    
+                    Spacer()
+
+                    Text("Rooms")
+                        .foregroundStyle(.red)
+                        .font(.headline)
+                    
+                    Spacer()
+                    
+                    SmallCTA(type: .red, leadingIcon: SFSymbols.plus, text: "Add Room") {
+                        showAddRoomsSheet = true
+                    }
+                }
+                RoomList
+            }
+        }
+    }
+    
+    var RoomList: some View {
+        LazyVStack(spacing: 12) {
+            ForEach(viewModel.rooms, id: \.id) { room in
+                NavigationLink(value: NavigationDestination.pulllistRoomDetailView(
+                    items: viewModel.itemsByRoom[room.id] ?? [],
+                    room: room
+                )) {
+                    PullListRoomListItem(
+                        room: room,
+                        items: viewModel.itemsByRoom[room.id] ?? [],
+                        action: handleAction(_:)
+                    )
                 }
             }
         }

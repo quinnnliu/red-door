@@ -27,8 +27,14 @@ final class CreateEssentialsGroupViewModel {
     var groupTypes: [EssentialsGroupType] = []
     var selectedGroupType: EssentialsGroupType?
     var newGroupTypeName: String = ""
+    var newGroupTypeEmoji: String = ""
     var showNewTypeField: Bool = false
     var showGroupTypePicker: Bool = false
+
+    var newGroupTypeValid: Bool {
+        let name = newGroupTypeName.trimmingCharacters(in: .whitespacesAndNewlines)
+        return !name.isEmpty && (newGroupTypeEmoji.isEmpty || newGroupTypeEmoji.isSingleEmoji)
+    }
 
     // MARK: - Accessories
     var selectedAccessory: Accessories? = nil
@@ -52,13 +58,19 @@ final class CreateEssentialsGroupViewModel {
         }
     }
 
+    func refreshGroupTypes() async {
+        configService.invalidate(EssentialsGroupType.self)
+        await loadGroupTypes()
+    }
+
     // MARK: - Create Group Type
 
     func createAndSelectNewGroupType() {
         let name = newGroupTypeName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
 
-        let newType = EssentialsGroupType(displayName: name)
+        let emoji = newGroupTypeEmoji.isSingleEmoji ? newGroupTypeEmoji : "⭐️"
+        let newType = EssentialsGroupType(displayName: name, emoji: emoji)
 
         do {
             try essentialsGroupTypeRepo.set(document: newType)
@@ -66,6 +78,7 @@ final class CreateEssentialsGroupViewModel {
             groupTypes.append(newType)
             selectedGroupType = newType
             newGroupTypeName = ""
+            newGroupTypeEmoji = ""
             showNewTypeField = false
         } catch {
             print("Error creating group type: \(error)")

@@ -16,7 +16,7 @@ struct ItemDetailViewV2: View {
 
     // Presented
     @State private var showEditSheet: Bool = false
-    @State private var showInformation: Bool = false
+    @State private var showInformation: Bool = true
     @State private var showQRCodeLabel: Bool = false
 
     init(item: ItemV2) {
@@ -39,40 +39,7 @@ struct ItemDetailViewV2: View {
                             isImageSelected: $viewModel.isImageSelected
                         )
 
-                        VStack(spacing: 12) {
-                            HStack {
-                                Button(action: {
-                                    withAnimation(.spring(response: 0.3)) {
-                                        showInformation.toggle()
-                                    }
-                                }) {
-                                    HStack(spacing: 0) {
-                                        Text("Information")
-                                            .foregroundColor(.white)
-                                            .bold()
-                                        
-                                        Spacer()
-                                        
-                                        Image(systemName: showInformation ? "chevron.up" : "chevron.down")
-                                            .foregroundColor(.white)
-                                    }
-                                    .padding(8)
-                                    .background(.red)
-                                    .cornerRadius(6)
-                                }
-                                
-                                Spacer()
-                                
-                                SmallCTA(type: .red, leadingIcon: SFSymbols.qrcode, text: "Label") {
-                                    showQRCodeLabel = true
-                                }
-                            }
-
-                            if showInformation {
-                                ItemDetailSection(item: viewModel.item)
-                                    .transition(.opacity.combined(with: .move(edge: .top)))
-                            }
-                        }
+                        ItemDetails
                     }
                     .padding(.top, 4)
                     .frameHorizontalPadding()
@@ -133,5 +100,50 @@ struct ItemDetailViewV2: View {
                 .clipShape(Circle())
             }
         )
+    }
+}
+
+extension ItemDetailViewV2 {
+    var ItemDetails: some View {
+        VStack(spacing: 12) {
+            
+            HStack {
+                SmallCTA(type: .secondary, leadingIcon: SFSymbols.qrcode, text: "Label") {
+                    showQRCodeLabel = true
+                }
+                
+                Button {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                        showInformation.toggle()
+                    }
+                } label: {
+                    
+                    HStack(spacing: 8) {
+                        Image(systemName: SFSymbols.infoCircleFill)
+                            .foregroundColor(.white)
+                        Text("Information")
+                            .foregroundColor(.white)
+                        Image(systemName: SFSymbols.chevronDown)
+                            .foregroundColor(.white)
+                            .rotationEffect(.degrees(showInformation ? 0 : -90))
+                            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: showInformation)
+                    }
+                    .font(.subheadline)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 12)
+                    .background(.red)
+                    .cornerRadius(12)
+                }
+            }
+
+            if showInformation {
+                ItemDetailSection(item: viewModel.item)
+                    .transition(.asymmetric(
+                        insertion: .opacity.combined(with: .scale(scale: 0.97, anchor: .top)),
+                        removal:   .opacity.combined(with: .scale(scale: 0.97, anchor: .top))
+                    ))
+            }
+        }
     }
 }

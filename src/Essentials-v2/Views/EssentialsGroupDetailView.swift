@@ -10,11 +10,15 @@ import SwiftUI
 struct EssentialsGroupDetailView: View {
     @State private var viewModel: EssentialsGroupDetailViewModel
     @State private var showAddItemsSheet: Bool = false
+    @State private var showEditSheet: Bool = false
     @State private var itemToRemove: ItemV2? = nil
     @State private var showRemoveAlert: Bool = false
 
-    init(group: EssentialsGroup) {
+    let emoji: String
+
+    init(group: EssentialsGroup, emoji: String = "⭐️") {
         viewModel = EssentialsGroupDetailViewModel(group: group)
+        self.emoji = emoji
     }
 
     // MARK: - Body
@@ -37,6 +41,9 @@ struct EssentialsGroupDetailView: View {
                 }
                 .frameHorizontalPadding()
             }
+        }
+        .sheet(isPresented: $showEditSheet) {
+            EssentialsViewFactory().makeEditEssentialsGroupSheet(group: viewModel.groupState)
         }
         .sheet(isPresented: $showAddItemsSheet) {
             AddItemToDocumentSheetV2 { item in
@@ -77,12 +84,15 @@ private extension EssentialsGroupDetailView {
                 BackButton()
             },
             header: {
-                Text(viewModel.groupState.label)
+                Text("\(emoji) \(viewModel.groupState.label)")
                     .font(.headline)
                     .bold()
             },
             trailingView: {
-                EmptyView()
+                RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.pencil) {
+                    showEditSheet = true
+                }
+                .clipShape(Circle())
             }
         )
     }

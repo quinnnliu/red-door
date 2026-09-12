@@ -14,7 +14,7 @@ enum NavigationDestination: Hashable {
     case pulllistRoomDetailView(items: [ItemV2], room: RoomV2)
 
     // MARK: EssentialsGroup
-    case essentialsGroupDetailView(_ group: EssentialsGroup)
+    case essentialsGroupDetailView(_ group: EssentialsGroup, emoji: String)
 
     // MARK: Accessories
     case accessoriesDetailView(_ accessories: Accessories)

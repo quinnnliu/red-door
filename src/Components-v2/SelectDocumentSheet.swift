@@ -13,14 +13,27 @@ struct SelectDocumentSheet<T: RDDocument>: View {
     let title: String
     let documents: [T]
     let action: (Any?) -> Void
+    var refreshAction: (() -> Void)? = nil
 
     var body: some View {
         VStack(spacing: 16) {
             DragIndicator()
 
-            Text(title)
-                .font(.headline)
-                .foregroundStyle(.red)
+            ZStack {
+                Text(title)
+                    .font(.headline)
+                    .foregroundStyle(.red)
+                if let refreshAction {
+                    HStack {
+                        Spacer()
+                        Button(action: refreshAction) {
+                            Image(systemName: "arrow.clockwise")
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
 
             ScrollView {
                 LazyVStack {

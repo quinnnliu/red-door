@@ -18,4 +18,11 @@ struct EssentialsViewFactory {
         )
         return CreateEssentialsGroupView(viewModel: vm)
     }
+
+    func makeEditEssentialsGroupSheet(group: EssentialsGroup) -> EditEssentialsGroupSheet {
+        let vm = EditEssentialsGroupViewModel(
+            essentialsGroupTypeRepo: essentialsGroupTypeRepo
+        )
+        return EditEssentialsGroupSheet(group: group, viewModel: vm, essentialsRepo: essentialsRepo)
+    }
 }

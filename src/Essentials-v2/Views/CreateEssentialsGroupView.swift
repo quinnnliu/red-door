@@ -27,6 +27,7 @@ struct CreateEssentialsGroupView: View {
                         GroupTypeSection
                         SelectedAccessoriesSection
                     }
+                    .padding(.horizontal, 8)
                 }
                 .ignoresSafeArea(.keyboard)
                 
@@ -62,7 +63,8 @@ struct CreateEssentialsGroupView: View {
             SelectDocumentSheet(
                 title: "Select Group Type",
                 documents: viewModel.groupTypes,
-                action: handleAction(_:)
+                action: handleAction(_:),
+                refreshAction: { Task { await viewModel.refreshGroupTypes() } }
             )
         }
         .sheet(isPresented: $viewModel.showAddAccessoriesSheet) {
@@ -143,23 +145,31 @@ private extension CreateEssentialsGroupView {
 
             if viewModel.showNewTypeField {
                 HStack(spacing: 8) {
-                    TextField("New type name", text: $viewModel.newGroupTypeName)
-                        .padding(10)
+                    TextField("Emoji (default ⭐️)", text: $viewModel.newGroupTypeEmoji)
+                        .multilineTextAlignment(.center)
+                        .padding(8)
                         .background(Color(.systemGray5))
                         .cornerRadius(8)
+                        .font(.caption)
+
+                    TextField("New type name", text: $viewModel.newGroupTypeName)
+                        .padding(8)
+                        .background(Color(.systemGray5))
+                        .cornerRadius(8)
+                        .font(.caption)
 
                     RDButton(variant: .default, size: .sm, label: "Create", fullWidth: false) {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             viewModel.createAndSelectNewGroupType()
                         }
                     }
-                    .disabled(viewModel.newGroupTypeName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(!viewModel.newGroupTypeValid)
                 }
             }
 
             if let selected = viewModel.selectedGroupType {
                 HStack {
-                    Text(selected.displayName)
+                    Text("\(selected.emoji) \(selected.displayName)")
                         .font(.body)
                         .bold()
                     Spacer()

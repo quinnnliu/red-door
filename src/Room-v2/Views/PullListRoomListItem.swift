@@ -20,9 +20,7 @@ struct PullListRoomListItem: View {
             RoomPreviewHeader
             
             if !items.isEmpty && showRoomPreview {
-                withAnimation {
-                    RoomPreview
-                }
+                RoomPreview
             }
         }
         .padding(12)
@@ -43,7 +41,9 @@ extension PullListRoomListItem {
                 iconBold: true,
                 fullWidth: false
             ) {
-                showRoomPreview.toggle()
+                withAnimation(.bouncy) {
+                    showRoomPreview.toggle()
+                }
             }
             .disabled(items.isEmpty)
             

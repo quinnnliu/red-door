@@ -64,7 +64,8 @@ struct CreateAccessoriesView: View {
             SelectDocumentSheet(
                 title: "Select Accessories Type",
                 documents: viewModel.accessoriesTypes,
-                action: handleAction(_:)
+                action: handleAction(_:),
+                refreshAction: { Task { await viewModel.refreshTypes() } }
             )
         }
         .task {

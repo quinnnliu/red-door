@@ -120,3 +120,8 @@ File header:
 - `private` repository properties in ViewModels
 - Use `// MARK: -` to section ViewModels and views
 - Capture repositories directly (not `self`) inside transaction closures to avoid retain cycles
+
+## Claude Guidelines
+
+- When given a task or implementation suggestion, do some diligence to check whether this is the correct architectural choice for implementation and feel free surface concerns to the user.
+- When writing plans don't verify. The user will build and test the app.

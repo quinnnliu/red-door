@@ -16,15 +16,18 @@ struct EssentialsGroupType: ConfigurationOption {
 
     let id: String
     let displayName: String
-    
-    init(displayName: String) {
+    let emoji: String
+
+    init(displayName: String, emoji: String = "⭐️") {
         self.id = displayName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: " ", with: "-")
         self.displayName = displayName
+        self.emoji = emoji
     }
-    
+
     enum CodingKeys: String, CodingKey {
         case id
         case displayName = "display_name"
+        case emoji
     }
 }
 
@@ -35,17 +38,17 @@ struct EssentialsGroup: RDDocument {
     static let orderByField: String = EssentialsGroup.CodingKeys.displayName.stringValue
     static let searchField: String = EssentialsGroup.CodingKeys.displayNameLowercased.stringValue
     
-    let id: String
-    let displayName: String
-    let displayNameLowercased: String
-    let essentialsTypeId: String // maps to EssentialsGroupType
-    
-    let status: LocationStatus
-    let locationId: String
-    let itemIds: [String]
-    let accessoriesId: String?
-    let groupNumber: Int
-    let nickname: String?
+    var id: String
+    var displayName: String
+    var displayNameLowercased: String
+    var essentialsTypeId: String // maps to EssentialsGroupType
+
+    var status: LocationStatus
+    var locationId: String
+    var itemIds: [String]
+    var accessoriesId: String?
+    var groupNumber: Int
+    var nickname: String?
 
     enum CodingKeys: String, CodingKey {
         case id, status, nickname
