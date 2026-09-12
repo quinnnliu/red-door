@@ -198,7 +198,7 @@ extension ItemDocumentListViewV2 {
         case .essentials:
             EssentialsViewFactory().makeCreateEssentialsGroupView()
         case .accessories:
-            CreateAccessoriesView()
+            AccessoriesViewFactory().makeCreateAccessoriesView()
         }
     }
 

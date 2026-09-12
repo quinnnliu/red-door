@@ -66,4 +66,5 @@ enum SFSymbols {
     static let sliderHorizontal3 = "slider.horizontal.3"
     static let listBulletClipboardFill = "list.bullet.clipboard.fill"
     static let houseFill = "house.fill"
+    static let lockFill = "lock.fill"
 }

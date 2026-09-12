@@ -7,8 +7,9 @@
 
 import Foundation
 
-struct AccessoriesType: RDDocument{
-    static let collectionName: String = "accessories_types"
+struct AccessoriesType: ConfigurationOption {
+    static let collectionName: String = Accessories.collectionName
+    static var configurationType: String = "accessories_types"
     static let orderByField: String = AccessoriesType.CodingKeys.displayName.stringValue
     static let searchField: String = AccessoriesType.CodingKeys.displayName.stringValue
     
@@ -40,8 +41,10 @@ struct Accessories: RDDocument {
     let locationId: String
     let description: String
     
-    let primaryImage: RDImage
+    var primaryImage: RDImage
     let secondaryImages: [RDImage]?
+    let accessoriesNumber: Int
+    let nickname: String?
 
     init(
         id: String = UUID().uuidString,
@@ -52,6 +55,8 @@ struct Accessories: RDDocument {
         status: LocationStatus = .inStorage,
         locationId: String = Warehouse.warehouse1.id, // TODO: non-default warehouse (select where they should be stored)
         description: String,
+        accessoriesNumber: Int = 0,
+        nickname: String? = nil
     ) {
         self.id = id
         self.displayName = displayName
@@ -62,15 +67,18 @@ struct Accessories: RDDocument {
         self.status = status
         self.locationId = locationId
         self.description = description
+        self.accessoriesNumber = accessoriesNumber
+        self.nickname = nickname
     }
-    
+
     enum CodingKeys: String, CodingKey {
-        case id, status, description
+        case id, status, description, nickname
         case displayName = "display_name"
         case displayNameLowercased = "display_name_lowercased"
         case accessoriesTypeId = "accessories_type_id"
         case primaryImage = "primary_image"
         case secondaryImages = "secondary_images"
         case locationId = "location_id"
+        case accessoriesNumber = "accessories_number"
     }
 }

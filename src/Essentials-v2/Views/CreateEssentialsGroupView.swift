@@ -26,23 +26,25 @@ struct CreateEssentialsGroupView: View {
                     VStack(spacing: 16) {
                         GroupTypeSection
                         SelectedAccessoriesSection
-
-                        RDButton(
-                            variant: .default,
-                            size: .default,
-                            leadingIcon: "plus",
-                            label: "Create Essentials Group",
-                            fullWidth: true
-                        ) {
-                            Task {
-                                let success = await viewModel.createEssentialsGroup()
-                                if success { dismiss() }
-                            }
-                        }
-                        .disabled(viewModel.selectedGroupType == nil)
                     }
                 }
                 .ignoresSafeArea(.keyboard)
+                
+                Spacer()
+                
+                RDButton(
+                    variant: .default,
+                    size: .default,
+                    leadingIcon: "plus",
+                    label: "Create Essentials Group",
+                    fullWidth: true
+                ) {
+                    Task {
+                        let success = await viewModel.createEssentialsGroup()
+                        if success { dismiss() }
+                    }
+                }
+                .disabled(viewModel.selectedGroupType == nil)
             }
             .toolbar(.hidden)
             .frameTop()
@@ -99,8 +101,11 @@ private extension CreateEssentialsGroupView {
                 .clipShape(Circle())
             },
             header: {
-                Text(viewModel.selectedGroupType?.displayName ?? "New Essentials Group")
-                    .font(.headline)
+                VStack(alignment: .center, spacing: 6) {
+                    Text(viewModel.selectedGroupType?.displayName ?? "New Essentials Group")
+                        .font(.headline)
+                    NicknameEntry
+                }
             },
             trailingView: {
                 Spacer().frame(width: 44)
@@ -171,6 +176,17 @@ private extension CreateEssentialsGroupView {
                 }
             }
         }
+    }
+}
+
+// MARK: - Nickname Entry
+
+private extension CreateEssentialsGroupView {
+    var NicknameEntry: some View {
+        TextField("Nickname (optional)", text: $viewModel.nickname)
+            .font(.caption)
+            .multilineTextAlignment(.center)
+            .foregroundStyle(.secondary)
     }
 }
 

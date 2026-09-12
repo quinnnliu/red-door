@@ -42,9 +42,9 @@ struct SearchBarV2: View {
 
             Button("Cancel", role: .destructive) {
                 searchText = ""
-                action(SearchBarAction.cancel)
                 isFocused = false
                 isActive = false
+                action(SearchBarAction.cancel)
             }
         }
         .onAppear { isFocused = true }

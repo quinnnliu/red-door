@@ -78,6 +78,7 @@ extension InstallPullListSheet {
                         warehouses: viewModel.warehouses,
                         action: handleAction(_:)
                     )
+                    .padding(4)
                 }
             }
         }

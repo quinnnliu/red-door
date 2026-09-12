@@ -14,6 +14,7 @@ import SwiftUI
 enum RDImageTypeEnum: String, Codable {
     case model_primary, model_secondary, item, rd_list, dirty, misc, delete
     case roomBefore, roomAfter, listV2
+    case accessory
 
     var objectPath: String? {
         switch self {
@@ -29,6 +30,8 @@ enum RDImageTypeEnum: String, Codable {
             "rd_lists"
         case .misc:
             "misc"
+        case .accessory:
+            "accessory_images"
         case .dirty, .delete:
             nil // no path for dirty or delete
         }

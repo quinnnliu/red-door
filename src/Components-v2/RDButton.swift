@@ -182,11 +182,11 @@ struct RDButton: View {
             )
             .frame(maxWidth: fullWidth ? .infinity : nil)
             .background(
-                RoundedRectangle(cornerRadius: 6)
+                RoundedRectangle(cornerRadius: 12)
                     .fill(disabled ? Color.gray.opacity(0.2) : variant.backgroundColor)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: 6)
+                RoundedRectangle(cornerRadius: 12)
                     .stroke(variant.borderColor ?? Color.clear, lineWidth: variant.borderWidth)
             )
             .scaleEffect(isPressed ? 0.98 : 1.0)

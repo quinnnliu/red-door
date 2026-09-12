@@ -9,45 +9,98 @@ import SwiftUI
 
 @Observable
 final class CreateAccessoriesViewModel {
-    private let accessoriesRepo: AccessoriesRepository = .init()
-    private let accessoriesTypeRepo: AccessoriesTypeRepository = .init()
+    private let accessoriesRepo: AccessoriesRepository
+    private let accessoriesTypeRepo: AccessoriesTypeRepository
+    private let configService: ConfigurationService
 
-    var displayName: String = ""
-    var description: String = ""
+    init(
+        accessoriesRepo: AccessoriesRepository,
+        accessoriesTypeRepo: AccessoriesTypeRepository,
+        configService: ConfigurationService = .shared
+    ) {
+        self.accessoriesRepo = accessoriesRepo
+        self.accessoriesTypeRepo = accessoriesTypeRepo
+        self.configService = configService
+    }
+
+    // MARK: - Type
+
+    var accessoriesTypes: [AccessoriesType] = []
     var selectedType: AccessoriesType?
-    var existingTypes: [AccessoriesType] = []
     var newTypeName: String = ""
+    var showNewTypeField: Bool = false
+    var showTypePicker: Bool = false
+
+    // MARK: - Fields
+
+    var nickname: String = ""
+    var description: String = ""
     var primaryImage: RDImage = RDImage()
-    var secondaryImages: [RDImage]? = nil
+
+    // MARK: - State
 
     var isLoading: Bool = false
 
     // MARK: - Load
 
     func loadTypes() async {
-        // TODO: use DocumentListViewModelV2<AccessoriesType> or a one-shot fetch
+        do {
+            accessoriesTypes = try await configService.getAll(using: accessoriesTypeRepo)
+        } catch {
+            print("Error loading accessories types: \(error)")
+        }
     }
 
-    // MARK: - createAccessories
+    // MARK: - Create Type
 
-    func createAccessories() async {
-        guard let accessoriesType = selectedType else { return }
+    func createAndSelectNewType() {
+        let name = newTypeName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { return }
+        let newType = AccessoriesType(displayName: name)
+        do {
+            try accessoriesTypeRepo.set(document: newType)
+            configService.invalidate(AccessoriesType.self)
+            accessoriesTypes.append(newType)
+            selectedType = newType
+            newTypeName = ""
+            showNewTypeField = false
+        } catch {
+            print("Error creating accessories type: \(error)")
+        }
+    }
 
-        let accessory = Accessories(
-            displayName: displayName,
-            accessoriesTypeId: accessoriesType.id,
-            primaryImage: primaryImage,
-            secondaryImages: secondaryImages,
-            description: description
-        )
+    // MARK: - Create Accessories
+
+    func createAccessories() async -> Bool {
+        guard let type = selectedType else { return false }
 
         isLoading = true
         defer { isLoading = false }
 
         do {
-            try accessoriesRepo.set(document: accessory)
+            let maxNumber = await accessoriesRepo.maxAccessoriesNumber(forTypeId: type.id)
+            var newAccessory = Accessories(
+                displayName: type.displayName,
+                accessoriesTypeId: type.id,
+                primaryImage: primaryImage,
+                description: description,
+                accessoriesNumber: maxNumber + 1,
+                nickname: nickname.isEmpty ? nil : nickname
+            )
+            newAccessory.primaryImage.objectId = newAccessory.id
+
+            if let uploadedImage = try await FirebaseImageManager.shared.updateImage(
+                newAccessory.primaryImage,
+                resultImageType: .accessory
+            ) {
+                newAccessory.primaryImage = uploadedImage
+            }
+
+            try accessoriesRepo.set(document: newAccessory)
+            return true
         } catch {
             print("Error creating accessory: \(error)")
+            return false
         }
     }
 }

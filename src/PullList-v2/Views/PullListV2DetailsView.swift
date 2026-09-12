@@ -41,7 +41,7 @@ struct PullListV2DetailsView: View {
             
             RDButton(
                 variant: viewModel.canOpenInstallSheet ? .red : .secondary,
-                leadingIcon: SFSymbols.truckBoxBadgeClockFill,
+                leadingIcon: viewModel.canOpenInstallSheet ?  SFSymbols.truckBoxBadgeClockFill : SFSymbols.lockFill,
                 label: viewModel.canOpenInstallSheet ? "Begin Install" : "Being Installed...",
                 fullWidth: true
             ) {

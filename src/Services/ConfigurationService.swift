@@ -18,7 +18,14 @@ final class ConfigurationService {
         let fetchedAt: Date
     }
 
-    private var cache: [String: CacheEntry] = [:]
+    private actor CacheStore {
+        var entries: [String: CacheEntry] = [:]
+        func get(_ key: String) -> CacheEntry? { entries[key] }
+        func set(_ key: String, _ entry: CacheEntry) { entries[key] = entry }
+        func remove(_ key: String) { entries.removeValue(forKey: key) }
+    }
+
+    private let cache = CacheStore()
     private let ttl: TimeInterval = 15 * 60  // 15 minutes
 
     // MARK: - Cache Access
@@ -27,18 +34,18 @@ final class ConfigurationService {
         using repository: GenericRepository<T>
     ) async throws -> [T] {
         let key = T.collectionPath
-        if let entry = cache[key],
+        if let entry = await cache.get(key),
            Date().timeIntervalSince(entry.fetchedAt) < ttl,
            let values = entry.values as? [T] {
             return values
         }
         let fresh = try await repository.getAll()
-        cache[key] = CacheEntry(values: fresh, fetchedAt: Date())
+        await cache.set(key, CacheEntry(values: fresh, fetchedAt: Date()))
         return fresh
     }
 
     func invalidate<T: ConfigurationOption>(_ type: T.Type) {
-        cache.removeValue(forKey: T.collectionPath)
+        Task { await cache.remove(T.collectionPath) }
     }
 
     // MARK: - Preload
@@ -48,7 +55,9 @@ final class ConfigurationService {
             group.addTask {
                 _ = try? await self.getAll(using: EssentialsGroupTypeRepository())
             }
-            // Add future ConfigurationOption types here
+            group.addTask {
+                _ = try? await self.getAll(using: AccessoriesTypeRepository())
+            }
         }
     }
 }
