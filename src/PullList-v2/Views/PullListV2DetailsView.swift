@@ -21,29 +21,42 @@ struct PullListV2DetailsView: View {
     }
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 0) {
             TopBar
+                .padding(.bottom, 12)
             
             ScrollView {
-                VStack(spacing: 12) {
+                LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
                     PrimaryImageView(image: viewModel.pullListState.image)
 
-                    RoomsListSection
+                    Section {
+                        RoomsListContent
+                    } header: {
+                        RoomsListHeader
+                    }
                 }
             }
             
-            Spacer()
+            Spacer(minLength: 0)
             
-            CollapsibleDetailsHeader
-            
-            RDButton(
-                variant: viewModel.canOpenInstallSheet ? .red : .secondary,
-                leadingIcon: viewModel.canOpenInstallSheet ?  SFSymbols.truckBoxBadgeClockFill : SFSymbols.lockFill,
-                label: viewModel.canOpenInstallSheet ? "Begin Install" : "Being Installed...",
-                fullWidth: true
-            ) {
-                handleInstallListAction()
+            if showDetails {
+                ListDetails
             }
+            
+            HStack {
+                RDButton(
+                    variant: viewModel.canOpenInstallSheet ? .red : .secondary,
+                    leadingIcon: viewModel.canOpenInstallSheet ?  SFSymbols.truckBoxBadgeClockFill : SFSymbols.lockFill,
+                    label: viewModel.canOpenInstallSheet ? "Begin Install" : "Being Installed...",
+                    fullWidth: true
+                ) {
+                    handleInstallListAction()
+                }
+                
+                ShowDetailsButton
+            }
+            .padding(.top, 12)
+            .cornerRadius(12)
         }
         .frameTop()
         .frameHorizontalPadding()
@@ -83,42 +96,33 @@ struct PullListV2DetailsView: View {
 
 extension PullListV2DetailsView {
     
-    // MARK: CollapsibleDetailsHeader
-    var CollapsibleDetailsHeader: some View {
-        Button {
+    // MARK: ShowDetailsButton
+    var ShowDetailsButton: some View {
+        
+        RDButton(variant: showDetails ? .red : .secondary, leadingIcon: SFSymbols.infoCircleFill, label: "Details") {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                 showDetails.toggle()
             }
-        } label: {
-            VStack {
-                HStack(spacing: 6) {
-                    Text("Details")
-                        .bold()
-                    if showDetails {
-                        Spacer()
-                    }
-                    Image(systemName: SFSymbols.chevronDown)
-                        .frame(24)
-                        .bold()
-                        .rotationEffect(.degrees(showDetails ? 0 : -90))
-                        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: showDetails)
-                }
-                .foregroundStyle(showDetails ? Color(.systemGray) : Color(.systemGray3))
-                
-                if showDetails {
-                    PullListDetailsSection(viewModel.pullListState)
-                        .transition(.asymmetric(
-                            insertion: .opacity.combined(with: .scale(scale: 0.97, anchor: .top)),
-                            removal:   .opacity.combined(with: .scale(scale: 0.97, anchor: .top))
-                        ))
-                }
+        }
+    }
+    
+    var ListDetails: some View {
+        Button {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                showDetails = false
             }
-            .padding(showDetails ? 12 : 8)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(showDetails ? .red : Color(.systemGray3), lineWidth: 6)
-            )
-            .cornerRadius(12)
+        } label: {
+            PullListDetailsSection(viewModel.pullListState)
+                .transition(.asymmetric(
+                    insertion: .opacity.combined(with: .scale(scale: 0.97, anchor: .top)),
+                    removal:   .opacity.combined(with: .scale(scale: 0.97, anchor: .top))
+                ))
+                .padding(12)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(.red, lineWidth: 4)
+                )
+                .padding(.top, 12)
         }
     }
 
@@ -219,36 +223,41 @@ extension PullListV2DetailsView {
                     .foregroundColor(.primary)
             )
         }
+        .font(.footnote)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
     
-    // MARK: RoomsListView
+    // MARK: RoomsListHeader
+    var RoomsListHeader: some View {
+        HStack(spacing: .zero) {
+            SmallCTA(type: .secondary, leadingIcon: SFSymbols.richtextPageFill, text: "Show PDF") {
+                showPDFSheet = true
+            }
+
+            Spacer()
+
+            Text("Rooms")
+                .foregroundStyle(.red)
+                .font(.headline)
+
+            Spacer()
+
+            SmallCTA(type: .red, leadingIcon: SFSymbols.plus, text: "Add Room") {
+                showAddRoomsSheet = true
+            }
+        }
+        .padding(.vertical, 12)
+        .background(Color(.systemBackground))
+    }
+
+    // MARK: RoomsListContent
     @ViewBuilder
-    var RoomsListSection: some View {
+    var RoomsListContent: some View {
         if viewModel.isLoading && viewModel.rooms.isEmpty {
             ProgressView()
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         } else {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: .zero) {
-                    SmallCTA(type: .secondary, leadingIcon: SFSymbols.richtextPageFill, text: "Show PDF") {
-                        showPDFSheet = true
-                    }
-                    
-                    Spacer()
-
-                    Text("Rooms")
-                        .foregroundStyle(.red)
-                        .font(.headline)
-                    
-                    Spacer()
-                    
-                    SmallCTA(type: .red, leadingIcon: SFSymbols.plus, text: "Add Room") {
-                        showAddRoomsSheet = true
-                    }
-                }
-                RoomList
-            }
+            RoomList
         }
     }
     

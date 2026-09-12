@@ -270,15 +270,12 @@ extension PullListV2DetailsViewModel {
             try roomRepo.set(document: newRoom)
             try await pullListRepo.update(
                 id: pullListState.id,
-                fields: [PullListV2.CodingKeys.roomIds.stringValue: newRoom.id]
+                fields: [PullListV2.CodingKeys.roomIds.stringValue: FieldValue.arrayUnion([newRoom.id])]
             )
         } catch {
             alertMessage = "error adding \(newRoom.displayName): \(error.localizedDescription)"
             showAlert = true
             return
         }
-
-        pullListState.roomIds.append(newRoom.id)
-        rooms.append(newRoom)
     }
 }

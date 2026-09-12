@@ -126,9 +126,19 @@ final class DocumentListViewModelV2<T: RDDocument> {
             // isLoading will have already been reset by startReload.
             guard fetchGeneration == generation else { return }
 
+            print("[DocumentList:\(T.collectionName)] raw docs returned: \(snapshot.documents.count), filters: \(activeFilters)")
+
             cursor = snapshot.documents.last
             hasMore = snapshot.documents.count == pageSize
-            let page = snapshot.documents.compactMap { try? $0.data(as: T.self) }
+            let page: [T] = snapshot.documents.compactMap { doc in
+                do {
+                    return try doc.data(as: T.self)
+                } catch {
+                    print("[DocumentList:\(T.collectionName)] decode error for doc \(doc.documentID): \(error)")
+                    return nil
+                }
+            }
+            print("[DocumentList:\(T.collectionName)] decoded \(page.count)/\(snapshot.documents.count) docs")
             if appending {
                 documents.append(contentsOf: page)
             } else {
@@ -136,7 +146,7 @@ final class DocumentListViewModelV2<T: RDDocument> {
             }
         } catch {
             guard fetchGeneration == generation else { return }
-            print("DocumentListViewModelV2 fetch failed: \(error)")
+            print("[DocumentList:\(T.collectionName)] fetch failed: \(error)")
         }
 
         isLoading = false
