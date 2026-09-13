@@ -23,7 +23,6 @@ struct PullListV2DetailsView: View {
     var body: some View {
         VStack(spacing: 0) {
             TopBar
-                .padding(.bottom, 12)
             
             ScrollView {
                 LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {

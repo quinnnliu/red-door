@@ -15,7 +15,7 @@ struct InstalledListV2: RDDocument {
     var id: String
     var address: Address
     var addressId: String
-    var displayName: String {
+    var baseName: String {
         address.getStreetAddress() ?? address.formattedAddress
     }
     var createdDate: String

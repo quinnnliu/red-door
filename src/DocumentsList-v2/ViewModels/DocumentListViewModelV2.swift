@@ -126,8 +126,6 @@ final class DocumentListViewModelV2<T: RDDocument> {
             // isLoading will have already been reset by startReload.
             guard fetchGeneration == generation else { return }
 
-            print("[DocumentList:\(T.collectionName)] raw docs returned: \(snapshot.documents.count), filters: \(activeFilters)")
-
             cursor = snapshot.documents.last
             hasMore = snapshot.documents.count == pageSize
             let page: [T] = snapshot.documents.compactMap { doc in
@@ -138,7 +136,7 @@ final class DocumentListViewModelV2<T: RDDocument> {
                     return nil
                 }
             }
-            print("[DocumentList:\(T.collectionName)] decoded \(page.count)/\(snapshot.documents.count) docs")
+            
             if appending {
                 documents.append(contentsOf: page)
             } else {
@@ -162,7 +160,7 @@ final class DocumentListViewModelV2<T: RDDocument> {
                 q = q.whereField(key, isGreaterThanOrEqualTo: text)
                      .whereField(key, isLessThan: text + "\u{f8ff}")
             } else {
-                q = q.whereField(key, isEqualTo: value)
+                q = q.whereField(key, isEqualTo: value.base)
             }
         }
         return q

@@ -9,15 +9,15 @@ import SwiftUI
 
 struct ItemV2: RDDocument {
     static let collectionName: String = "items_v2"
-    static let orderByField: String = "name_lowercased"
-    static let searchField: String = "name_lowercased"
+    static let orderByField: String = "base_name_lowercased"
+    static let searchField: String = "base_name_lowercased"
 
     var id: String
     var modelId: String
     var groupId: String?
 
-    var displayName: String
-    var nameLowercased: String // for search
+    var baseName: String
+    var baseNameLowercased: String // for search
     var primaryImage: RDImage
     var secondaryImages: [RDImage]?
     var type: ItemType
@@ -40,7 +40,7 @@ struct ItemV2: RDDocument {
         id: String,
         modelId: String,
         groupId: String? = nil,
-        displayName: String,
+        baseName: String,
         primaryImage: RDImage,
         secondaryImages: [RDImage]? = nil,
         type: ItemType,
@@ -62,8 +62,8 @@ struct ItemV2: RDDocument {
         self.id = id
         self.modelId = modelId
         self.groupId = groupId
-        self.displayName = displayName
-        self.nameLowercased = displayName.lowercased()
+        self.baseName = baseName
+        self.baseNameLowercased = baseName.lowercased()
         self.primaryImage = primaryImage
         self.secondaryImages = secondaryImages
         self.type = type
@@ -87,8 +87,8 @@ struct ItemV2: RDDocument {
         self.id = UUID().uuidString
         self.modelId = item.modelId
         self.groupId = item.groupId
-        self.displayName = item.displayName
-        self.nameLowercased = item.nameLowercased
+        self.baseName = item.baseName
+        self.baseNameLowercased = item.baseNameLowercased
         self.primaryImage = item.primaryImage
         self.secondaryImages = item.secondaryImages
         self.type = item.type
@@ -114,7 +114,7 @@ struct ItemV2: RDDocument {
         case locationId = "location_id"
         case id, attention, type, color, material, value, brand, description
         case attentionDescription = "attention_description"
-        case nameLowercased = "name_lowercased"
+        case baseNameLowercased = "base_name_lowercased"
         case purchaseLocation = "purchase_location"
         case datePurchased = "date_purchased"
         case essentialGroupId = "essential_group_id"
@@ -122,7 +122,7 @@ struct ItemV2: RDDocument {
         case nickname
         case primaryImage = "primary_image"
         case secondaryImages = "secondary_images"
-        case displayName = "display_name"
+        case baseName = "base_name"
     }
 }
 

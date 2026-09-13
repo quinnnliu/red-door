@@ -70,7 +70,7 @@ final class CreateEssentialsGroupViewModel {
         guard !name.isEmpty else { return }
 
         let emoji = newGroupTypeEmoji.isSingleEmoji ? newGroupTypeEmoji : "⭐️"
-        let newType = EssentialsGroupType(displayName: name, emoji: emoji)
+        let newType = EssentialsGroupType(baseName: name, emoji: emoji)
 
         do {
             try essentialsGroupTypeRepo.set(document: newType)
@@ -96,7 +96,7 @@ final class CreateEssentialsGroupViewModel {
         do {
             let maxNumber =  await essentialsRepo.maxGroupNumber(forTypeId: groupType.id)
             let group = EssentialsGroup(
-                displayName: groupType.displayName,
+                baseName: groupType.displayName,
                 essentialsTypeId: groupType.id,
                 accessoriesId: selectedAccessory?.id,
                 groupNumber: maxNumber + 1,

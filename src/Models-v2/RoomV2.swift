@@ -10,26 +10,26 @@ import Foundation
 struct RoomV2: RDDocument {
     static let collectionName: String = "rooms"
     static let orderByField: String = "name"
-    static let searchField: String = "display_name"
-    
+    static let searchField: String = "base_name"
+
     var id: String
     var nameId: String
-    var displayName: String
+    var baseName: String
     var listId: String
     var itemIds: Set<String>
     var beforeImage: RDImage?
     var afterImage: RDImage?
     
     init(
-        displayName: String,
+        baseName: String,
         listId: String,
         itemIds: Set<String> = [],
         beforeImage: RDImage? = nil,
         afterimage: RDImage? = nil
     ) {
         self.id = UUID().uuidString
-        self.nameId = RoomV2.nameToId(displayName)
-        self.displayName = displayName
+        self.nameId = RoomV2.nameToId(baseName)
+        self.baseName = baseName
         self.listId = listId
         self.itemIds = itemIds
         self.beforeImage = beforeImage
@@ -40,7 +40,7 @@ struct RoomV2: RDDocument {
         case id
         case itemIds = "item_ids"
         case listId = "list_id"
-        case displayName = "display_name"
+        case baseName = "base_name"
         case nameId = "name_id"
         case beforeImage = "before_image"
         case afterImage = "after_image"

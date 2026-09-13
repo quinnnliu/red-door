@@ -61,7 +61,7 @@ final class CreateAccessoriesViewModel {
     func createAndSelectNewType() {
         let name = newTypeName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { return }
-        let newType = AccessoriesType(displayName: name)
+        let newType = AccessoriesType(baseName: name)
         do {
             try accessoriesTypeRepo.set(document: newType)
             configService.invalidate(AccessoriesType.self)
@@ -85,7 +85,7 @@ final class CreateAccessoriesViewModel {
         do {
             let maxNumber = await accessoriesRepo.maxAccessoriesNumber(forTypeId: type.id)
             var newAccessory = Accessories(
-                displayName: type.displayName,
+                baseName: type.displayName,
                 accessoriesTypeId: type.id,
                 primaryImage: primaryImage,
                 description: description,

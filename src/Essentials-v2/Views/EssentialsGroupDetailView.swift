@@ -46,7 +46,11 @@ struct EssentialsGroupDetailView: View {
             EssentialsViewFactory().makeEditEssentialsGroupSheet(group: viewModel.groupState)
         }
         .sheet(isPresented: $showAddItemsSheet) {
-            AddItemToDocumentSheetV2 { item in
+            AddItemToDocumentSheetV2(
+                defaultFilters: [
+                    ItemV2.CodingKeys.essentialGroupId.rawValue: AnyHashable(NSNull())
+                ]
+            ) { item in
                 AddItemDocumentContext.itemToEssentialsGroup(item: item, group: viewModel.groupState)
             }
         }
@@ -64,7 +68,7 @@ struct EssentialsGroupDetailView: View {
             }
         } message: {
             if let item = itemToRemove {
-                Text("Remove \(item.displayName) from \(viewModel.groupState.label)?")
+                Text("Remove \(item.displayName) from \(viewModel.groupState.displayName)?")
             }
         }
         .onAppear {
@@ -84,7 +88,7 @@ private extension EssentialsGroupDetailView {
                 BackButton()
             },
             header: {
-                Text("\(emoji) \(viewModel.groupState.label)")
+                Text("\(emoji) \(viewModel.groupState.displayName)")
                     .font(.headline)
                     .bold()
             },

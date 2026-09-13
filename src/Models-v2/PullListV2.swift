@@ -21,7 +21,7 @@ struct PullListV2: RDDocument {
 
     var address: Address
     var addressId: String
-    var displayName: String {
+    var baseName: String {
         self.address.getStreetAddress() ?? self.address.formattedAddress
     }
 

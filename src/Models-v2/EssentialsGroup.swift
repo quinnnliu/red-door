@@ -11,22 +11,22 @@ import Foundation
 struct EssentialsGroupType: ConfigurationOption {
     static let configurationType: String = EssentialsGroup.collectionName
     static let collectionName = "essentials_group_types"
-    static let orderByField = EssentialsGroupType.CodingKeys.displayName.stringValue
-    static let searchField = EssentialsGroupType.CodingKeys.displayName.stringValue
+    static let orderByField = EssentialsGroupType.CodingKeys.baseName.stringValue
+    static let searchField = EssentialsGroupType.CodingKeys.baseName.stringValue
 
     let id: String
-    let displayName: String
+    let baseName: String
     let emoji: String
 
-    init(displayName: String, emoji: String = "⭐️") {
-        self.id = displayName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: " ", with: "-")
-        self.displayName = displayName
+    init(baseName: String, emoji: String = "⭐️") {
+        self.id = baseName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: " ", with: "-")
+        self.baseName = baseName
         self.emoji = emoji
     }
 
     enum CodingKeys: String, CodingKey {
         case id
-        case displayName = "display_name"
+        case baseName = "base_name"
         case emoji
     }
 }
@@ -35,12 +35,12 @@ struct EssentialsGroupType: ConfigurationOption {
 
 struct EssentialsGroup: RDDocument {
     static let collectionName: String = "essentials"
-    static let orderByField: String = EssentialsGroup.CodingKeys.displayName.stringValue
-    static let searchField: String = EssentialsGroup.CodingKeys.displayNameLowercased.stringValue
-    
+    static let orderByField: String = EssentialsGroup.CodingKeys.baseName.stringValue
+    static let searchField: String = EssentialsGroup.CodingKeys.baseNameLowercased.stringValue
+
     var id: String
-    var displayName: String
-    var displayNameLowercased: String
+    var baseName: String
+    var baseNameLowercased: String
     var essentialsTypeId: String // maps to EssentialsGroupType
 
     var status: LocationStatus
@@ -54,21 +54,16 @@ struct EssentialsGroup: RDDocument {
         case id, status, nickname
         case accessoriesId = "accessories_id"
         case itemIds = "item_ids"
-        case displayName = "display_name"
-        case displayNameLowercased = "display_name_lowercased"
+        case baseName = "base_name"
+        case baseNameLowercased = "base_name_lowercased"
         case essentialsTypeId = "essentials_type_id"
         case locationId = "location_id"
         case groupNumber = "group_number"
     }
 
-    var label: String {
-        if let nickname { return "\"\(nickname)\"" }
-        return displayName
-    }
-
     init(
         id: String = UUID().uuidString,
-        displayName: String,
+        baseName: String,
         status: LocationStatus = .inStorage,
         locationId: String = Warehouse.warehouse1.id,
         essentialsTypeId: String,
@@ -78,8 +73,8 @@ struct EssentialsGroup: RDDocument {
         nickname: String? = nil
     ) {
         self.id = id
-        self.displayName = displayName
-        self.displayNameLowercased = displayName.lowercased()
+        self.baseName = baseName
+        self.baseNameLowercased = baseName.lowercased()
         self.status = status
         self.essentialsTypeId = essentialsTypeId
         self.itemIds = itemIds
