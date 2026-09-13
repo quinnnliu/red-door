@@ -130,7 +130,7 @@ struct PullListItemDetailsView: View {
 
     private var ItemDetails: some View {
 		VStack(alignment: .leading, spacing: 12) {
-            if viewModel.itemState.status != .inStorage {
+            if viewModel.itemState.location.status != .inStorage {
                 HStack(alignment: .center, spacing: 0) {
                     Text("Location: ")
                         .foregroundColor(.red)

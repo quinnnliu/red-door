@@ -78,11 +78,11 @@ struct ItemDetailSection: View {
                         Spacer()
                         
                         Text("Status:")
-                        Text(item.status.displayTitle)
+                        Text(item.location.status.displayTitle)
                             .padding(4)
-                            .background(item.status == .inStorage ? Color.green.opacity(0.15) : Color.red.opacity(0.15))
+                            .background(item.location.status == .inStorage ? Color.green.opacity(0.15) : Color.red.opacity(0.15))
                             .cornerRadius(4)
-                            .foregroundColor(item.status == .inStorage ? .green : .red)
+                            .foregroundColor(item.location.status == .inStorage ? .green : .red)
                     }
                 }
                 .padding(8)

@@ -21,7 +21,7 @@ final class InstallPullListSheetViewModel {
     var itemsByRoom: [String: [ItemV2]] = [:] // key: roomId, value: [ItemV2]
     var isLoading: Bool = false
     var itemsCache: [String: ItemV2] = [:] // key: itemId, value: ItemV2
-    var itemInstallStates: [String: (status: LocationStatus, locationId: String)] = [:] // key: itemId
+    var itemLocationState: [String: DocumentLocation] = [:] // key: itemId
     var warehouses: [WarehouseV2] = []
     
     private var roomsListener: ListenerRegistration? = nil
@@ -50,7 +50,7 @@ final class InstallPullListSheetViewModel {
         self.rooms = rooms
         self.itemsByRoom = itemsByRoom
         for item in itemsByRoom.values.joined() {
-            self.itemInstallStates[item.id] = (status: .inInstalledList, locationId: item.locationId)
+            self.itemLocationState[item.id] = DocumentLocation(status: .inInstalledList, locationId: item.location.locationId)
             self.itemsCache[item.id] = item
         }
     }
@@ -114,8 +114,8 @@ final class InstallPullListSheetViewModel {
                 let fetched = try await itemRepo.get(ids: Array(uncachedIds))
                 for item in fetched {
                     itemsCache[item.id] = item
-                    if itemInstallStates[item.id] == nil {
-                        itemInstallStates[item.id] = (status: .inInstalledList, locationId: item.locationId)
+                    if itemLocationState[item.id] == nil {
+                        itemLocationState[item.id] = DocumentLocation(status: .inInstalledList, locationId: item.location.locationId)
                     }
                 }
             }
@@ -182,9 +182,9 @@ final class InstallPullListSheetViewModel {
     // MARK: confirmInstallSummary
 
     var confirmInstallSummary: ConfirmInstallSummary {
-        let installedCount = itemInstallStates.values.filter { $0.status == .inInstalledList }.count
+        let installedCount = itemLocationState.values.filter { $0.status == .inInstalledList }.count
         var storageCounts: [String: Int] = [:]
-        for state in itemInstallStates.values where state.status == .inStorage {
+        for state in itemLocationState.values where state.status == .inStorage {
             storageCounts[state.locationId, default: 0] += 1
         }
         let breakdown = storageCounts.compactMap { warehouseId, count -> (warehouseName: String, count: Int)? in
@@ -204,7 +204,7 @@ final class InstallPullListSheetViewModel {
     func createInstalledList() async -> InstalledListV2? {
         let installedList = InstalledListV2(from: pullListState)
         let roomSnapshot = rooms
-        let stateSnapshot = itemInstallStates
+        let stateSnapshot = itemLocationState
         let installedListRepo = self.installedListRepo
         let installedRoomRepo = self.installedRoomRepo
         let itemRepo = self.itemRepo
@@ -229,10 +229,7 @@ final class InstallPullListSheetViewModel {
             for (itemId, state) in stateSnapshot {
                 itemRepo.update(
                     id: itemId,
-                    fields: [
-                        ItemV2.CodingKeys.status.stringValue: state.status.rawValue,
-                        ItemV2.CodingKeys.locationId.stringValue: state.locationId
-                    ],
+                    fields: [ItemV2.CodingKeys.location.stringValue: try Firestore.Encoder().encode(state)],
                     inBatch: batch
                 )
             }

@@ -15,6 +15,7 @@ struct PullListV2DetailsView: View {
     @State private var showPDFSheet: Bool = false
     @State private var showInstallListSheet: Bool = false
     @State private var showDetails: Bool = false
+    @State private var showUnassignedItems: Bool = false
 
     init(list: PullListV2) {
         viewModel = PullListV2DetailsViewModel(from: list)
@@ -27,6 +28,12 @@ struct PullListV2DetailsView: View {
             ScrollView {
                 LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
                     PrimaryImageView(image: viewModel.pullListState.image)
+
+                    Section {
+                        UnassignedItemsContent
+                    } header: {
+                        UnassignedItemsHeader
+                    }
 
                     Section {
                         RoomsListContent
@@ -226,6 +233,45 @@ extension PullListV2DetailsView {
         .frame(maxWidth: .infinity, alignment: .leading)
     }
     
+    // MARK: UnassignedItemsHeader
+    var UnassignedItemsHeader: some View {
+        HStack(spacing: .zero) {
+            Text("Unassigned Items")
+                .foregroundStyle(.red)
+                .font(.headline)
+
+            Spacer()
+
+            Button {
+                withAnimation(.bouncy) {
+                    showUnassignedItems.toggle()
+                }
+            } label: {
+                Text("\(showUnassignedItems ? "Hide" : "Show") (\(viewModel.unassignedItems.count))")
+                    .font(.caption)
+                    .foregroundStyle(.red)
+            }
+        }
+        .padding(.vertical, 12)
+        .background(Color(.systemBackground))
+    }
+
+    // MARK: UnassignedItemsContent
+    @ViewBuilder
+    var UnassignedItemsContent: some View {
+        if showUnassignedItems {
+            LazyVStack(spacing: 8) {
+                ForEach(viewModel.unassignedItems) { item in
+                    Text(item.displayName)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(12)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(8)
+                }
+            }
+        }
+    }
+
     // MARK: RoomsListHeader
     var RoomsListHeader: some View {
         HStack(spacing: .zero) {

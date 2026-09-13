@@ -48,6 +48,7 @@ struct EssentialsGroupDetailView: View {
         .sheet(isPresented: $showAddItemsSheet) {
             AddItemToDocumentSheetV2(
                 defaultFilters: [
+                    "\(ItemV2.CodingKeys.location.rawValue).\(DocumentLocation.CodingKeys.status.rawValue)": LocationStatus.inStorage.rawValue,
                     ItemV2.CodingKeys.essentialGroupId.rawValue: AnyHashable(NSNull())
                 ]
             ) { item in
@@ -113,7 +114,7 @@ private extension EssentialsGroupDetailView {
                         Text(item.displayName)
                             .font(.body)
                             .bold()
-                        Text(item.status.displayTitle)
+                        Text(item.location.status.displayTitle)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }

@@ -92,7 +92,7 @@ final class CreateAccessoriesViewModel {
                 accessoriesNumber: maxNumber + 1,
                 nickname: nickname.isEmpty ? nil : nickname
             )
-            newAccessory.primaryImage.objectId = newAccessory.id
+            newAccessory.primaryImage.documentId = newAccessory.id
 
             if let uploadedImage = try await FirebaseImageManager.shared.updateImage(
                 newAccessory.primaryImage,

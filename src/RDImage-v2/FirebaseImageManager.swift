@@ -59,31 +59,31 @@ final class FirebaseImageManager {
     // MARK: - Uploading
 
     enum ImageUploadError: Error {
-        case notDirty, invalidType, noUIImage, cannotCompress, missingObjectId
+        case notDirty, invalidType, noUIImage, cannotCompress, missingDocumentId
     }
 
-    private func validateUploadRDImage(_ rdImage: RDImage, uploadImageType: RDImageTypeEnum) throws -> (uiImage: UIImage, objectPath: String, objectId: String) {
+    private func validateUploadRDImage(_ rdImage: RDImage, uploadImageType: RDImageTypeEnum) throws -> (uiImage: UIImage, storagePath: String, documentId: String) {
         guard rdImage.imageType == .dirty else { throw ImageUploadError.notDirty }
-        guard let objectPath = uploadImageType.objectPath else { throw ImageUploadError.invalidType }
+        guard let storagePath = uploadImageType.storagePath else { throw ImageUploadError.invalidType }
         guard let uiImage = rdImage.uiImage else { throw ImageUploadError.noUIImage }
-        guard let objectId = rdImage.objectId else { throw ImageUploadError.missingObjectId }
+        guard let documentId = rdImage.documentId else { throw ImageUploadError.missingDocumentId }
 
-        return (uiImage, objectPath, objectId)
+        return (uiImage, storagePath, documentId)
     }
 
     // MARK: uploadImage()
 
     func uploadImage(_ rdImage: RDImage, uploadImageType: RDImageTypeEnum) async throws -> RDImage {
-        let (uiImage, objectPath, objectId): (UIImage, String, String)
+        let (uiImage, storagePath, documentId): (UIImage, String, String)
 
         do {
-            (uiImage, objectPath, objectId) = try validateUploadRDImage(rdImage, uploadImageType: uploadImageType)
+            (uiImage, storagePath, documentId) = try validateUploadRDImage(rdImage, uploadImageType: uploadImageType)
         } catch {
             print("Upload skipped: \(error)")
             return rdImage
         }
 
-        let storageRef = FirebaseImageManager.storageRef.child(objectPath).child(objectId).child(rdImage.id)
+        let storageRef = FirebaseImageManager.storageRef.child(storagePath).child(documentId).child(rdImage.id)
 
         let metaData = StorageMetadata()
         metaData.contentType = "image/jpeg"
@@ -103,36 +103,48 @@ final class FirebaseImageManager {
     // MARK: - Delete Images
 
     enum ImageDeleteError: Error {
-        case getObjectPathError, missingObjectId
+        case getStoragePathError, missingDocumentId
     }
 
-    private func validateDeleteRDImage(_ rdImage: RDImage, deletedImageType: RDImageTypeEnum) throws -> (objectId: String, objectPath: String) {
-        guard let objectId = rdImage.objectId else { throw ImageDeleteError.missingObjectId }
-        guard let objectPath = deletedImageType.objectPath else { throw ImageDeleteError.getObjectPathError }
+    private func validateDeleteRDImage(_ rdImage: RDImage, deletedImageType: RDImageTypeEnum) throws -> (documentId: String, storagePath: String) {
+        guard let documentId = rdImage.documentId else { throw ImageDeleteError.missingDocumentId }
+        guard let storagePath = deletedImageType.storagePath else { throw ImageDeleteError.getStoragePathError }
 
-        return (objectId, objectPath)
+        return (documentId, storagePath)
     }
 
-    // MARK: Delete Image
+    // MARK: deleteImage()
 
     func deleteImage(_ rdImage: RDImage, deletedImageType: RDImageTypeEnum) async throws {
-        // delete image from storage
-        let (objectId, objectPath): (String, String)
+        let (documentId, storagePath): (String, String)
 
         do {
-            (objectId, objectPath) = try validateDeleteRDImage(rdImage, deletedImageType: deletedImageType)
+            (documentId, storagePath) = try validateDeleteRDImage(rdImage, deletedImageType: deletedImageType)
         } catch {
             print("Delete skipped: \(error)")
             throw error
         }
 
-        var storageRef = FirebaseImageManager.storageRef.child(objectPath)
-        storageRef = storageRef.child(objectId).child(rdImage.id)
+        let storageRef = FirebaseImageManager.storageRef.child(storagePath).child(documentId).child(rdImage.id)
 
         do {
             try await storageRef.delete()
         } catch {
             print("Error deleting imageID: \(error)")
+        }
+    }
+
+    // MARK: deleteDocumentImages()
+
+    func deleteDocumentImages(document: any RDDocument, imageType: RDImageTypeEnum) async throws {
+        guard let storagePath = imageType.storagePath else { throw ImageDeleteError.getStoragePathError }
+        let folderRef = FirebaseImageManager.storageRef.child(storagePath).child(document.id)
+        let result = try await folderRef.listAll()
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            for item in result.items {
+                group.addTask { try await item.delete() }
+            }
+            try await group.waitForAll()
         }
     }
 }

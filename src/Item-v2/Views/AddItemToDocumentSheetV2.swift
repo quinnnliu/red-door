@@ -17,7 +17,7 @@ struct AddItemToDocumentSheetV2: View {
 
     init(
         title: String = "Available Items",
-        defaultFilters: [String: AnyHashable] = [ItemV2.CodingKeys.status.rawValue: LocationStatus.inStorage.rawValue],
+        defaultFilters: [String: AnyHashable] = ["\(ItemV2.CodingKeys.location.rawValue).\(DocumentLocation.CodingKeys.status.rawValue)": LocationStatus.inStorage.rawValue],
         makeContext: @escaping (ItemV2) -> AddItemDocumentContext
     ) {
         self.title = title

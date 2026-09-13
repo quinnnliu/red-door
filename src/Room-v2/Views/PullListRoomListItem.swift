@@ -122,7 +122,7 @@ extension PullListRoomListItem {
             .padding(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 6)
-                    .stroke(item.attention ? Color.yellow.opacity(0.75) : item.status == .inStorage ? Color(.systemGray3) : Color.red, lineWidth: 2)
+                    .stroke(item.attention ? Color.yellow.opacity(0.75) : item.location.status == .inStorage ? Color(.systemGray3) : Color.red, lineWidth: 2)
             )
         }
     }

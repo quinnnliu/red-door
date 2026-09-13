@@ -74,7 +74,7 @@ extension InstallPullListSheet {
                     InstallPullListRoomListItem(
                         room,
                         items: viewModel.itemsByRoom[room.id] ?? [],
-                        installStates: viewModel.itemInstallStates,
+                        installStates: viewModel.itemLocationState,
                         warehouses: viewModel.warehouses,
                         action: handleAction(_:)
                     )
@@ -92,14 +92,14 @@ struct InstallPullListRoomListItem: View {
 
     let items: [ItemV2]
     let room: RoomV2
-    let installStates: [String: (status: LocationStatus, locationId: String)]
+    let installStates: [String: DocumentLocation]
     let warehouses: [WarehouseV2]
     let action: (Any?) -> ()
 
     init(
         _ room: RoomV2,
         items: [ItemV2],
-        installStates: [String: (status: LocationStatus, locationId: String)],
+        installStates: [String: DocumentLocation],
         warehouses: [WarehouseV2],
         action: @escaping (Any?) -> ()
     ) {
@@ -255,11 +255,11 @@ extension InstallPullListSheet {
         case let roomAction as InstallPullListRoomAction:
             switch roomAction {
             case .installItem(let itemId):
-                viewModel.itemInstallStates.updateValue((status: .inInstalledList, locationId: viewModel.pullListState.id), forKey: itemId)
+                viewModel.itemLocationState.updateValue(DocumentLocation(status: .inInstalledList, locationId: viewModel.pullListState.id), forKey: itemId)
             case .refreshRoom(let roomId):
                 viewModel.refreshRoom(roomId)
             case .storeItem(let itemId, let warehouseId):
-                viewModel.itemInstallStates.updateValue((status: .inStorage, locationId: warehouseId), forKey: itemId)
+                viewModel.itemLocationState.updateValue(DocumentLocation(status: .inStorage, locationId: warehouseId), forKey: itemId)
             }
         case let confirmAction as ConfirmInstallSheetAction:
             switch confirmAction {

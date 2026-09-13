@@ -117,12 +117,12 @@ extension PullListRoomDetailsViewModel {
         
         do {
             let batch = roomRepo.db.batch()
+            let storageLocationData = try Firestore.Encoder().encode(
+                DocumentLocation(status: .inStorage, locationId: Warehouse.warehouse1.id)
+            )
             itemRepo.update(
                 id: item.id,
-                fields: [
-                    ItemV2.CodingKeys.status.stringValue: LocationStatus.inStorage.rawValue,
-                    ItemV2.CodingKeys.locationId.stringValue: Warehouse.warehouse1.id
-                ],
+                fields: [ItemV2.CodingKeys.location.stringValue: storageLocationData],
                 inBatch: batch
             )
             roomRepo.update(
@@ -177,7 +177,7 @@ extension PullListRoomDetailsViewModel {
         defer { isLoading = false }
 
         var imageToUpdate = updatedImage
-        imageToUpdate.objectId = roomState.id
+        imageToUpdate.documentId = roomState.id
         
         let imageField = isBefore ? RoomV2.CodingKeys.beforeImage.stringValue : RoomV2.CodingKeys.afterImage.stringValue
         
@@ -202,7 +202,7 @@ extension PullListRoomDetailsViewModel {
             "id": image.id,
             "imageType": image.imageType.rawValue
         ]
-        if let objectId = image.objectId { dict["objectId"] = objectId }
+        if let documentId = image.documentId { dict["document_id"] = documentId }
         if let url = image.imageURL { dict["imageURL"] = url.absoluteString }
         return dict
     }

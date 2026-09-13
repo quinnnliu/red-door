@@ -16,7 +16,7 @@ struct NavigationDestinationsModifierV2: ViewModifier {
             .navigationDestination(for: NavigationDestination.self) { destination in
                 switch destination {
                 case .itemDetailView(let item):
-                    ItemDetailViewV2(item: item)
+                    ItemDetailsViewV2(item: item)
                 case .pullListDetailView(let list):
                     PullListV2DetailsView(list: list)
                 case .pulllistRoomDetailView(let items, let room):

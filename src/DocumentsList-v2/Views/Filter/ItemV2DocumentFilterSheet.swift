@@ -32,7 +32,7 @@ struct ItemV2DocumentFilterSheet: View {
         _selectedType      = State(initialValue: (initialFilters[ItemV2.CodingKeys.type.stringValue] as? String).flatMap(ItemType.init(rawValue:)))
         _selectedColor     = State(initialValue: (initialFilters[ItemV2.CodingKeys.color.stringValue] as? String).flatMap(ItemColor.init(rawValue:)))
         _selectedMaterial  = State(initialValue: (initialFilters[ItemV2.CodingKeys.material.stringValue] as? String).flatMap(ItemMaterial.init(rawValue:)))
-        _selectedStatus    = State(initialValue: (initialFilters[ItemV2.CodingKeys.status.stringValue] as? String).flatMap(LocationStatus.init(rawValue:)))
+        _selectedStatus    = State(initialValue: (initialFilters["\(ItemV2.CodingKeys.location.stringValue).\(DocumentLocation.CodingKeys.status.stringValue)"] as? String).flatMap(LocationStatus.init(rawValue:)))
         _selectedAttention = State(initialValue: initialFilters[ItemV2.CodingKeys.attention.stringValue] as? Bool)
         let groupId = initialFilters[ItemV2.CodingKeys.essentialGroupId.stringValue] as? String
         _selectedGroup     = State(initialValue: availableGroups.first { $0.id == groupId })
@@ -174,7 +174,7 @@ private extension ItemV2DocumentFilterSheet {
         if let type = selectedType { filters[ItemV2.CodingKeys.type.stringValue] = type.rawValue }
         if let color = selectedColor { filters[ItemV2.CodingKeys.color.stringValue] = color.rawValue }
         if let material = selectedMaterial { filters[ItemV2.CodingKeys.material.stringValue] = material.rawValue }
-        if let status = selectedStatus { filters[ItemV2.CodingKeys.status.stringValue] = status.rawValue }
+        if let status = selectedStatus { filters["\(ItemV2.CodingKeys.location.stringValue).\(DocumentLocation.CodingKeys.status.stringValue)"] = status.rawValue }
         if let attention = selectedAttention { filters[ItemV2.CodingKeys.attention.stringValue] = attention }
         if let group = selectedGroup { filters[ItemV2.CodingKeys.essentialGroupId.stringValue] = group.id }
         return filters

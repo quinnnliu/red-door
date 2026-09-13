@@ -8,22 +8,21 @@
 import SwiftUI
 
 struct EditItemSheetV2: View {
+    typealias ImageEditorAction = PrimaryImageEditor.ImageEditorAction
+
     @Environment(\.dismiss) private var dismiss
+    @Environment(NavigationCoordinator.self) private var coordinator: NavigationCoordinator
 
     var viewModel: ItemDetailViewModel
     @State private var editingItem: ItemV2
     var onDelete: (() -> Void)?
-
-    // Image overlay
-    @State private var selectedRDImage: RDImage? = nil
-    @State private var isImageSelected: Bool = false
 
     // Loading and delete
     @State private var showDeleteAlert: Bool = false
 
     init(viewModel: ItemDetailViewModel, onDelete: (() -> Void)? = nil) {
         self.viewModel = viewModel
-        self.editingItem = viewModel.item
+        self.editingItem = viewModel.itemState
         self.onDelete = onDelete
     }
 
@@ -35,7 +34,9 @@ struct EditItemSheetV2: View {
                 VStack(spacing: 12) {
                     TopBar()
 
-                    ItemImageEditor(image: $editingItem.primaryImage)
+                    PrimaryImageEditor(image: editingItem.primaryImage) { action in
+                        handleImageAction(action)
+                    }
 
                     EditItemDetailSection(
                         description: $editingItem.description,
@@ -70,10 +71,6 @@ struct EditItemSheetV2: View {
                 .frameTopPadding()
             }
             .toolbar(.hidden)
-            .overlay(
-                ModelRDImageOverlay(selectedRDImage: selectedRDImage, isImageSelected: $isImageSelected)
-                    .animation(.easeInOut(duration: 0.3), value: isImageSelected)
-            )
 
             if viewModel.isLoading {
                 Color.black.opacity(0.3).ignoresSafeArea()
@@ -116,7 +113,7 @@ struct EditItemSheetV2: View {
     var ItemNameEntry: some View {
         TextField("Item Name", text: $editingItem.baseName)
             .padding(6)
-            .background(isImageSelected ? Color.clear : Color(.systemGray5))
+            .background(Color(.systemGray5))
             .cornerRadius(8)
             .multilineTextAlignment(.center)
     }
@@ -133,9 +130,19 @@ struct EditItemSheetV2: View {
 
     // MARK: - Helper Functions
 
+    private func handleImageAction(_ actionArg: Any?) {
+        guard let action = actionArg as? ImageEditorAction else { return }
+        switch action {
+        case .newImage(let image):
+            editingItem.primaryImage = image
+        case .deleteImage(let deletedImage):
+            editingItem.primaryImage = deletedImage
+        }
+    }
+
     private func saveItem() {
         Task {
-            viewModel.item = editingItem
+            viewModel.itemState = editingItem
             await viewModel.updateItem()
             dismiss()
         }
@@ -145,7 +152,7 @@ struct EditItemSheetV2: View {
         Task {
             await viewModel.deleteItem()
             onDelete?()
-            dismiss()
+            coordinator.resetSelectedPath()
         }
     }
 }

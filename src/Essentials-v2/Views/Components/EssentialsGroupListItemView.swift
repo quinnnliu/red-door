@@ -24,8 +24,8 @@ struct EssentialsGroupListItemView: View {
                         .font(.headline)
                         .foregroundStyle(.primary)
 
-                    if group.status != .inStorage {
-                        Text("• \(group.status.displayTitle)")
+                    if group.location.status != .inStorage {
+                        Text("• \(group.location.status.displayTitle)")
                             .font(.footnote)
                             .foregroundStyle(.red)
                     }

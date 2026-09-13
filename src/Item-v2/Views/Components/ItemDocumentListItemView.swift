@@ -36,8 +36,8 @@ struct ItemDocumentListItemView: View {
                         .font(.headline)
                         .foregroundStyle(.primary)
 
-                    if item.status != .inStorage {
-                        Text("• \(item.status.displayTitle)")
+                    if item.location.status != .inStorage {
+                        Text("• \(item.location.status.displayTitle)")
                             .font(.footnote)
                             .foregroundStyle(.red)
                     }

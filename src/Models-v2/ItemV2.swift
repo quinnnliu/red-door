@@ -27,12 +27,11 @@ struct ItemV2: RDDocument {
     var brand: String?
     var purchaseLocation: String?
     var datePurchased: String?
-    var status: LocationStatus
-    var locationId: String
+    var location: DocumentLocation
     var attention: Bool
     var attentionDescription: String?
     var description: String
-    var essentialGroupId: String?
+    @NullEncodable var essentialGroupId: String?
     var itemNumber: Int
     var nickname: String?
 
@@ -50,8 +49,7 @@ struct ItemV2: RDDocument {
         brand: String? = nil,
         purchaseLocation: String? = nil,
         datePurchased: String? = nil,
-        status: LocationStatus = .inStorage,
-        locationId: String = Warehouse.warehouse1.id, // TODO: non-default warehouse (select where they should be stored)
+        location: DocumentLocation = DocumentLocation(status: .inStorage, locationId: Warehouse.warehouse1.id), // TODO: non-default warehouse (select where they should be stored)
         attention: Bool,
         attentionDescription: String? = nil,
         description: String,
@@ -73,8 +71,7 @@ struct ItemV2: RDDocument {
         self.brand = brand
         self.purchaseLocation = purchaseLocation
         self.datePurchased = datePurchased
-        self.status = status
-        self.locationId = locationId
+        self.location = location
         self.attention = attention
         self.attentionDescription = attentionDescription
         self.description = description
@@ -98,8 +95,7 @@ struct ItemV2: RDDocument {
         self.brand = item.brand
         self.purchaseLocation = item.purchaseLocation
         self.datePurchased = item.datePurchased
-        self.status = item.status
-        self.locationId = item.locationId
+        self.location = item.location
         self.attention = item.attention
         self.attentionDescription = item.attentionDescription
         self.description = item.description
@@ -110,8 +106,7 @@ struct ItemV2: RDDocument {
 
     enum CodingKeys: String, CodingKey {
         case modelId = "model_id"
-        case status = "status"
-        case locationId = "location_id"
+        case location
         case id, attention, type, color, material, value, brand, description
         case attentionDescription = "attention_description"
         case baseNameLowercased = "base_name_lowercased"

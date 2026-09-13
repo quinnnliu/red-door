@@ -136,7 +136,7 @@ final class DocumentListViewModelV2<T: RDDocument> {
                     return nil
                 }
             }
-            
+
             if appending {
                 documents.append(contentsOf: page)
             } else {
@@ -144,7 +144,7 @@ final class DocumentListViewModelV2<T: RDDocument> {
             }
         } catch {
             guard fetchGeneration == generation else { return }
-            print("[DocumentList:\(T.collectionName)] fetch failed: \(error)")
+            print("[DocumentList:\(T.collectionName)] fetch FAILED: \(error)")
         }
 
         isLoading = false

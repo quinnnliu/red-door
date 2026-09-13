@@ -46,12 +46,12 @@ extension AddItemToRoomDetailViewModel {
                         fields: [RoomV2.CodingKeys.itemIds.stringValue: newItemIds],
                         transaction: transaction
                     )
+                    guard let newLocationData = try? Firestore.Encoder().encode(
+                        DocumentLocation(status: .inPullList, locationId: self.room.listId)
+                    ) else { return nil }
                     self.itemRepo.update(
                         id: self.item.id,
-                        fields: [
-                            ItemV2.CodingKeys.status.stringValue: LocationStatus.inPullList.rawValue,
-                            ItemV2.CodingKeys.locationId.stringValue: self.room.listId
-                        ],
+                        fields: [ItemV2.CodingKeys.location.stringValue: newLocationData],
                         transaction: transaction
                     )
                     return nil

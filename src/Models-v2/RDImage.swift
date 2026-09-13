@@ -16,7 +16,7 @@ enum RDImageTypeEnum: String, Codable {
     case roomBefore, roomAfter, listV2
     case accessory
 
-    var objectPath: String? {
+    var storagePath: String? {
         switch self {
         case .roomAfter, .roomBefore:
             "rooms"
@@ -43,12 +43,13 @@ enum RDImageTypeEnum: String, Codable {
 struct RDImage: Identifiable, Codable, Hashable {
     var id: String = UUID().uuidString
     var imageType: RDImageTypeEnum = .dirty
-    var objectId: String? = nil
+    var documentId: String? = nil
     var imageURL: URL? = nil
     var uiImage: UIImage? = nil
 
     enum CodingKeys: String, CodingKey {
-        case id, objectId, imageURL, imageType
+        case id, imageURL, imageType
+        case documentId = "document_id"
     }
 }
 

@@ -140,7 +140,7 @@ struct PLGeneratedPDFViewV2: View {
                 .padding(.leading, 6)
                 .lineLimit(1)
 
-            Text(item.locationId)
+            Text(item.location.locationId)
                 .font(.system(size: 9))
                 .frame(width: 150, alignment: .leading)
                 .padding(.leading, 6)

@@ -43,29 +43,27 @@ struct EssentialsGroup: RDDocument {
     var baseNameLowercased: String
     var essentialsTypeId: String // maps to EssentialsGroupType
 
-    var status: LocationStatus
-    var locationId: String
+    var location: DocumentLocation
     var itemIds: [String]
     var accessoriesId: String?
     var groupNumber: Int
     var nickname: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, status, nickname
+        case id, nickname
         case accessoriesId = "accessories_id"
         case itemIds = "item_ids"
         case baseName = "base_name"
         case baseNameLowercased = "base_name_lowercased"
         case essentialsTypeId = "essentials_type_id"
-        case locationId = "location_id"
+        case location
         case groupNumber = "group_number"
     }
 
     init(
         id: String = UUID().uuidString,
         baseName: String,
-        status: LocationStatus = .inStorage,
-        locationId: String = Warehouse.warehouse1.id,
+        location: DocumentLocation = DocumentLocation(status: .inStorage, locationId: Warehouse.warehouse1.id),
         essentialsTypeId: String,
         itemIds: [String] = [],
         accessoriesId: String? = nil,
@@ -75,11 +73,10 @@ struct EssentialsGroup: RDDocument {
         self.id = id
         self.baseName = baseName
         self.baseNameLowercased = baseName.lowercased()
-        self.status = status
+        self.location = location
         self.essentialsTypeId = essentialsTypeId
         self.itemIds = itemIds
         self.accessoriesId = accessoriesId
-        self.locationId = locationId
         self.groupNumber = groupNumber
         self.nickname = nickname
     }

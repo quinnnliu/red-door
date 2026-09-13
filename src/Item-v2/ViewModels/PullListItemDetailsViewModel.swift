@@ -61,12 +61,12 @@ final class PullListItemDetailsViewModel {
                     var currentRoom = try roomRepo.get(id: roomId, transaction: transaction)
                     currentRoom.itemIds.remove(itemId)
 
+                    guard let storageLocationData = try? Firestore.Encoder().encode(
+                        DocumentLocation(status: .inStorage, locationId: Warehouse.warehouse1.id)
+                    ) else { return false }
                     itemRepo.update(
                         id: itemId,
-                        fields: [
-                            ItemV2.CodingKeys.status.stringValue: LocationStatus.inStorage.rawValue,
-                            ItemV2.CodingKeys.locationId.stringValue: Warehouse.warehouse1.id // TODO: should select where it should be stored
-                        ],
+                        fields: [ItemV2.CodingKeys.location.stringValue: storageLocationData],
                         transaction: transaction
                     )
                     roomRepo.update(
@@ -115,7 +115,7 @@ final class PullListItemDetailsViewModel {
 
                     guard !fetchedNewRoom.itemIds.contains(fetchedItem.id),
                           fetchedCurrentRoom.itemIds.contains(fetchedItem.id),
-                          fetchedItem.locationId == fetchedCurrentRoom.listId else {
+                          fetchedItem.location.locationId == fetchedCurrentRoom.listId else {
                         return nil
                     }
 
@@ -143,10 +143,10 @@ final class PullListItemDetailsViewModel {
 	// MARK: - Data Fetching
 
 	func fetchPullListForLocation() async {
-        guard itemState.status != .inStorage, itemState.status == .inPullList, pullList == nil else { return }
+        guard itemState.location.status != .inStorage, itemState.location.status == .inPullList, pullList == nil else { return }
 
 		do {
-			pullList = try await listRepo.get(id: itemState.locationId)
+			pullList = try await listRepo.get(id: itemState.location.locationId)
 		} catch {
 			alertMessage = "Failed to load item location: \(error.localizedDescription)"
 			showAlert = true

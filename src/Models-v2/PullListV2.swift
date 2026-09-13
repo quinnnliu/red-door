@@ -31,6 +31,7 @@ struct PullListV2: RDDocument {
     var clientId: String // TODO: make a "job" object?
 
     var roomIds: [String]
+    var unassignedItemIds: [String]
     var installingSession: InstallingSession?
     var image: RDImage?
 
@@ -46,6 +47,7 @@ struct PullListV2: RDDocument {
         clientId: String,
 
         roomIds: [String] = [],
+        unassignedItemIds: [String] = [],
         installingSession: InstallingSession? = nil,
         image: RDImage? = nil
     ) {
@@ -60,6 +62,7 @@ struct PullListV2: RDDocument {
 
         self.clientId = clientId
         self.roomIds = roomIds
+        self.unassignedItemIds = unassignedItemIds
         self.installingSession = installingSession
         self.image = image
     }
@@ -92,6 +95,7 @@ struct PullListV2: RDDocument {
         case uninstallDate = "uninstall_date"
         case clientId = "client_id"
         case roomIds = "room_ids"
+        case unassignedItemIds = "unassigned_item_ids"
         case installingSession = "installing_session"
         case image
     }

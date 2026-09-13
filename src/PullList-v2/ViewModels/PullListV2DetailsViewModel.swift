@@ -13,6 +13,7 @@ final class PullListV2DetailsViewModel {
     var pullListState: PullListV2
     var rooms: [RoomV2] = []
     var itemsByRoom: [String: [ItemV2]] = [:] // key: roomId, value: [ItemV2]
+    var unassignedItems: [ItemV2] = []
     var isLoading: Bool = false
     var itemsCache: [String: ItemV2] = [:] // key: itemId, value: ItemV2
 
@@ -75,6 +76,8 @@ final class PullListV2DetailsViewModel {
         for room in self.rooms {
             await fetchItemsForRoom(room)
         }
+
+        await fetchUnassignedItems()
     }
 
     @MainActor
@@ -84,6 +87,24 @@ final class PullListV2DetailsViewModel {
         alertMessage = error.localizedDescription
     }
     
+    // MARK: fetchUnassignedItems
+
+    @MainActor
+    func fetchUnassignedItems() async {
+        let ids = pullListState.unassignedItemIds
+        guard !ids.isEmpty else {
+            unassignedItems = []
+            return
+        }
+        do {
+            let fetched = try await itemRepo.get(ids: ids)
+            unassignedItems = fetched.sorted { $0.displayName < $1.displayName }
+        } catch {
+            alertMessage = error.localizedDescription
+            showAlert = true
+        }
+    }
+
     // MARK: fetchItemsForRoom
     
     @MainActor
@@ -156,16 +177,17 @@ final class PullListV2DetailsViewModel {
         let pullListId = self.pullListState.id
 
         do {
+            let storageLocationData = try Firestore.Encoder().encode(
+                DocumentLocation(status: .inStorage, locationId: Warehouse.warehouse1.id)
+            )
+
             _ = try await pullListRepo.db.runTransaction { (transaction, errorPointer) -> Any? in
                 // Update all items: clear listId, mark as available
                 let allItemIds = roomSnapshot.flatMap { $0.itemIds }
                 for itemId in allItemIds {
                     itemRepo.update(
                         id: itemId,
-                        fields: [
-                            ItemV2.CodingKeys.status.stringValue: LocationStatus.inStorage.rawValue,
-                            ItemV2.CodingKeys.locationId.stringValue: Warehouse.warehouse1.id
-                        ],
+                        fields: [ItemV2.CodingKeys.location.stringValue: storageLocationData],
                         transaction: transaction
                     )
                 }

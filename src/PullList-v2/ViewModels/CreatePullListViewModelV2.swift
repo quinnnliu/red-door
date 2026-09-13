@@ -40,7 +40,7 @@ final class CreatePullListViewModelV2 {
         do {
             if let image = pullListState.image {
                 var imageToUpload = image
-                imageToUpload.objectId = pullListState.id
+                imageToUpload.documentId = pullListState.id
                 pullListState.image = try await FirebaseImageManager.shared.updateImage(imageToUpload, resultImageType: .listV2)
             }
 

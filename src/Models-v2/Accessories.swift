@@ -37,8 +37,7 @@ struct Accessories: RDDocument {
     let baseNameLowercased: String
     
     let accessoriesTypeId: String
-    let status: LocationStatus
-    let locationId: String
+    let location: DocumentLocation
     let description: String
     
     var primaryImage: RDImage
@@ -52,8 +51,7 @@ struct Accessories: RDDocument {
         accessoriesTypeId: String,
         primaryImage: RDImage,
         secondaryImages: [RDImage]? = nil,
-        status: LocationStatus = .inStorage,
-        locationId: String = Warehouse.warehouse1.id, // TODO: non-default warehouse (select where they should be stored)
+        location: DocumentLocation = DocumentLocation(status: .inStorage, locationId: Warehouse.warehouse1.id), // TODO: non-default warehouse (select where they should be stored)
         description: String,
         accessoriesNumber: Int = 0,
         nickname: String? = nil
@@ -64,21 +62,20 @@ struct Accessories: RDDocument {
         self.accessoriesTypeId = accessoriesTypeId
         self.primaryImage = primaryImage
         self.secondaryImages = secondaryImages
-        self.status = status
-        self.locationId = locationId
+        self.location = location
         self.description = description
         self.accessoriesNumber = accessoriesNumber
         self.nickname = nickname
     }
 
     enum CodingKeys: String, CodingKey {
-        case id, status, description, nickname
+        case id, description, nickname
         case baseName = "base_name"
         case baseNameLowercased = "base_name_lowercased"
         case accessoriesTypeId = "accessories_type_id"
         case primaryImage = "primary_image"
         case secondaryImages = "secondary_images"
-        case locationId = "location_id"
+        case location
         case accessoriesNumber = "accessories_number"
     }
 }

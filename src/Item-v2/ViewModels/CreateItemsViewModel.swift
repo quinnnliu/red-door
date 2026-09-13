@@ -75,7 +75,7 @@ final class CreateItemsViewModel {
                 var newItem = ItemV2(item: itemState)
                 newItem.modelId = resolvedModelId
                 newItem.itemNumber = startingNumber + i + 1
-                newItem.primaryImage.objectId = newItem.id
+                newItem.primaryImage.documentId = newItem.id
                 items.append(newItem)
             }
         } catch {

@@ -1,5 +1,5 @@
 //
-//  ItemDetailViewV2.swift
+//  ItemDetailsViewV2.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 5/14/26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ItemDetailViewV2: View {
+struct ItemDetailsViewV2: View {
     // Environment
     @Environment(\.dismiss) private var dismiss
 
@@ -18,6 +18,7 @@ struct ItemDetailViewV2: View {
     @State private var showEditSheet: Bool = false
     @State private var showInformation: Bool = true
     @State private var showQRCodeLabel: Bool = false
+
 
     init(item: ItemV2) {
         viewModel = ItemDetailViewModel(item: item)
@@ -33,11 +34,7 @@ struct ItemDetailViewV2: View {
 
                 ScrollView {
                     VStack(spacing: 12) {
-                        ItemImageView(
-                            image: viewModel.item.primaryImage,
-                            selectedImage: $viewModel.selectedRDImage,
-                            isImageSelected: $viewModel.isImageSelected
-                        )
+                        PrimaryImageView(image: viewModel.itemState.primaryImage)
 
                         ItemDetails
                     }
@@ -47,19 +44,13 @@ struct ItemDetailViewV2: View {
             }
             .frameTop()
             .toolbar(.hidden)
+            .onAppear { viewModel.startListening() }
             .sheet(isPresented: $showEditSheet) {
                 EditItemSheetV2(viewModel: viewModel)
             }
             .fullScreenCover(isPresented: $showQRCodeLabel) {
-                ItemV2LabelView(item: viewModel.item)
+                ItemV2LabelView(item: viewModel.itemState)
             }
-            .overlay(
-                ModelRDImageOverlay(
-                    selectedRDImage: viewModel.selectedRDImage,
-                    isImageSelected: $viewModel.isImageSelected
-                )
-                .animation(.easeInOut(duration: 0.3), value: viewModel.isImageSelected)
-            )
 
             if viewModel.isLoading {
                 Color.black.opacity(0.3).ignoresSafeArea()
@@ -84,9 +75,9 @@ struct ItemDetailViewV2: View {
                     HStack {
                         Text("Name:")
                             .font(.headline)
-                        Text(viewModel.item.displayName)
+                        Text(viewModel.itemState.displayName)
                     }
-                    if let nickname = viewModel.item.nickname {
+                    if let nickname = viewModel.itemState.nickname {
                         Text("Nickname: \(nickname)")
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -103,7 +94,7 @@ struct ItemDetailViewV2: View {
     }
 }
 
-extension ItemDetailViewV2 {
+extension ItemDetailsViewV2 {
     var ItemDetails: some View {
         VStack(spacing: 12) {
             
@@ -138,7 +129,7 @@ extension ItemDetailViewV2 {
             }
 
             if showInformation {
-                ItemDetailSection(item: viewModel.item)
+                ItemDetailSection(item: viewModel.itemState)
                     .transition(.asymmetric(
                         insertion: .opacity.combined(with: .scale(scale: 0.97, anchor: .top)),
                         removal:   .opacity.combined(with: .scale(scale: 0.97, anchor: .top))

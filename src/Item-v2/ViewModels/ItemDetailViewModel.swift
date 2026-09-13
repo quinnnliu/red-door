@@ -6,51 +6,83 @@
 //
 
 import SwiftUI
+import Firebase
 
 @Observable
 final class ItemDetailViewModel {
     private let itemRepo: ItemRepository = ItemRepository()
 
     // MARK: Item State
-    var item: ItemV2
+    var itemState: ItemV2
 
     // MARK: View State
     var isLoading: Bool = false
 
-    // Image Overlay
-    var selectedRDImage: RDImage?
-    var isImageSelected: Bool = false
+    // MARK: Listener
+    private var itemListener: ListenerRegistration? = nil
+
+    deinit {
+        stopListening()
+    }
 
     init(item: ItemV2) {
-        self.item = item
+        self.itemState = item
     }
+
+    // MARK: - Listeners
+
+    func startListening() {
+        guard itemListener == nil else { return }
+        itemListener = itemRepo.addDocumentListener(id: itemState.id) { [weak self] result in
+            Task { @MainActor in
+                switch result {
+                case .success(let updatedItem):
+                    self?.itemState = updatedItem
+                case .failure(let error):
+                    print("item listener error: \(error.localizedDescription)")
+                }
+            }
+        }
+    }
+
+    func stopListening() {
+        itemListener?.remove()
+        itemListener = nil
+    }
+
+    // MARK: - updateItem
 
     func updateItem() async {
         isLoading = true
         defer { isLoading = false }
         do {
-            var updatedItem = item
+            var updatedItem = itemState
             updatedItem.baseNameLowercased = updatedItem.baseName.lowercased()
             if let uploadedImage = try await FirebaseImageManager.shared.updateImage(
-                item.primaryImage,
+                itemState.primaryImage,
                 resultImageType: .item
             ) {
                 updatedItem.primaryImage = uploadedImage
+            } else {
+                updatedItem.primaryImage = RDImage()
             }
-            item = updatedItem
-            try itemRepo.set(document: item)
+            itemState = updatedItem
+            try itemRepo.set(document: itemState)
         } catch {
-            print("Error updating item \(item.id): \(error.localizedDescription)")
+            print("Error updating item \(itemState.id): \(error.localizedDescription)")
         }
     }
+
+    // MARK: - deleteItem
 
     func deleteItem() async {
         isLoading = true
         defer { isLoading = false }
         do {
-            try await itemRepo.delete(id: item.id)
+            try await FirebaseImageManager.shared.deleteDocumentImages(document: itemState, imageType: .item)
+            try await itemRepo.delete(id: itemState.id)
         } catch {
-            print("error deleting \(item.displayName): \(error.localizedDescription)")
+            print("error deleting \(itemState.displayName): \(error.localizedDescription)")
         }
     }
 }

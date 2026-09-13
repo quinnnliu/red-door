@@ -20,8 +20,8 @@ struct AccessoriesListItemView: View {
                         .font(.headline)
                         .foregroundStyle(.primary)
 
-                    if accessories.status != .inStorage {
-                        Text("• \(accessories.status.displayTitle)")
+                    if accessories.location.status != .inStorage {
+                        Text("• \(accessories.location.status.displayTitle)")
                             .font(.footnote)
                             .foregroundStyle(.red)
                     }

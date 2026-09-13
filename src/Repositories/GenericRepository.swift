@@ -34,7 +34,7 @@ class GenericRepository<T: RDDocument> {
         return try snapshot.data(as: T.self)
     }
     
-    func update(id: String, fields: [String: AnyHashable]) async throws {
+    func update(id: String, fields: [String: Any]) async throws {
         try await collectionRef.document(id).updateData(fields)
     }
 
@@ -74,7 +74,7 @@ class GenericRepository<T: RDDocument> {
         batch.deleteDocument(collectionRef.document(id))
     }
     
-    func update(id: String, fields: [String: AnyHashable], inBatch batch: WriteBatch) {
+    func update(id: String, fields: [String: Any], inBatch batch: WriteBatch) {
         let documentRef = collectionRef.document(id)
         batch.updateData(fields, forDocument: documentRef)
     }
@@ -108,7 +108,7 @@ class GenericRepository<T: RDDocument> {
         )
     }
 
-    func update(id: String, fields: [String: AnyHashable], transaction: Transaction) {
+    func update(id: String, fields: [String: Any], transaction: Transaction) {
         let documentRef = collectionRef.document(id)
         transaction.updateData(fields, forDocument: documentRef)
     }

@@ -130,7 +130,7 @@ final class ModelViewModel {
     func updateModel() async {
         do {
             // update primary image
-            selectedModel.primaryImage.objectId = selectedModel.id
+            selectedModel.primaryImage.documentId = selectedModel.id
             let newPrimaryImage = try await imageManager.updateImage(
                 selectedModel.primaryImage,
                 resultImageType: .model_primary
@@ -138,7 +138,7 @@ final class ModelViewModel {
 
             // update secondary images
             for index in selectedModel.secondaryImages.indices {
-                selectedModel.secondaryImages[index].objectId = selectedModel.id
+                selectedModel.secondaryImages[index].documentId = selectedModel.id
             }
             let newSecondaryImages = try await imageManager.updateImages(
                 selectedModel.secondaryImages,
@@ -176,7 +176,7 @@ final class ModelViewModel {
     func deleteModel() async {
         do {
             // delete primary image
-            selectedModel.primaryImage.objectId = selectedModel.id
+            selectedModel.primaryImage.documentId = selectedModel.id
             selectedModel.primaryImage.imageType = .delete
             _ = try await imageManager.updateImage(
                 selectedModel.primaryImage,
@@ -185,7 +185,7 @@ final class ModelViewModel {
 
             // delete secondary images
             for index in selectedModel.secondaryImages.indices {
-                selectedModel.secondaryImages[index].objectId = selectedModel.id
+                selectedModel.secondaryImages[index].documentId = selectedModel.id
                 selectedModel.secondaryImages[index].imageType = .delete
             }
             _ = try await imageManager.updateImages(
