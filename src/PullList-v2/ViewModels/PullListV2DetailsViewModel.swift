@@ -263,7 +263,7 @@ extension PullListV2DetailsViewModel {
         }
 
         let newRoom = RoomV2(
-            displayName: roomName,
+            baseName: roomName,
             listId: pullListState.id
         )
         do {

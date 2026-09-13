@@ -114,7 +114,7 @@ struct EditItemSheetV2: View {
     // MARK: - Item Name Entry
 
     var ItemNameEntry: some View {
-        TextField("Item Name", text: $editingItem.displayName)
+        TextField("Item Name", text: $editingItem.baseName)
             .padding(6)
             .background(isImageSelected ? Color.clear : Color(.systemGray5))
             .cornerRadius(8)

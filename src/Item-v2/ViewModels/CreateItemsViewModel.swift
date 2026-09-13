@@ -19,7 +19,7 @@ final class CreateItemsViewModel {
     private var modelId: String {
         if let templateState { return templateState.modelId }
         let parts = [
-            itemState.displayName,
+            itemState.baseName,
             itemState.type.rawValue,
             itemState.color.rawValue,
             itemState.material.rawValue,
@@ -46,14 +46,13 @@ final class CreateItemsViewModel {
         self.itemState = template.map { ItemV2(item: $0) } ?? ItemV2(
             id: UUID().uuidString,
             modelId: "",
-            displayName: "",
+            baseName: "",
             primaryImage: RDImage(),
             type: .misc,
             color: .black,
             material: .none,
             attention: false,
-            description: "",
-            essentialGroupId: "" // TODO: use a custom binding like the other optional fields
+            description: ""
         )
         self.itemCount = 1
         self.selectedRDImage = nil
@@ -68,7 +67,7 @@ final class CreateItemsViewModel {
 
         let resolvedModelId = modelId
         var items: [ItemV2] = []
-        itemState.nameLowercased = itemState.displayName.lowercased()
+        itemState.baseNameLowercased = itemState.baseName.lowercased()
 
         do {
             let startingNumber = try await itemRepo.maxItemNumber(forModelId: resolvedModelId)

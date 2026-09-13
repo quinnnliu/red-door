@@ -54,7 +54,7 @@ final class EditEssentialsGroupViewModel {
         guard !name.isEmpty else { return nil }
 
         let emoji = newGroupTypeEmoji.isSingleEmoji ? newGroupTypeEmoji : "⭐️"
-        let newType = EssentialsGroupType(displayName: name, emoji: emoji)
+        let newType = EssentialsGroupType(baseName: name, emoji: emoji)
 
         do {
             try essentialsGroupTypeRepo.set(document: newType)

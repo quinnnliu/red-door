@@ -108,7 +108,7 @@ struct CreateItemsViewV2: View {
     // MARK: Model Name Entry
     
     var ModelNameEntry: some View {
-        TextField("Items Name", text: $viewModel.itemState.displayName)
+        TextField("Items Name", text: $viewModel.itemState.baseName)
             .padding(6)
             .background(viewModel.isImageSelected ? Color.clear : Color(.systemGray5))
             .cornerRadius(8)

@@ -210,6 +210,8 @@ struct RDButton: View {
                     }
                 }
         )
+        .padding(2)
+        .contentShape(Rectangle())
     }
 }
 

@@ -20,7 +20,7 @@ struct EssentialsGroupListItemView: View {
 
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 4) {
-                    Text(group.label)
+                    Text(group.displayName)
                         .font(.headline)
                         .foregroundStyle(.primary)
 

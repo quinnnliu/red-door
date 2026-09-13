@@ -13,18 +13,18 @@ struct WarehouseV2: RDDocument {
     static var searchField: String = "id"
     
     var id: String
-    var displayName: String
+    var baseName: String
     var address: Address
     
-    init(displayName: String, address: Address) {
-        self.id = displayName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: " ", with: "-")
-        self.displayName = displayName
+    init(baseName: String, address: Address) {
+        self.id = baseName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: " ", with: "-")
+        self.baseName = baseName
         self.address = address
     }
     
 }
 
 extension WarehouseV2 {
-    static let warehouse1 = WarehouseV2(displayName: "Warehouse 1", address: Address(street: "123 Main St", city: "Anytown", state: "CA", zipcode: "12345", isWarehouse: true))
-    static let warehouse2 = WarehouseV2(displayName: "Warehouse 2", address: Address(street: "456 Main St", city: "Anytown", state: "CA", zipcode: "12345", isWarehouse: true))
+    static let warehouse1 = WarehouseV2(baseName: "Warehouse 1", address: Address(street: "123 Main St", city: "Anytown", state: "CA", zipcode: "12345", isWarehouse: true))
+    static let warehouse2 = WarehouseV2(baseName: "Warehouse 2", address: Address(street: "456 Main St", city: "Anytown", state: "CA", zipcode: "12345", isWarehouse: true))
 }

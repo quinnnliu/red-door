@@ -17,7 +17,7 @@ struct OptionsViewV2: View {
         // Editing Warehouses
     @State private var editingWarehouses: Bool = false
     @State private var showAddressSheet: Bool = false
-    @State private var newWarehouse: WarehouseV2 = WarehouseV2(displayName: "", address: Address())
+    @State private var newWarehouse: WarehouseV2 = WarehouseV2(baseName: "", address: Address())
     @State private var warehouseName: String = ""
     @State private var showWarehouseNameAlert: Bool = false
     @State private var showWarehouseDeleteAlert: Bool = false
@@ -143,7 +143,7 @@ struct OptionsViewV2: View {
                     
                     if editingWarehouses {
                         RDButton(variant: .secondary, size: .default, leadingIcon: "plus", label: "Add Warehouse", fullWidth: true) {
-                            newWarehouse = WarehouseV2(displayName: "", address: Address())
+                            newWarehouse = WarehouseV2(baseName: "", address: Address())
                             showAddressSheet = true
                         }
                     }
@@ -162,9 +162,9 @@ struct OptionsViewV2: View {
                 .textInputAutocapitalization(.never)
             
             Button("OK") {
-                warehouseViewModel.addWarehouse(warehouse: WarehouseV2(displayName: warehouseName, address: newWarehouse.address))
+                warehouseViewModel.addWarehouse(warehouse: WarehouseV2(baseName: warehouseName, address: newWarehouse.address))
                 showWarehouseNameAlert = false
-                newWarehouse = WarehouseV2(displayName: warehouseName, address: newWarehouse.address)
+                newWarehouse = WarehouseV2(baseName: warehouseName, address: newWarehouse.address)
             }.tint(.blue)
         }
     }

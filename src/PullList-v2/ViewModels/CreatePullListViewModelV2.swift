@@ -82,7 +82,7 @@ extension CreatePullListViewModelV2 {
         }
         
         let newRoom = RoomV2(
-            displayName: roomName,
+            baseName: roomName,
             listId: pullListState.id
         )
         pullListState.roomIds.append(newRoom.id)

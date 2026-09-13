@@ -17,11 +17,12 @@ struct AddItemToDocumentSheetV2: View {
 
     init(
         title: String = "Available Items",
+        defaultFilters: [String: AnyHashable] = [ItemV2.CodingKeys.status.rawValue: LocationStatus.inStorage.rawValue],
         makeContext: @escaping (ItemV2) -> AddItemDocumentContext
     ) {
         self.title = title
         self.makeContext = makeContext
-        self.viewModel = DocumentListViewModelV2<ItemV2>(defaultFilters: [ItemV2.CodingKeys.status.rawValue: LocationStatus.inStorage.rawValue])
+        self.viewModel = DocumentListViewModelV2<ItemV2>(defaultFilters: defaultFilters)
     }
 
     var body: some View {

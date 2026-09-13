@@ -8,33 +8,33 @@
 import Foundation
 
 struct AccessoriesType: ConfigurationOption {
-    static let collectionName: String = Accessories.collectionName
-    static var configurationType: String = "accessories_types"
-    static let orderByField: String = AccessoriesType.CodingKeys.displayName.stringValue
-    static let searchField: String = AccessoriesType.CodingKeys.displayName.stringValue
-    
+    static let collectionName: String = "accessories_types"
+    static var configurationType: String = Accessories.collectionName
+    static let orderByField: String = AccessoriesType.CodingKeys.baseName.stringValue
+    static let searchField: String = AccessoriesType.CodingKeys.baseName.stringValue
+
     let id: String
-    let displayName: String
-    
-    init(displayName: String) {
-        self.id = displayName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: " ", with: "-")
-        self.displayName = displayName
+    let baseName: String
+
+    init(baseName: String) {
+        self.id = baseName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: " ", with: "-")
+        self.baseName = baseName
     }
-    
+
     enum CodingKeys: String, CodingKey {
         case id
-        case displayName = "display_name"
+        case baseName = "base_name"
     }
 }
 
 struct Accessories: RDDocument {
     static let collectionName: String = "accessories"
-    static let orderByField: String = Accessories.CodingKeys.displayName.stringValue
-    static let searchField: String = Accessories.CodingKeys.displayNameLowercased.stringValue
-    
+    static let orderByField: String = Accessories.CodingKeys.baseName.stringValue
+    static let searchField: String = Accessories.CodingKeys.baseNameLowercased.stringValue
+
     let id: String
-    let displayName: String
-    let displayNameLowercased: String
+    let baseName: String
+    let baseNameLowercased: String
     
     let accessoriesTypeId: String
     let status: LocationStatus
@@ -48,7 +48,7 @@ struct Accessories: RDDocument {
 
     init(
         id: String = UUID().uuidString,
-        displayName: String,
+        baseName: String,
         accessoriesTypeId: String,
         primaryImage: RDImage,
         secondaryImages: [RDImage]? = nil,
@@ -59,8 +59,8 @@ struct Accessories: RDDocument {
         nickname: String? = nil
     ) {
         self.id = id
-        self.displayName = displayName
-        self.displayNameLowercased = displayName.lowercased()
+        self.baseName = baseName
+        self.baseNameLowercased = baseName.lowercased()
         self.accessoriesTypeId = accessoriesTypeId
         self.primaryImage = primaryImage
         self.secondaryImages = secondaryImages
@@ -73,8 +73,8 @@ struct Accessories: RDDocument {
 
     enum CodingKeys: String, CodingKey {
         case id, status, description, nickname
-        case displayName = "display_name"
-        case displayNameLowercased = "display_name_lowercased"
+        case baseName = "base_name"
+        case baseNameLowercased = "base_name_lowercased"
         case accessoriesTypeId = "accessories_type_id"
         case primaryImage = "primary_image"
         case secondaryImages = "secondary_images"

@@ -159,9 +159,9 @@ extension PullListRoomDetailsViewModel {
             let newNameId = RoomV2.nameToId(newRoomName)
             try await roomRepo.update(id: roomId, fields: [
                 RoomV2.CodingKeys.nameId.stringValue: newNameId,
-                RoomV2.CodingKeys.displayName.stringValue: newRoomName
+                RoomV2.CodingKeys.baseName.stringValue: newRoomName
             ])
-            roomState.displayName = newRoomName
+            roomState.baseName = newRoomName
         } catch {
             alertMessage = "Failed to rename \(roomState.displayName) to \(newRoomName)"
             showAlert = true

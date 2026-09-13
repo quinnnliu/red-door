@@ -93,8 +93,8 @@ struct EditEssentialsGroupSheet: View {
 
     private func applyGroupType(_ type: EssentialsGroupType) {
         editingGroup.essentialsTypeId = type.id
-        editingGroup.displayName = type.displayName
-        editingGroup.displayNameLowercased = type.displayName.lowercased()
+        editingGroup.baseName = type.displayName
+        editingGroup.baseNameLowercased = type.displayName.lowercased()
     }
 
     // MARK: - Top Bar
@@ -141,8 +141,8 @@ struct EditEssentialsGroupSheet: View {
 
             let fields: [String: AnyHashable] = [
                 EssentialsGroup.CodingKeys.essentialsTypeId.stringValue: editingGroup.essentialsTypeId,
-                EssentialsGroup.CodingKeys.displayName.stringValue: editingGroup.displayName,
-                EssentialsGroup.CodingKeys.displayNameLowercased.stringValue: editingGroup.displayNameLowercased,
+                EssentialsGroup.CodingKeys.baseName.stringValue: editingGroup.baseName,
+                EssentialsGroup.CodingKeys.baseNameLowercased.stringValue: editingGroup.baseNameLowercased,
                 EssentialsGroup.CodingKeys.groupNumber.stringValue: editingGroup.groupNumber,
                 EssentialsGroup.CodingKeys.nickname.stringValue: editingGroup.nickname ?? nil
             ]
