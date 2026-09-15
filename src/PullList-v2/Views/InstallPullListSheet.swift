@@ -175,7 +175,7 @@ struct InstallPullListRoomListItem: View {
     
     private func ItemListItem(_ item: ItemV2) -> some View {
         HStack(spacing: 8) {
-            ItemListItemImage(item.primaryImage)
+            ThumbnailImageView(item.primaryImage)
             
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {

@@ -12,7 +12,7 @@ struct AccessoriesListItemView: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            ItemListItemImage(accessories.primaryImage)
+            ThumbnailImageView(accessories.primaryImage)
 
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 4) {

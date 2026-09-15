@@ -45,11 +45,13 @@ struct RDImage: Identifiable, Codable, Hashable {
     var imageType: RDImageTypeEnum = .dirty
     var documentId: String? = nil
     var imageURL: URL? = nil
+    var thumbnailURL: URL? = nil
     var uiImage: UIImage? = nil
 
     enum CodingKeys: String, CodingKey {
         case id, imageURL, imageType
         case documentId = "document_id"
+        case thumbnailURL = "thumbnail_url"
     }
 }
 

@@ -167,7 +167,7 @@ struct PullListRoomDetailsView: View {
     @ViewBuilder
     private func RoomItemListItemView(item: ItemV2) -> some View {
         HStack(alignment: .center, spacing: 8) {
-            ItemListItemImage(item.primaryImage)
+            ThumbnailImageView(item.primaryImage)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(item.displayName)

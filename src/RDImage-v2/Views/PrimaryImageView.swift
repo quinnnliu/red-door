@@ -5,7 +5,7 @@
 //  Created by Quinn Liu on 6/10/26.
 //
 
-import CachedAsyncImage
+import Kingfisher
 import PhotosUI
 import SwiftUI
 
@@ -127,32 +127,11 @@ private struct PrimaryImageContent: View {
                     .resizable()
                     .scaledToFill()
             } else if let imageUrl = image?.imageURL {
-                CachedAsyncImage(url: imageUrl) { img in
-                    img
-                        .resizable()
-                        .scaledToFill()
-                } placeholder: {
-                    PlaceholderRectangle(isLoading: true)
-                }
+                RDImageView(url: imageUrl)
             } else {
-                PlaceholderRectangle()
+                RDImagePlaceholder(content: .empty(editable: editable))
             }
         }
-    }
-
-    func PlaceholderRectangle(isLoading: Bool = false) -> some View {
-        RoundedRectangle(cornerRadius: 12)
-            .foregroundColor(Color(.systemGray5))
-            .overlay {
-                if isLoading {
-                    ProgressView()
-                } else if editable {
-                    Image(systemName: SFSymbols.photoBadgePlus)
-                        .font(.largeTitle)
-                        .bold()
-                        .foregroundColor(.secondary)
-                }
-            }
     }
 }
 
@@ -215,16 +194,14 @@ private struct PrimaryImageOverlay: View {
                     .shadow(radius: 10)
                 
             } else if let imageURL = image?.imageURL {
-                CachedAsyncImage(url: imageURL) { image in
-                    image
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .cornerRadius(8)
-                        .shadow(radius: 10)
-                } placeholder: {
-                    ProgressView("Loading Image...")
-                }
+                KFImage(imageURL)
+                    .placeholder { ProgressView("Loading Image...") }
+                    .fade(duration: 0.2)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .cornerRadius(8)
+                    .shadow(radius: 10)
             }
             
             BackButton(icon: SFSymbols.xmark)

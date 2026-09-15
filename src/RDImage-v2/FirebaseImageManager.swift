@@ -71,6 +71,10 @@ final class FirebaseImageManager {
         return (uiImage, storagePath, documentId)
     }
 
+    private static let fullMaxDimension: CGFloat = 1000
+    private static let thumbMaxDimension: CGFloat = 250
+    private static let jpegCompressionQuality: CGFloat = 0.55
+
     // MARK: uploadImage()
 
     func uploadImage(_ rdImage: RDImage, uploadImageType: RDImageTypeEnum) async throws -> RDImage {
@@ -83,18 +87,28 @@ final class FirebaseImageManager {
             return rdImage
         }
 
-        let storageRef = FirebaseImageManager.storageRef.child(storagePath).child(documentId).child(rdImage.id)
+        let fullRef = FirebaseImageManager.storageRef.child(storagePath).child(documentId).child(rdImage.id)
+        let thumbRef = FirebaseImageManager.storageRef.child(storagePath).child(documentId).child("\(rdImage.id)_thumb")
 
-        let metaData = StorageMetadata()
-        metaData.contentType = "image/jpeg"
+        let metadata = StorageMetadata()
+        metadata.contentType = "image/jpeg"
 
-        guard let imageData = uiImage.jpegData(compressionQuality: 0.5) else { throw ImageUploadError.cannotCompress }
+        guard let fullData = uiImage.resized(toMaxDimension: Self.fullMaxDimension).jpegData(compressionQuality: Self.jpegCompressionQuality) else { throw ImageUploadError.cannotCompress }
+        guard let thumbData = uiImage.resized(toMaxDimension: Self.thumbMaxDimension).jpegData(compressionQuality: Self.jpegCompressionQuality) else { throw ImageUploadError.cannotCompress }
 
-        _ = try await storageRef.putDataAsync(imageData, metadata: metaData)
-        let url = try await storageRef.downloadURL()
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            group.addTask { _ = try await fullRef.putDataAsync(fullData, metadata: metadata) }
+            group.addTask { _ = try await thumbRef.putDataAsync(thumbData, metadata: metadata) }
+            try await group.waitForAll()
+        }
+
+        async let fullURL = fullRef.downloadURL()
+        async let thumbURL = thumbRef.downloadURL()
+        let (resolvedFullURL, resolvedThumbURL) = try await (fullURL, thumbURL)
 
         var updated = rdImage
-        updated.imageURL = url
+        updated.imageURL = resolvedFullURL
+        updated.thumbnailURL = resolvedThumbURL
         updated.imageType = uploadImageType
         updated.uiImage = nil
         return updated

@@ -7,6 +7,7 @@
 
 import FirebaseCore
 import FirebaseFirestore
+import Kingfisher
 import SwiftUI
 
 class AppDelegate: NSObject, UIApplicationDelegate {
@@ -25,6 +26,14 @@ struct RedDoorApp: App {
     init() {
         FirebaseApp.configure()
         UITabBar.appearance().tintColor = UIColor.red
+        configureImageCache()
+    }
+
+    private func configureImageCache() {
+        let cache = ImageCache.default
+        cache.memoryStorage.config.totalCostLimit = 50 * 1024 * 1024  // 50 MB
+        cache.diskStorage.config.sizeLimit = 200 * 1024 * 1024         // 200 MB
+        cache.diskStorage.config.expiration = .never
     }
 
     var body: some Scene {

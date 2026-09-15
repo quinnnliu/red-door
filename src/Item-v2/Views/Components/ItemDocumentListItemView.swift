@@ -28,7 +28,7 @@ struct ItemDocumentListItemView: View {
     // MARK: Body
     var body: some View {
         HStack(spacing: 12) {
-            ItemListItemImage(item.primaryImage)
+            ThumbnailImageView(item.primaryImage)
 
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 4) {
