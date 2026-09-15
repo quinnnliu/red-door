@@ -27,17 +27,17 @@ Two Firestore documents must stay in sync on any change:
 
 ### 1. EssentialsRepository
 
-Add `arrayUnion`/`arrayRemove` helpers using `collectionRef` directly (keeps `FieldValue` out of ViewModels):
+Add `arrayUnion`/`arrayRemove` helpers using `GenericRepository.update(id:fields:)`:
 
 ```swift
 func addItem(_ itemId: String, toGroup groupId: String) async throws {
-    try await collectionRef.document(groupId).updateData([
+    try await update(id: groupId, fields: [
         EssentialsGroup.CodingKeys.itemIds.stringValue: FieldValue.arrayUnion([itemId])
     ])
 }
 
 func removeItem(_ itemId: String, fromGroup groupId: String) async throws {
-    try await collectionRef.document(groupId).updateData([
+    try await update(id: groupId, fields: [
         EssentialsGroup.CodingKeys.itemIds.stringValue: FieldValue.arrayRemove([itemId])
     ])
 }

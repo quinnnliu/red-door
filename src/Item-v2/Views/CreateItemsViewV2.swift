@@ -24,6 +24,7 @@ struct CreateItemsViewV2: View {
     var body: some View {
         ZStack {
             VStack(spacing: 12) {
+
                 VStack(spacing: 4) {
                     TopBar()
                     
@@ -41,7 +42,8 @@ struct CreateItemsViewV2: View {
                         color: $viewModel.itemState.color,
                         material: $viewModel.itemState.material,
                         type: $viewModel.itemState.type,
-                        essentialGroupId: $viewModel.itemState.essentialGroupId,
+                        selectedGroup: $viewModel.selectedGroup,
+                        groups: viewModel.availableGroups,
                         value: $viewModel.itemState.value,
                         brand: $viewModel.itemState.brand,
                         purchaseLocation: $viewModel.itemState.purchaseLocation,
@@ -79,6 +81,7 @@ struct CreateItemsViewV2: View {
                     .shadow(radius: 10)
             }
         }
+        .task { await viewModel.loadGroups() }
         .overlay(
             ModelRDImageOverlay(selectedRDImage: viewModel.selectedRDImage, isImageSelected: $viewModel.isImageSelected)
                 .animation(.easeInOut(duration: 0.3), value: viewModel.isImageSelected)

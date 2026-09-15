@@ -10,6 +10,18 @@ import Firebase
 final class EssentialsGroupTypeRepository: GenericRepository<EssentialsGroupType> {}
 
 final class EssentialsRepository: GenericRepository<EssentialsGroup> {
+    func addItem(_ itemId: String, toGroup groupId: String) async throws {
+        try await update(id: groupId, fields: [
+            EssentialsGroup.CodingKeys.itemIds.stringValue: FieldValue.arrayUnion([itemId])
+        ])
+    }
+
+    func removeItem(_ itemId: String, fromGroup groupId: String) async throws {
+        try await update(id: groupId, fields: [
+            EssentialsGroup.CodingKeys.itemIds.stringValue: FieldValue.arrayRemove([itemId])
+        ])
+    }
+
     func maxGroupNumber(forTypeId typeId: String) async -> Int {
         do {
             let snapshot = try await collectionRef
@@ -25,7 +37,5 @@ final class EssentialsRepository: GenericRepository<EssentialsGroup> {
             print("error getting max number: \(error)")
             return 0
         }
-        
-        
     }
 }

@@ -11,9 +11,13 @@ import Firebase
 @Observable
 final class ItemDetailViewModel {
     private let itemRepo: ItemRepository = ItemRepository()
+    private let essentialsRepo: EssentialsRepository = .init()
 
     // MARK: Item State
     var itemState: ItemV2
+
+    // MARK: Essentials
+    var availableGroups: [EssentialsGroup] = []
 
     // MARK: View State
     var isLoading: Bool = false
@@ -50,9 +54,16 @@ final class ItemDetailViewModel {
         itemListener = nil
     }
 
+    // MARK: - loadGroups
+
+    func loadGroups() async {
+        do { availableGroups = try await essentialsRepo.getAll() }
+        catch { print("error loading groups: \(error)") }
+    }
+
     // MARK: - updateItem
 
-    func updateItem() async {
+    func updateItem(oldGroupId: String?) async {
         isLoading = true
         defer { isLoading = false }
         do {
@@ -68,6 +79,16 @@ final class ItemDetailViewModel {
             }
             itemState = updatedItem
             try itemRepo.set(document: itemState)
+
+            let newGroupId = itemState.essentialGroupId
+            if newGroupId != oldGroupId {
+                if let old = oldGroupId {
+                    try await essentialsRepo.removeItem(itemState.id, fromGroup: old)
+                }
+                if let new = newGroupId {
+                    try await essentialsRepo.addItem(itemState.id, toGroup: new)
+                }
+            }
         } catch {
             print("Error updating item \(itemState.id): \(error.localizedDescription)")
         }

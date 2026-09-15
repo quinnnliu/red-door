@@ -42,7 +42,10 @@ struct RedDoorApp: App {
                 if isReady {
                     ContentView()
                 } else {
-                    ProgressView("Loading...")
+                    Image("RedDoor")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(Constants.screenWidth / 4)
                         .task {
                             await ConfigurationService.shared.preload()
                             isReady = true

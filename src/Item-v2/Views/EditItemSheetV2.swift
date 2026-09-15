@@ -19,6 +19,7 @@ struct EditItemSheetV2: View {
 
     // Loading and delete
     @State private var showDeleteAlert: Bool = false
+    @State private var selectedGroup: EssentialsGroup? = nil
 
     init(viewModel: ItemDetailViewModel, onDelete: (() -> Void)? = nil) {
         self.viewModel = viewModel
@@ -43,7 +44,8 @@ struct EditItemSheetV2: View {
                         color: $editingItem.color,
                         material: $editingItem.material,
                         type: $editingItem.type,
-                        essentialGroupId: $editingItem.essentialGroupId,
+                        selectedGroup: $selectedGroup,
+                        groups: viewModel.availableGroups,
                         value: $editingItem.value,
                         brand: $editingItem.brand,
                         purchaseLocation: $editingItem.purchaseLocation,
@@ -78,6 +80,12 @@ struct EditItemSheetV2: View {
                     .padding()
                     .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
                     .shadow(radius: 10)
+            }
+        }
+        .task {
+            await viewModel.loadGroups()
+            if let groupId = editingItem.essentialGroupId {
+                selectedGroup = viewModel.availableGroups.first { $0.id == groupId }
             }
         }
     }
@@ -142,8 +150,10 @@ struct EditItemSheetV2: View {
 
     private func saveItem() {
         Task {
+            let oldGroupId = editingItem.essentialGroupId
+            editingItem.essentialGroupId = selectedGroup?.id
             viewModel.itemState = editingItem
-            await viewModel.updateItem()
+            await viewModel.updateItem(oldGroupId: oldGroupId)
             dismiss()
         }
     }

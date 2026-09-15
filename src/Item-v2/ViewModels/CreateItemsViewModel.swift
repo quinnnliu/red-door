@@ -10,7 +10,12 @@ import SwiftUI
 @Observable
 final class CreateItemsViewModel {
     private let itemRepo: ItemRepository = .init()
-    
+    private let essentialsRepo: EssentialsRepository = .init()
+
+    // MARK: Essentials
+    var availableGroups: [EssentialsGroup] = []
+    var selectedGroup: EssentialsGroup? = nil
+
     // MARK: itemState
     var itemState: ItemV2
     let templateState: ItemV2?
@@ -60,6 +65,15 @@ final class CreateItemsViewModel {
         self.isLoading = false
     }
     
+    func loadGroups() async {
+        do {
+            availableGroups = try await essentialsRepo.getAll()
+            if let groupId = itemState.essentialGroupId {
+                selectedGroup = availableGroups.first { $0.id == groupId }
+            }
+        } catch { print("error loading groups: \(error)") }
+    }
+
     func createItems() async {
         guard !isLoading else { return }
         isLoading = true
@@ -68,6 +82,8 @@ final class CreateItemsViewModel {
         let resolvedModelId = modelId
         var items: [ItemV2] = []
         itemState.baseNameLowercased = itemState.baseName.lowercased()
+
+        itemState.essentialGroupId = selectedGroup?.id
 
         do {
             let startingNumber = try await itemRepo.maxItemNumber(forModelId: resolvedModelId)
@@ -84,9 +100,9 @@ final class CreateItemsViewModel {
         }
 
         do {
-            let updatedItems: [ItemV2] = try await withThrowingTaskGroup(of: ItemV2.self) { group in
+            let updatedItems: [ItemV2] = try await withThrowingTaskGroup(of: ItemV2.self) { taskGroup in
                 for item in items {
-                    group.addTask {
+                    taskGroup.addTask {
                         var updated = item
                         if let uploadedImage = try await FirebaseImageManager.shared.updateImage(
                             item.primaryImage,
@@ -98,7 +114,7 @@ final class CreateItemsViewModel {
                     }
                 }
                 var results: [ItemV2] = []
-                for try await item in group { results.append(item) }
+                for try await item in taskGroup { results.append(item) }
                 return results
             }
 
@@ -107,6 +123,12 @@ final class CreateItemsViewModel {
                 try itemRepo.set(document: item, id: item.id, inBatch: batch)
             }
             try await batch.commit()
+
+            if let group = selectedGroup {
+                for item in updatedItems {
+                    try await essentialsRepo.addItem(item.id, toGroup: group.id)
+                }
+            }
 
         } catch {
             print("error creating items for: \(itemState.displayName)")

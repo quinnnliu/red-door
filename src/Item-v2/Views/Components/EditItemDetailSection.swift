@@ -12,7 +12,9 @@ struct EditItemDetailSection: View {
     @Binding var color: ItemColor
     @Binding var material: ItemMaterial
     @Binding var type: ItemType
-    @Binding var essentialGroupId: String?
+    @Binding var selectedGroup: EssentialsGroup?
+    let groups: [EssentialsGroup]
+    @State private var showGroupPicker: Bool = false
     @Binding var value: Double?
     @Binding var brand: String?
     @Binding var purchaseLocation: String?
@@ -125,12 +127,22 @@ struct EditItemDetailSection: View {
                     
                     Spacer()
                     
-                    HStack(alignment: .center, spacing: 4) {
-                        Text("Essential:")
-                            .foregroundColor(.red)
-                            .bold()
-                        
-                        Text(essentialGroupId ?? "")
+                    Button { showGroupPicker = true } label: {
+                        HStack {
+                            Text("Essential:")
+                                .foregroundColor(.red)
+                                .bold()
+                            Spacer()
+                            Text(selectedGroup?.displayName ?? "None")
+                                .foregroundColor(.blue)
+                        }
+                    }
+                    .sheet(isPresented: $showGroupPicker) {
+                        SelectDocumentSheet(title: "Select Essentials Group", documents: groups) { action in
+                            guard let action = action as? SelectDocumentSheetAction<EssentialsGroup>,
+                                  case .selected(let group) = action else { return }
+                            selectedGroup = group
+                        }
                     }
                 }
             }
