@@ -12,14 +12,11 @@ final class ItemRepository: GenericRepository<ItemV2> {
     // MARK: maxItemNumber
 
     func maxItemNumber(forModelId modelId: String) async throws -> Int {
-        let snapshot = try await collectionRef
-            .whereField(ItemV2.CodingKeys.modelId.stringValue, isEqualTo: modelId)
-            .order(by: ItemV2.CodingKeys.itemNumber.stringValue, descending: true)
-            .limit(to: 1)
-            .getDocuments()
-
-        return snapshot.documents.first
-            .flatMap { $0.data()["item_number"] as? Int } ?? 0
+        try await maxNumber(
+            filteredBy: ItemV2.CodingKeys.modelId.stringValue,
+            equalTo: modelId,
+            numberField: ItemV2.CodingKeys.itemNumber.stringValue
+        )
     }
 
     // MARK: markItemNeedsAttention

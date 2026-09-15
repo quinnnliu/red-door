@@ -113,6 +113,18 @@ class GenericRepository<T: RDDocument> {
         transaction.updateData(fields, forDocument: documentRef)
     }
 
+    // MARK: - Queries
+
+    func maxNumber(filteredBy filterField: String, equalTo filterValue: Any, numberField: String) async throws -> Int {
+        let snapshot = try await collectionRef
+            .whereField(filterField, isEqualTo: filterValue)
+            .order(by: numberField, descending: true)
+            .limit(to: 1)
+            .getDocuments()
+        return snapshot.documents.first
+            .flatMap { $0.data()[numberField] as? Int } ?? 0
+    }
+
     // MARK: - Listeners
     typealias ListenerCallback<Value> = (Result<Value, Error>) -> Void
 
