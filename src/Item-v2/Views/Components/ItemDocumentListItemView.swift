@@ -12,18 +12,33 @@ enum ItemListItemStyle {
     case inventoryList
     case addItemToDocument
     case addItemToRoom
+    case essentialsGroup
 }
 
 enum ItemDocumentListItemAction {
     case copyItem(ItemV2)
+    case removeItem(ItemV2)
 }
 
 struct ItemDocumentListItemView: View {
     let item: ItemV2
-    var style: ItemListItemStyle = .inventoryList
+    var style: ItemListItemStyle
+    let essentialsEmoji: String
     var action: ((Any) -> Void)? = nil
 
     private let imageSize: CGFloat = Constants.screenWidth / 7
+    
+    init(
+        item: ItemV2,
+        style: ItemListItemStyle = .inventoryList,
+        essentialsEmoji: String = "⭐️",
+        action: ((Any) -> Void)? = nil
+    ) {
+        self.item = item
+        self.style = style
+        self.essentialsEmoji = essentialsEmoji
+        self.action = action
+    }
 
     // MARK: Body
     var body: some View {
@@ -59,26 +74,48 @@ struct ItemDocumentListItemView: View {
 
             Spacer()
 
-            if let _ = item.essentialGroupId {
-                Image(systemName: SFSymbols.starCircleFill)
-                    .foregroundStyle(.yellow)
-                    .padding(.trailing, 6)
-            }
-
-            if style == .inventoryList, let action {
-                Menu {
-                    Button("Create Copy", systemImage: "doc.on.doc") {
-                        action(ItemDocumentListItemAction.copyItem(item))
-                    }
-                } label: {
-                    RDButton(variant: .secondary, size: .icon, leadingIcon: SFSymbols.ellipsis, fullWidth: false) { }
-                        .allowsHitTesting(false)
-                }
-                .clipShape(Circle())
-            }
+            TrailingContent
         }
         .padding(8)
         .background(Color(.systemGray5))
         .cornerRadius(8)
+    }
+}
+
+private extension ItemDocumentListItemView {
+    var TrailingContent: some View {
+        HStack(spacing: 8) {
+            
+            if let _ = item.essentialGroupId {
+                Text(essentialsEmoji)
+                    .font(.caption)
+            }
+            
+            if let action {
+                switch style {
+                case .inventoryList:
+                    Menu {
+                        Button("Create Copy", systemImage: "doc.on.doc") {
+                            action(ItemDocumentListItemAction.copyItem(item))
+                        }
+                    } label: {
+                        RDButton(variant: .secondary, size: .icon, leadingIcon: SFSymbols.ellipsis, fullWidth: false) { }
+                            .allowsHitTesting(false)
+                    }
+                    .clipShape(Circle())
+                case .essentialsGroup:
+                    Button {
+                        action(ItemDocumentListItemAction.removeItem(item))
+                    } label: {
+                        Image(systemName: SFSymbols.xmark)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                default:
+                    EmptyView()
+                }
+            }
+        }
     }
 }

@@ -12,8 +12,12 @@ import Firebase
 final class EssentialsGroupDetailViewModel {
     private let essentialsRepo: EssentialsRepository = .init()
     private let itemRepo: ItemRepository = .init()
+    private let accessoriesRepo: AccessoriesRepository = .init()
 
     var groupState: EssentialsGroup
+    var accessoriesState: Accessories? = nil
+    var availableAccessories: [Accessories] = []
+
     var items: [ItemV2] = []
     var isLoading: Bool = false
     var showAlert: Bool = false
@@ -71,6 +75,19 @@ final class EssentialsGroupDetailViewModel {
             }
         }
         items = snapshot.itemIds.compactMap { itemsCache[$0] }.sorted { $0.displayName < $1.displayName }
+
+        if let accessoriesId = snapshot.accessoriesId {
+            if accessoriesState?.id != accessoriesId {
+                do {
+                    accessoriesState = try await accessoriesRepo.get(id: accessoriesId)
+                } catch {
+                    alertMessage = "Failed to load accessories: \(error.localizedDescription)"
+                    showAlert = true
+                }
+            }
+        } else {
+            accessoriesState = nil
+        }
     }
 
     @MainActor
@@ -78,6 +95,45 @@ final class EssentialsGroupDetailViewModel {
         isLoading = false
         alertMessage = "Failed to load group: \(error.localizedDescription)"
         showAlert = true
+    }
+
+    // MARK: - Accessories
+
+    func fetchAvailableAccessories() async {
+        do {
+            availableAccessories = try await accessoriesRepo.getAll()
+        } catch {
+            alertMessage = "Failed to load accessories: \(error.localizedDescription)"
+            showAlert = true
+        }
+    }
+
+    func setAccessories(_ accessories: Accessories) async {
+        do {
+            try await essentialsRepo.update(
+                id: groupState.id,
+                fields: [EssentialsGroup.CodingKeys.accessoriesId.stringValue: accessories.id]
+            )
+            accessoriesState = accessories
+            groupState.accessoriesId = accessories.id
+        } catch {
+            alertMessage = "Failed to set accessories: \(error.localizedDescription)"
+            showAlert = true
+        }
+    }
+
+    func removeAccessories() async {
+        do {
+            try await essentialsRepo.update(
+                id: groupState.id,
+                fields: [EssentialsGroup.CodingKeys.accessoriesId.stringValue: NSNull()]
+            )
+            accessoriesState = nil
+            groupState.accessoriesId = nil
+        } catch {
+            alertMessage = "Failed to remove accessories: \(error.localizedDescription)"
+            showAlert = true
+        }
     }
 
     // MARK: - Remove Item

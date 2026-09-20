@@ -121,7 +121,7 @@ struct ItemV2: RDDocument {
     }
 }
 
-enum ItemType: String, Filterable {
+enum ItemType: String, Filterable, CaseIterable {
     case chair = "Chair"
     case desk = "Desk"
     case table = "Table"

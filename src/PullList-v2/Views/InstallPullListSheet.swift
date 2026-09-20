@@ -57,7 +57,13 @@ extension InstallPullListSheet {
                 })
             },
             header: {
-                Text("Installing: \(viewModel.pullListState.address.getStreetAddress() ?? "loading")")
+                (
+                    Text("Installing: ")
+                        .foregroundStyle(.red)
+                    +
+                    Text("\(viewModel.pullListState.address.getStreetAddress() ?? "loading")")
+                )
+                
             },
             trailingView: {
                 EmptyTopBarIconButton()
@@ -155,7 +161,9 @@ struct InstallPullListRoomListItem: View {
                 fullWidth: false,
                 disabled: itemCount == 0
             ) {
-                showItems.toggle()
+                withAnimation {
+                    showItems.toggle()
+                }
             }
             .disabled(items.isEmpty)
         }

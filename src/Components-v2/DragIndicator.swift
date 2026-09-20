@@ -12,6 +12,6 @@ struct DragIndicator: View {
         RoundedRectangle(cornerRadius: 2.5)
             .fill(Color.secondary.opacity(0.5))
             .frame(width: 36, height: 5)
-            .padding(.vertical, 8)
+            .padding(.top, 8)
     }
 }

@@ -9,6 +9,7 @@ import SwiftUI
 
 struct AccessoriesListItemView: View {
     let accessories: Accessories
+    var onRemove: (() -> Void)? = nil
 
     var body: some View {
         HStack(spacing: 12) {
@@ -29,6 +30,15 @@ struct AccessoriesListItemView: View {
             }
 
             Spacer()
+
+            if let onRemove {
+                Button(action: onRemove) {
+                    Image(systemName: SFSymbols.xmark)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+            }
         }
         .padding(8)
         .background(Color(.systemGray5))

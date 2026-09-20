@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct CreatePullListViewV2: View {
-    typealias ImageEditorAction = PrimaryImageEditor.ImageEditorAction
 
     @Environment(\.dismiss) private var dismiss
 

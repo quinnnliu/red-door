@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct EditItemSheetV2: View {
-    typealias ImageEditorAction = PrimaryImageEditor.ImageEditorAction
 
     @Environment(\.dismiss) private var dismiss
     @Environment(NavigationCoordinator.self) private var coordinator: NavigationCoordinator

@@ -352,6 +352,8 @@ private extension ItemDocumentListViewV2 {
             switch rowAction {
             case .copyItem(let item):
                 itemToCopy = item
+            default:
+                return
             }
         default:
             print("ERROR: Untracked action")

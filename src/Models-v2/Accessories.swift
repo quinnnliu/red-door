@@ -33,17 +33,17 @@ struct Accessories: RDDocument {
     static let searchField: String = Accessories.CodingKeys.baseNameLowercased.stringValue
 
     let id: String
-    let baseName: String
-    let baseNameLowercased: String
-    
-    let accessoriesTypeId: String
+    var baseName: String
+    var baseNameLowercased: String
+
+    var accessoriesTypeId: String
     let location: DocumentLocation
-    let description: String
-    
+    var description: String
+
     var primaryImage: RDImage
     let secondaryImages: [RDImage]?
-    let accessoriesNumber: Int
-    let nickname: String?
+    var accessoriesNumber: Int
+    var nickname: String?
 
     init(
         id: String = UUID().uuidString,

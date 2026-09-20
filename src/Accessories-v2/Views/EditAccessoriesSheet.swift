@@ -1,18 +1,33 @@
 //
-//  CreateAccessoriesView.swift
+//  EditAccessoriesSheet.swift
 //  RedDoor
 //
-//  Created by Quinn Liu on 6/13/26.
+//  Created by Quinn Liu on 9/20/26.
 //
 
 import SwiftUI
 
-struct CreateAccessoriesView: View {
-    @State private var viewModel: CreateAccessoriesViewModel
-    @Environment(\.dismiss) var dismiss    
+struct EditAccessoriesSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @State private var viewModel: EditAccessoriesViewModel
 
-    init(viewModel: CreateAccessoriesViewModel) {
+    private let accessoriesRepo: AccessoriesRepository
+    private let originalTypeId: String
+    private let onSave: (Accessories) -> Void
+
+    @State private var editingAccessory: Accessories
+
+    init(
+        accessories: Accessories,
+        viewModel: EditAccessoriesViewModel,
+        accessoriesRepo: AccessoriesRepository,
+        onSave: @escaping (Accessories) -> Void
+    ) {
+        self.originalTypeId = accessories.accessoriesTypeId
+        self._editingAccessory = State(initialValue: accessories)
         self._viewModel = State(initialValue: viewModel)
+        self.accessoriesRepo = accessoriesRepo
+        self.onSave = onSave
     }
 
     // MARK: - Body
@@ -20,31 +35,29 @@ struct CreateAccessoriesView: View {
     var body: some View {
         ZStack {
             VStack(spacing: 12) {
+                DragIndicator()
+
                 VStack(spacing: 6) {
                     TopBar
-                    
                     NicknameEntry
                 }
-                
+
                 ImageSection
 
                 DescriptionSection
-                
+
                 Spacer()
 
                 RDButton(
                     variant: .red,
                     size: .default,
-                    leadingIcon: "plus",
-                    label: "Add Accessory",
-                    fullWidth: true
+                    leadingIcon: "checkmark",
+                    iconBold: true,
+                    label: "Save",
+                    fullWidth: false
                 ) {
-                    Task {
-                        let success = await viewModel.createAccessories()
-                        if success { dismiss() }
-                    }
+                    saveAccessory()
                 }
-                .disabled(viewModel.selectedType == nil)
             }
             .toolbar(.hidden)
             .frameTop()
@@ -58,6 +71,7 @@ struct CreateAccessoriesView: View {
                     .shadow(radius: 10)
             }
         }
+        .presentationDetents([.large])
         .sheet(isPresented: $viewModel.showSelectTypeSheet) {
             SelectAccessoriesTypeSheet
         }
@@ -74,26 +88,64 @@ struct CreateAccessoriesView: View {
         case let sheetAction as SelectDocumentSheetAction<AccessoriesType>:
             switch sheetAction {
             case .selected(let type):
-                viewModel.selectedType = type
+                applyType(type)
                 viewModel.showSelectTypeSheet = false
             }
         case let imageAction as ImageEditorAction:
             switch imageAction {
             case .newImage(let image):
-                viewModel.primaryImage = image
-            case .deleteImage:
-                viewModel.primaryImage = nil
+                editingAccessory.primaryImage = image
+            case .deleteImage(let image):
+                editingAccessory.primaryImage = image
             }
-
         default:
             break
+        }
+    }
+
+    private func applyType(_ type: AccessoriesType) {
+        editingAccessory.accessoriesTypeId = type.id
+        editingAccessory.baseName = type.displayName
+        editingAccessory.baseNameLowercased = type.displayName.lowercased()
+    }
+
+    // MARK: - Save
+
+    private func saveAccessory() {
+        Task {
+            viewModel.isLoading = true
+
+            var accessoryToSave = editingAccessory
+
+            if accessoryToSave.accessoriesTypeId != originalTypeId {
+                let maxNumber = await accessoriesRepo.maxAccessoriesNumber(forTypeId: accessoryToSave.accessoriesTypeId)
+                accessoryToSave.accessoriesNumber = maxNumber + 1
+            }
+
+            let imageNeedsUpdate = accessoryToSave.primaryImage.uiImage != nil
+                || accessoryToSave.primaryImage.imageType == .delete
+            if imageNeedsUpdate {
+                accessoryToSave.primaryImage.documentId = accessoryToSave.id
+                if let updatedImage = try? await FirebaseImageManager.shared.updateImage(
+                    accessoryToSave.primaryImage,
+                    resultImageType: .accessory
+                ) {
+                    accessoryToSave.primaryImage = updatedImage
+                }
+            }
+
+            try? accessoriesRepo.set(document: accessoryToSave)
+
+            viewModel.isLoading = false
+            onSave(accessoryToSave)
+            dismiss()
         }
     }
 }
 
 // MARK: - Top Bar
 
-private extension CreateAccessoriesView {
+private extension EditAccessoriesSheet {
     var TopBar: some View {
         TopAppBar(
             leadingView: {
@@ -106,8 +158,9 @@ private extension CreateAccessoriesView {
                 RDButton(
                     variant: .outline,
                     size: .default,
-                    label: viewModel.selectedType?.displayName ?? "Accessory Type") {
-                        viewModel.showSelectTypeSheet = true
+                    label: editingAccessory.baseName
+                ) {
+                    viewModel.showSelectTypeSheet = true
                 }
             },
             trailingView: {
@@ -119,30 +172,34 @@ private extension CreateAccessoriesView {
 
 // MARK: - Nickname Entry
 
-private extension CreateAccessoriesView {
+private extension EditAccessoriesSheet {
     var NicknameEntry: some View {
-        TextField("Nickname (optional)", text: $viewModel.nickname)
-            .font(.caption)
-            .multilineTextAlignment(.center)
-            .foregroundStyle(.secondary)
+        TextField("Nickname (optional)", text: Binding(
+            get: { editingAccessory.nickname ?? "" },
+            set: { editingAccessory.nickname = $0.isEmpty ? nil : $0 }
+        ))
+        .font(.caption)
+        .multilineTextAlignment(.center)
+        .foregroundStyle(.secondary)
     }
 }
 
-// MARK: Select Accessories Type Sheet
-private extension CreateAccessoriesView {
+// MARK: - Select Accessories Type Sheet
+
+private extension EditAccessoriesSheet {
     var SelectAccessoriesTypeSheet: some View {
         VStack {
             DragIndicator()
-            
+
             Text("Select Accessories Type")
                 .bold()
                 .foregroundStyle(.red)
-            
+
             VStack {
                 Text("Create New Type")
                     .bold()
                     .frame(maxWidth: .infinity, alignment: .leading)
-                
+
                 HStack(spacing: 8) {
                     TextField("New type name", text: $viewModel.newTypeName)
                         .font(.caption)
@@ -151,7 +208,9 @@ private extension CreateAccessoriesView {
                         .cornerRadius(8)
 
                     RDButton(variant: .default, size: .default, label: "Create", fullWidth: false) {
-                        viewModel.createAndSelectNewType()
+                        if let newType = viewModel.createAndSelectNewType() {
+                            applyType(newType)
+                        }
                     }
                     .disabled(viewModel.newTypeName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
@@ -159,12 +218,12 @@ private extension CreateAccessoriesView {
             .padding(8)
             .background(Color(.systemGray6))
             .cornerRadius(8)
-            
+
             VStack {
                 Text("Select Existing Type")
                     .bold()
                     .frame(maxWidth: .infinity, alignment: .leading)
-                
+
                 RDButton(variant: .outline, size: .default, label: "Select Type", fullWidth: true) {
                     viewModel.showExistingTypePicker = true
                 }
@@ -172,7 +231,6 @@ private extension CreateAccessoriesView {
             .padding(8)
             .background(Color(.systemGray6))
             .cornerRadius(8)
-            
         }
         .frameHorizontalPadding()
         .presentationDetents([.fraction(0.4)])
@@ -189,9 +247,9 @@ private extension CreateAccessoriesView {
 
 // MARK: - Image Section
 
-private extension CreateAccessoriesView {
+private extension EditAccessoriesSheet {
     var ImageSection: some View {
-        PrimaryImageEditor(image: viewModel.primaryImage) { result in
+        PrimaryImageEditor(image: editingAccessory.primaryImage) { result in
             handleAction(result)
         }
     }
@@ -199,13 +257,13 @@ private extension CreateAccessoriesView {
 
 // MARK: - Description Section
 
-private extension CreateAccessoriesView {
+private extension EditAccessoriesSheet {
     var DescriptionSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Description")
                 .foregroundStyle(.red)
 
-            TextField("Description", text: $viewModel.description, axis: .vertical)
+            TextField("Description", text: $editingAccessory.description, axis: .vertical)
                 .lineLimit(3...6)
                 .padding(10)
                 .background(Color(.systemGray5))

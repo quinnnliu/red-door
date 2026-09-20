@@ -9,7 +9,6 @@ import SwiftUI
 import CachedAsyncImage
 
 struct PullListRoomDetailsView: View {
-    typealias ImageEditorAction = PrimaryImageEditor.ImageEditorAction
     
     @State var viewModel: PullListRoomDetailsViewModel
     @State var itemToRemove: ItemV2? = nil

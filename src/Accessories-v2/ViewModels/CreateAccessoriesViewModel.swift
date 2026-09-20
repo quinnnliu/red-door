@@ -29,13 +29,15 @@ final class CreateAccessoriesViewModel {
     var selectedType: AccessoriesType?
     var newTypeName: String = ""
     var showNewTypeField: Bool = false
-    var showTypePicker: Bool = false
+    var showExistingTypePicker: Bool = false
+    var showSelectTypeSheet: Bool = false
 
+    
     // MARK: - Fields
 
     var nickname: String = ""
     var description: String = ""
-    var primaryImage: RDImage = RDImage()
+    var primaryImage: RDImage? = RDImage()
 
     // MARK: - State
 
@@ -69,6 +71,7 @@ final class CreateAccessoriesViewModel {
             selectedType = newType
             newTypeName = ""
             showNewTypeField = false
+            showSelectTypeSheet = false
         } catch {
             print("Error creating accessories type: \(error)")
         }
@@ -77,7 +80,7 @@ final class CreateAccessoriesViewModel {
     // MARK: - Create Accessories
 
     func createAccessories() async -> Bool {
-        guard let type = selectedType else { return false }
+        guard let type = selectedType, let image = primaryImage else { return false }
 
         isLoading = true
         defer { isLoading = false }
@@ -87,7 +90,7 @@ final class CreateAccessoriesViewModel {
             var newAccessory = Accessories(
                 baseName: type.displayName,
                 accessoriesTypeId: type.id,
-                primaryImage: primaryImage,
+                primaryImage: image,
                 description: description,
                 accessoriesNumber: maxNumber + 1,
                 nickname: nickname.isEmpty ? nil : nickname

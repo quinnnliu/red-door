@@ -21,8 +21,22 @@ enum ImageSourceEnum: String, Identifiable {
 
 struct PrimaryImageView: View {
     let image: RDImage?
+    let size: CGFloat
+    let isExpandable: Bool
     
     @State private var expandedImage: RDImage?
+    
+    init(
+        image: RDImage?,
+        expandedImage: RDImage? = nil,
+        size: CGFloat? = Constants.screenWidthPadding / 2,
+        isExpandable: Bool = true
+    ) {
+        self.image = image
+        self.expandedImage = expandedImage
+        self.size = size ?? Constants.screenWidthPadding / 2
+        self.isExpandable = isExpandable
+    }
 
     var body: some View {
         Button {
@@ -34,15 +48,22 @@ struct PrimaryImageView: View {
         } label: {
             PrimaryImageContent(image, editable: false)
         }
-        .frame(width: Constants.screenWidthPadding / 2, height: Constants.screenWidthPadding / 2)
+        .frame(size)
         .clipped()
-        .expandImageOverlay(image)
+        .expandImageOverlay(image, isEnabled: isExpandable)
         .sheet(item: $expandedImage) { image in
             PrimaryImageOverlay(image)
         }
         .contentShape(Rectangle())
         .cornerRadius(12)
     }
+}
+
+// MARK: - ImageEditorAction
+
+enum ImageEditorAction {
+    case newImage(_ image: RDImage)
+    case deleteImage(_ image: RDImage)
 }
 
 // MARK: - ItemImageEditor
@@ -103,10 +124,7 @@ struct PrimaryImageEditor: View {
         activeSheet = nil
     }
     
-    enum ImageEditorAction {
-        case newImage(_ image: RDImage)
-        case deleteImage(_ image: RDImage)
-    }
+    
 }
 
 // MARK: - ItemImageContent (shared rendering)
@@ -137,12 +155,19 @@ private struct PrimaryImageContent: View {
 
 private struct ExpandImageOverlayModifier: ViewModifier {
     let image: RDImage?
+    let isEnabled: Bool
+    
+    init(image: RDImage?, isEnabled: Bool = true) {
+        self.image = image
+        self.isEnabled = isEnabled
+    }
+    
     @State private var showImageOverlay = false
 
     func body(content: Content) -> some View {
         content
             .overlay(alignment: .topTrailing) {
-                if image != nil {
+                if image != nil, isEnabled {
                     Button {
                         showImageOverlay = true
                     } label: {
@@ -164,8 +189,8 @@ private struct ExpandImageOverlayModifier: ViewModifier {
 }
 
 private extension View {
-    func expandImageOverlay(_ image: RDImage?) -> some View {
-        modifier(ExpandImageOverlayModifier(image: image))
+    func expandImageOverlay(_ image: RDImage?, isEnabled: Bool = true) -> some View {
+        modifier(ExpandImageOverlayModifier(image: image, isEnabled: isEnabled))
     }
 }
 

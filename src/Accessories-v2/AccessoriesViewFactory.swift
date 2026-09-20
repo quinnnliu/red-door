@@ -18,4 +18,21 @@ struct AccessoriesViewFactory {
         )
         return CreateAccessoriesView(viewModel: vm)
     }
+
+    func makeAccessoriesDetailsView(accessories: Accessories) -> AccessoriesDetailsView {
+        AccessoriesDetailsView(accessories: accessories)
+    }
+
+    func makeEditAccessoriesSheet(
+        accessories: Accessories,
+        onSave: @escaping (Accessories) -> Void
+    ) -> EditAccessoriesSheet {
+        let vm = EditAccessoriesViewModel(accessoriesTypeRepo: accessoriesTypeRepo)
+        return EditAccessoriesSheet(
+            accessories: accessories,
+            viewModel: vm,
+            accessoriesRepo: accessoriesRepo,
+            onSave: onSave
+        )
+    }
 }

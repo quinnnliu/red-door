@@ -30,7 +30,7 @@ struct NavigationDestinationsModifierV2: ViewModifier {
                 case .essentialsGroupDetailView(let group, let emoji):
                     EssentialsGroupDetailView(group: group, emoji: emoji)
                 case .accessoriesDetailView(let accessories):
-                    Text(accessories.displayName)
+                    AccessoriesDetailsView(accessories: accessories)
                 case .addItemToDocumentDetailView(let context):
                     AddItemToDocumentDetailView(context: context)
                 }
