@@ -48,8 +48,8 @@ struct ModelSecondaryImages: View {
                     }
             }
         }
-        .frame(maxWidth: Constants.screenWidthPadding / 2,
-               maxHeight: Constants.screenWidthPadding / 2)
+        .frame(maxWidth: Constants.Screen.screenWidthPadding / 2,
+               maxHeight: Constants.Screen.screenWidthPadding / 2)
     }
 
     // MARK: Edit Image Alert

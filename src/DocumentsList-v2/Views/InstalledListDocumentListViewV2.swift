@@ -86,8 +86,10 @@ extension InstalledListDocumentListViewV2 {
         DocumentListSection(
             viewModel: viewModel,
             noMoreLabel: "No More Installed Lists",
-            destination: { .installedListDetailView($0) },
-            rowContent: { InstalledListV2ListItem(list: $0) }
+            action: handleAction(_:),
+            rowContent: { list in
+                InstalledListV2ListItem(list: list, action: handleAction(_:))
+            }
         )
     }
 }
@@ -99,6 +101,16 @@ private extension InstalledListDocumentListViewV2 {
         switch action {
         case let searchAction as SearchBarAction:
             Task { await viewModel.handleSearchAction(searchAction) }
+        case let sectionAction as DocumentListSectionAction:
+            switch sectionAction {
+            case .loadMore:
+                Task { await viewModel.loadMore() }
+            }
+        case let listAction as InstalledListListItemAction:
+            switch listAction {
+            case .navigate(let list):
+                path.append(NavigationDestination.installedListDetailView(list))
+            }
         default:
             print("ERROR: Untracked action")
         }

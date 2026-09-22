@@ -50,7 +50,7 @@ struct ModelPrimaryImage: View {
             } else { // no image selected
                 RoundedRectangle(cornerRadius: 12)
                     .foregroundColor(Color(.systemGray5))
-                    .frame(width: Constants.screenWidthPadding / 2, height: Constants.screenWidthPadding / 2)
+                    .frame(width: Constants.Screen.screenWidthPadding / 2, height: Constants.Screen.screenWidthPadding / 2)
                     .overlay(Image(systemName: SFSymbols.photoBadgePlus)
                         .font(.largeTitle)
                         .bold()
@@ -76,7 +76,7 @@ struct ModelPrimaryImage: View {
                 }
             }
         }
-        .frame(width: Constants.screenWidthPadding / 2, height: Constants.screenWidthPadding / 2)
+        .frame(width: Constants.Screen.screenWidthPadding / 2, height: Constants.Screen.screenWidthPadding / 2)
         .contentShape(Rectangle())
         .cornerRadius(12)
     }

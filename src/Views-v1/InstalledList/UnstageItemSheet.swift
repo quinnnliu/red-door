@@ -42,7 +42,7 @@ struct UnstageItemSheet: View {
                     .foregroundColor(.primary)
             }
 
-            ItemModelImage(item: item, model: model, size: Constants.screenWidthPadding / 2)
+            ItemModelImage(item: item, model: model, size: Constants.Screen.screenWidthPadding / 2)
 
             ScrollView {
                 LazyVStack {

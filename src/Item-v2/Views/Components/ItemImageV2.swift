@@ -29,7 +29,7 @@ struct ItemImageView: View {
         } label: {
             ItemImageContent(image: image, showUploadIcon: false)
         }
-        .frame(width: Constants.screenWidthPadding / 2, height: Constants.screenWidthPadding / 2)
+        .frame(width: Constants.Screen.screenWidthPadding / 2, height: Constants.Screen.screenWidthPadding / 2)
         .contentShape(Rectangle())
         .cornerRadius(12)
     }
@@ -65,7 +65,7 @@ struct ItemImageEditor: View {
                 SingleCameraPicker(image: $image) { activeSheet = nil }
             }
         }
-        .frame(width: Constants.screenWidthPadding / 2, height: Constants.screenWidthPadding / 2)
+        .frame(width: Constants.Screen.screenWidthPadding / 2, height: Constants.Screen.screenWidthPadding / 2)
         .contentShape(Rectangle())
         .cornerRadius(12)
     }

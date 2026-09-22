@@ -232,12 +232,12 @@ struct PullListItemDetailsView: View {
                 image
                     .resizable()
                     .scaledToFill()
-                    .frame(Constants.screenWidthPadding / 2)
+                    .frame(Constants.Screen.screenWidthPadding / 2)
                     .cornerRadius(8)
             } placeholder: {
                 RoundedRectangle(cornerRadius: 12)
                     .foregroundColor(Color(.systemGray5))
-                    .frame(Constants.screenWidthPadding / 2)
+                    .frame(Constants.Screen.screenWidthPadding / 2)
                     .overlay(Image(systemName: SFSymbols.photoBadgePlus)
                         .font(.largeTitle)
                         .bold()

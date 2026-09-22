@@ -9,9 +9,17 @@ import Foundation
 import SwiftUI
 
 enum Constants {
-    // the width of the screen with padding removed
-    static let screenWidthPadding: CGFloat = UIScreen.width - 32
-    static let screenWidth: CGFloat = UIScreen.width
+    
+    enum Screen {
+        // the width of the screen with padding removed
+        static let screenWidthPadding: CGFloat = UIScreen.width - 32
+        static let screenWidth: CGFloat = UIScreen.width
+    }
+    
+    enum Image {
+        static let listItemDefault: CGFloat = 48
+        static let listItemLarge: CGFloat = 80
+    }
 }
 
 enum SFSymbols {
@@ -68,4 +76,5 @@ enum SFSymbols {
     static let houseFill = "house.fill"
     static let lockFill = "lock.fill"
     static let infoCircleFill = "info.circle.fill"
+    static let docOnDoc = "doc.on.doc"
 }

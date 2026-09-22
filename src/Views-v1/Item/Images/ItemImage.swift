@@ -21,7 +21,7 @@ struct ItemImage: View {
     @State private var showEditAlert: Bool = false
     @State private var activeSheet: ImageSourceEnum?
 
-    init(itemImage: Binding<RDImage?>, isEditing: Bool, size: CGFloat = Constants.screenWidthPadding / 2, selectedRDImage: Binding<RDImage?>? = nil, isImageSelected: Binding<Bool>? = nil) {
+    init(itemImage: Binding<RDImage?>, isEditing: Bool, size: CGFloat = Constants.Screen.screenWidthPadding / 2, selectedRDImage: Binding<RDImage?>? = nil, isImageSelected: Binding<Bool>? = nil) {
         _itemImage = itemImage
         self.isEditing = isEditing
         self.size = size

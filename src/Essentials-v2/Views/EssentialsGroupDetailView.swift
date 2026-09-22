@@ -15,6 +15,7 @@ struct EssentialsGroupDetailView: View {
     @State private var showRemoveAlert: Bool = false
     @State private var showSelectAccessoriesSheet: Bool = false
     @State private var showRemoveAccessoriesAlert: Bool = false
+    @State private var showAssignToPullListSheet: Bool = false
 
     let emoji: String
 
@@ -41,6 +42,11 @@ struct EssentialsGroupDetailView: View {
 
             AccessoriesSection
                 .frameHorizontalPadding()
+
+            SmallCTA(type: .red, leadingIcon: SFSymbols.pencilAndListClipboard, text: "Assign to Pull List") {
+                showAssignToPullListSheet = true
+            }
+            .frameHorizontalPadding()
         }
         .sheet(isPresented: $showEditSheet) {
             EssentialsViewFactory().makeEditEssentialsGroupSheet(group: viewModel.groupState)
@@ -54,6 +60,9 @@ struct EssentialsGroupDetailView: View {
             ) { item in
                 AddItemDocumentContext.itemToEssentialsGroup(item: item, group: viewModel.groupState)
             }
+        }
+        .sheet(isPresented: $showAssignToPullListSheet) {
+            AddEssentialsGroupToPullListSheet(action: handleAction(_:))
         }
         .sheet(isPresented: $showSelectAccessoriesSheet) {
             SelectDocumentSheet(
@@ -196,10 +205,16 @@ private extension EssentialsGroupDetailView {
             default:
                 return
             }
+        case let pullListAction as PullListListItemAction:
+            switch pullListAction {
+            case .assignEssentialsToList(let list):
+                Task { await viewModel.assignToPullList(list) }
+            default:
+                return
+            }
         default:
             return
         }
-        return
     }
 }
 

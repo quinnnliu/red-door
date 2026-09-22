@@ -10,7 +10,7 @@ import SwiftUI
 
 struct ModelListItemView: View {
     var model: Model
-    let imageWidth: CGFloat = Constants.screenWidth / 7
+    let imageWidth: CGFloat = Constants.Screen.screenWidth / 7
     
     private var typeIconName: String {
         // Handle "Miscellaneous" -> "Misc" mapping

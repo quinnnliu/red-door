@@ -23,7 +23,7 @@ struct TopAppBar<LeadingView: View, Header: View, TrailingView: View>: View {
             }
             
             header
-                .frame(maxWidth: (Constants.screenWidth * 0.7), alignment: .center)
+                .frame(maxWidth: (Constants.Screen.screenWidth * 0.7), alignment: .center)
         }
         
     }

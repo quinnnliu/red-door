@@ -29,12 +29,12 @@ struct PrimaryImageView: View {
     init(
         image: RDImage?,
         expandedImage: RDImage? = nil,
-        size: CGFloat? = Constants.screenWidthPadding / 2,
+        size: CGFloat? = Constants.Screen.screenWidthPadding / 2,
         isExpandable: Bool = true
     ) {
         self.image = image
         self.expandedImage = expandedImage
-        self.size = size ?? Constants.screenWidthPadding / 2
+        self.size = size ?? Constants.Screen.screenWidthPadding / 2
         self.isExpandable = isExpandable
     }
 
@@ -110,7 +110,7 @@ struct PrimaryImageEditor: View {
                 SingleCameraPickerV2(action: handleResult(_:))
             }
         }
-        .frame(width: Constants.screenWidthPadding / 2, height: Constants.screenWidthPadding / 2)
+        .frame(width: Constants.Screen.screenWidthPadding / 2, height: Constants.Screen.screenWidthPadding / 2)
         .clipped()
         .expandImageOverlay(image)
         .contentShape(Rectangle())

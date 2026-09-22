@@ -236,9 +236,12 @@ extension ItemDocumentListViewV2 {
         DocumentListSection(
             viewModel: itemsVM,
             noMoreLabel: "No More Items",
-            destination: { .itemDetailView($0) },
+            action: handleItemAction(_:),
             rowContent: { item in
-                ItemDocumentListItemView(item: item, action: handleAction(_:))
+                ItemDocumentListItemView(
+                    item: item,
+                    action: handleItemAction(_:)
+                )
             }
         )
     }
@@ -249,15 +252,12 @@ extension ItemDocumentListViewV2 {
         DocumentListSection(
             viewModel: essentialsVM,
             noMoreLabel: "No More Essentials",
-            destination: { group in
-                let emoji = groupTypesLookup[group.essentialsTypeId]?.emoji ?? "⭐️"
-                return .essentialsGroupDetailView(group, emoji: emoji)
-            },
+            action: handleEssentialsAction(_:),
             rowContent: { group in
-                let emoji = groupTypesLookup[group.essentialsTypeId]?.emoji
                 EssentialsGroupListItemView(
                     group: group,
-                    emoji: groupTypesLookup[group.essentialsTypeId]?.emoji
+                    emoji: groupTypesLookup[group.essentialsTypeId]?.emoji,
+                    action: handleEssentialsAction(_:)
                 )
             }
         )
@@ -276,8 +276,13 @@ extension ItemDocumentListViewV2 {
         DocumentListSection(
             viewModel: accessoriesVM,
             noMoreLabel: "No More Accessories",
-            destination: { .accessoriesDetailView($0) },
-            rowContent: { AccessoriesListItemView(accessories: $0) }
+            action: handleAccessoriesAction(_:),
+            rowContent: { accessories in
+                AccessoriesListItemView(
+                    accessories: accessories,
+                    action: handleAccessoriesAction(_:)
+                )
+            }
         )
         .task {
             if accessoriesVM.documents.isEmpty {
@@ -309,7 +314,7 @@ private extension ItemDocumentListViewV2 {
         }
     }
 
-    // MARK: - handleAction
+    // MARK: - handleAction (search + filter — shared across segments)
 
     func handleAction(_ action: Any?) {
         guard let action else { return }
@@ -318,12 +323,9 @@ private extension ItemDocumentListViewV2 {
         case let searchAction as SearchBarAction:
             Task {
                 switch selectedSegment {
-                case .items:
-                    await itemsVM.handleSearchAction(searchAction)
-                case .essentials:
-                    await essentialsVM.handleSearchAction(searchAction)
-                case .accessories:
-                    await accessoriesVM.handleSearchAction(searchAction)
+                case .items:       await itemsVM.handleSearchAction(searchAction)
+                case .essentials:  await essentialsVM.handleSearchAction(searchAction)
+                case .accessories: await accessoriesVM.handleSearchAction(searchAction)
                 }
             }
         case let filterAction as ItemInventoryFilterViewAction:
@@ -342,21 +344,82 @@ private extension ItemDocumentListViewV2 {
                 switch filterAction {
                 case .applyFilters(let filters):
                     switch selectedSegment {
-                    case .items: await itemsVM.setFilters(filters)
-                    case .essentials: await essentialsVM.setFilters(filters)
+                    case .items:       await itemsVM.setFilters(filters)
+                    case .essentials:  await essentialsVM.setFilters(filters)
                     case .accessories: await accessoriesVM.setFilters(filters)
                     }
                 }
             }
-        case let rowAction as ItemDocumentListItemAction:
-            switch rowAction {
-            case .copyItem(let item):
-                itemToCopy = item
-            default:
-                return
-            }
         default:
             print("ERROR: Untracked action")
+        }
+    }
+
+    // MARK: - handleItemAction
+
+    func handleItemAction(_ action: Any?) {
+        guard let action else { return }
+
+        switch action {
+        case let sectionAction as DocumentListSectionAction:
+            switch sectionAction {
+            case .loadMore:
+                Task { await itemsVM.loadMore() }
+            }
+        case let rowAction as ItemDocumentListItemAction:
+            switch rowAction {
+            case .navigate(let item):
+                path.append(NavigationDestination.itemDetailView(item))
+            case .copyItem(let item):
+                itemToCopy = item
+            case .removeItem:
+                break
+            }
+        default:
+            break
+        }
+    }
+
+    // MARK: - handleEssentialsAction
+
+    func handleEssentialsAction(_ action: Any?) {
+        guard let action else { return }
+
+        switch action {
+        case let sectionAction as DocumentListSectionAction:
+            switch sectionAction {
+            case .loadMore:
+                Task { await essentialsVM.loadMore() }
+            }
+        case let rowAction as EssentialsGroupListItemAction:
+            switch rowAction {
+            case .navigate(let group):
+                let emoji = groupTypesLookup[group.essentialsTypeId]?.emoji ?? "⭐️"
+                path.append(NavigationDestination.essentialsGroupDetailView(group, emoji: emoji))
+            }
+        default:
+            break
+        }
+    }
+
+    // MARK: - handleAccessoriesAction
+
+    func handleAccessoriesAction(_ action: Any?) {
+        guard let action else { return }
+
+        switch action {
+        case let sectionAction as DocumentListSectionAction:
+            switch sectionAction {
+            case .loadMore:
+                Task { await accessoriesVM.loadMore() }
+            }
+        case let rowAction as AccessoriesListItemAction:
+            switch rowAction {
+            case .navigate(let accessories):
+                path.append(NavigationDestination.accessoriesDetailView(accessories))
+            }
+        default:
+            break
         }
     }
 

@@ -7,28 +7,29 @@
 
 import SwiftUI
 
+enum DocumentListSectionAction {
+    case loadMore
+}
+
 struct DocumentListSection<T: RDDocument, RowContent: View>: View {
     let viewModel: DocumentListViewModelV2<T>
     let noMoreLabel: String
-    let destination: (T) -> NavigationDestination
+    let action: (Any?) -> Void
     @ViewBuilder let rowContent: (T) -> RowContent
 
     var body: some View {
         ScrollView {
             LazyVStack(spacing: .zero) {
                 ForEach(viewModel.documents, id: \.id) { document in
-                    NavigationLink(value: destination(document)) {
-                        rowContent(document)
-                            .padding(4)
-                    }
-                    .buttonStyle(PlainButtonStyle())
+                    rowContent(document)
+                        .padding(4)
                 }
 
                 DocumentLoadMoreButton(
                     isLoading: viewModel.isLoading,
                     hasMore: viewModel.hasMore,
                     noMoreLabel: noMoreLabel,
-                    loadMore: { await viewModel.loadMore() }
+                    loadMore: { action(DocumentListSectionAction.loadMore) }
                 )
             }
         }

@@ -97,7 +97,7 @@ extension PullListRoomListItem {
         ) {
             HStack(alignment: .center, spacing: 12) {
                 
-                ThumbnailImageView(item.primaryImage)
+                PrimaryImageView(image: item.primaryImage, size: Constants.Image.listItemDefault, isExpandable: false)
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(item.displayName)

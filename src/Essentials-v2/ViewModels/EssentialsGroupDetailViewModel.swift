@@ -13,6 +13,7 @@ final class EssentialsGroupDetailViewModel {
     private let essentialsRepo: EssentialsRepository = .init()
     private let itemRepo: ItemRepository = .init()
     private let accessoriesRepo: AccessoriesRepository = .init()
+    private let pullListRepo: PullListRepository = .init()
 
     var groupState: EssentialsGroup
     var accessoriesState: Accessories? = nil
@@ -134,6 +135,66 @@ final class EssentialsGroupDetailViewModel {
             alertMessage = "Failed to remove accessories: \(error.localizedDescription)"
             showAlert = true
         }
+    }
+
+    // MARK: - Assign to Pull List
+
+    func assignToPullList(_ pullList: PullListV2) async {
+        guard groupState.location.status != .inPullList else {
+            alertMessage = "This essentials group is already assigned to a pull list."
+            showAlert = true
+            return
+        }
+
+        let unavailable = unavailableNames()
+        if !unavailable.isEmpty {
+            let list = unavailable.map { "• \($0)" }.joined(separator: "\n")
+            alertMessage = "The following are not in storage and cannot be assigned:\n\n\(list)"
+            showAlert = true
+            return
+        }
+
+        let batch = essentialsRepo.db.batch()
+        let locationFields: [String: Any] = [
+            "location.\(DocumentLocation.CodingKeys.status.stringValue)": LocationStatus.inPullList.rawValue,
+            "location.\(DocumentLocation.CodingKeys.locationId.stringValue)": pullList.id
+        ]
+
+        for itemId in groupState.itemIds {
+            itemRepo.update(id: itemId, fields: locationFields, inBatch: batch)
+        }
+
+        if let accessoriesId = groupState.accessoriesId {
+            accessoriesRepo.update(id: accessoriesId, fields: locationFields, inBatch: batch)
+        }
+
+        essentialsRepo.update(id: groupState.id, fields: locationFields, inBatch: batch)
+
+        pullListRepo.update(
+            id: pullList.id,
+            fields: [
+                PullListV2.CodingKeys.essentialGroupId.stringValue: groupState.id,
+                PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayUnion(groupState.itemIds)
+            ],
+            inBatch: batch
+        )
+
+        do {
+            try await batch.commit()
+        } catch {
+            alertMessage = "Failed to assign to pull list: \(error.localizedDescription)"
+            showAlert = true
+        }
+    }
+
+    private func unavailableNames() -> [String] {
+        var names: [String] = items
+            .filter { $0.location.status != .inStorage }
+            .map { $0.displayName }
+        if let accessories = accessoriesState, accessories.location.status != .inStorage {
+            names.append(accessories.displayName)
+        }
+        return names
     }
 
     // MARK: - Remove Item

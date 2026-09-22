@@ -126,8 +126,10 @@ extension PullListDocumentListViewV2 {
         DocumentListSection(
             viewModel: viewModel,
             noMoreLabel: "No More Pull Lists",
-            destination: { .pullListDetailView($0) },
-            rowContent: { PullListV2ListItem(list: $0) }
+            action: handleAction(_:),
+            rowContent: { pullList in
+                PullListV2ListItem(list: pullList, action: handleAction(_:))
+            }
         )
     }
 }
@@ -144,6 +146,18 @@ private extension PullListDocumentListViewV2 {
                 switch filterAction {
                 case .applyFilters(let filters): await viewModel.setFilters(filters)
                 }
+            }
+        case let sectionAction as DocumentListSectionAction:
+            switch sectionAction {
+            case .loadMore:
+                Task { await viewModel.loadMore() }
+            }
+        case let listAction as PullListListItemAction:
+            switch listAction {
+            case .documentList(let list):
+                path.append(NavigationDestination.pullListDetailView(list))
+            default:
+                return
             }
         default:
             print("ERROR: Untracked action")

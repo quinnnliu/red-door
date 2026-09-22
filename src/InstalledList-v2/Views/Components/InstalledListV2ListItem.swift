@@ -7,10 +7,37 @@
 
 import SwiftUI
 
+enum InstalledListListItemAction {
+    case navigate(InstalledListV2)
+}
+
 struct InstalledListV2ListItem: View {
     let list: InstalledListV2
+    var action: ((Any?) -> Void)?
+    var actionType: InstalledListListItemAction
+
+    init(list: InstalledListV2, action: ((Any?) -> Void)? = nil, actionType: InstalledListListItemAction? = nil) {
+        self.list = list
+        self.action = action
+        self.actionType = actionType ?? .navigate(list)
+    }
 
     var body: some View {
+        Group {
+            if let action {
+                Button {
+                    action(actionType)
+                } label: {
+                    cellContent
+                }
+                .buttonStyle(PlainButtonStyle())
+            } else {
+                cellContent
+            }
+        }
+    }
+
+    private var cellContent: some View {
         HStack(alignment: .center, spacing: 12) {
             Text(list.address.getStreetAddress() ?? "")
                 .font(.headline)

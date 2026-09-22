@@ -5,7 +5,6 @@
 //  Created by Quinn Liu on 5/14/26.
 //
 
-import CachedAsyncImage
 import SwiftUI
 
 enum ItemListItemStyle {
@@ -16,6 +15,7 @@ enum ItemListItemStyle {
 }
 
 enum ItemDocumentListItemAction {
+    case navigate(ItemV2)
     case copyItem(ItemV2)
     case removeItem(ItemV2)
 }
@@ -26,8 +26,6 @@ struct ItemDocumentListItemView: View {
     let essentialsEmoji: String
     var action: ((Any) -> Void)? = nil
 
-    private let imageSize: CGFloat = Constants.screenWidth / 7
-    
     init(
         item: ItemV2,
         style: ItemListItemStyle = .inventoryList,
@@ -42,8 +40,23 @@ struct ItemDocumentListItemView: View {
 
     // MARK: Body
     var body: some View {
+        Group {
+            if style == .inventoryList, let action {
+                Button {
+                    action(ItemDocumentListItemAction.navigate(item))
+                } label: {
+                    cellContent
+                }
+                .buttonStyle(PlainButtonStyle())
+            } else {
+                cellContent
+            }
+        }
+    }
+
+    private var cellContent: some View {
         HStack(spacing: 12) {
-            ThumbnailImageView(item.primaryImage)
+            PrimaryImageView(image: item.primaryImage, size: Constants.Image.listItemDefault, isExpandable: false)
 
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 4) {
@@ -94,15 +107,14 @@ private extension ItemDocumentListItemView {
             if let action {
                 switch style {
                 case .inventoryList:
-                    Menu {
-                        Button("Create Copy", systemImage: "doc.on.doc") {
-                            action(ItemDocumentListItemAction.copyItem(item))
-                        }
+                    Button {
+                        action(ItemDocumentListItemAction.copyItem(item))
                     } label: {
-                        RDButton(variant: .secondary, size: .icon, leadingIcon: SFSymbols.ellipsis, fullWidth: false) { }
-                            .allowsHitTesting(false)
+                        Image(systemName: SFSymbols.docOnDoc)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
-                    .clipShape(Circle())
+                    .buttonStyle(.plain)
                 case .essentialsGroup:
                     Button {
                         action(ItemDocumentListItemAction.removeItem(item))

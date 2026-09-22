@@ -45,7 +45,7 @@ struct RedDoorApp: App {
                     Image("RedDoor")
                         .resizable()
                         .scaledToFit()
-                        .frame(Constants.screenWidth / 4)
+                        .frame(Constants.Screen.screenWidth / 4)
                         .task {
                             await ConfigurationService.shared.preload()
                             isReady = true
