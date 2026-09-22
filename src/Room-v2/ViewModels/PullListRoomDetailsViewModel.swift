@@ -182,7 +182,8 @@ extension PullListRoomDetailsViewModel {
         let imageField = isBefore ? RoomV2.CodingKeys.beforeImage.stringValue : RoomV2.CodingKeys.afterImage.stringValue
         
         do {
-            if let updatedImage = try await FirebaseImageManager.shared.updateImage(imageToUpdate, resultImageType: .roomBefore) {
+            let imageType: RDImageTypeEnum = isBefore ? .roomBefore : .roomAfter
+            if let updatedImage = try await FirebaseImageManager.shared.updateImage(imageToUpdate, resultImageType: imageType) {
                 try await roomRepo.update(id: roomState.id, fields: [
                     imageField: encodeRDImage(updatedImage)
                 ])

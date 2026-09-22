@@ -34,7 +34,7 @@ final class FirebaseImageManager {
     // MARK: updateImages()
 
     func updateImages(_ images: [RDImage], resultImageType: RDImageTypeEnum) async throws -> [RDImage] {
-        let clean = images.filter { $0.imageType != .dirty }
+        let clean = images.filter { $0.imageType != .dirty && $0.imageType != .delete }
 
         let updated = try await withThrowingTaskGroup(of: RDImage?.self) { group in
             for image in images where image.imageType == .dirty || image.imageType == .delete {
