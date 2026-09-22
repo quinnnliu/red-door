@@ -11,19 +11,22 @@ import SwiftUI
 // MARK: - EnableSwipeBack
 
 private struct EnableSwipeBack: UIViewControllerRepresentable {
-    func makeCoordinator() -> Coordinator { Coordinator() }
-    func makeUIViewController(context: Context) -> UIViewController { UIViewController() }
+    func makeUIViewController(context: Context) -> SwipeBackViewController { SwipeBackViewController() }
+    func updateUIViewController(_ vc: SwipeBackViewController, context: Context) {}
 
-    func updateUIViewController(_ vc: UIViewController, context: Context) {
-        DispatchQueue.main.async {
-            guard let nav = vc.navigationController else { return }
-            context.coordinator.navigationController = nav
+    class SwipeBackViewController: UIViewController {
+        private let swipeDelegate = SwipeDelegate()
+
+        override func viewWillAppear(_ animated: Bool) {
+            super.viewWillAppear(animated)
+            guard let nav = navigationController else { return }
+            swipeDelegate.navigationController = nav
             nav.interactivePopGestureRecognizer?.isEnabled = true
-            nav.interactivePopGestureRecognizer?.delegate = context.coordinator
+            nav.interactivePopGestureRecognizer?.delegate = swipeDelegate
         }
     }
 
-    class Coordinator: NSObject, UIGestureRecognizerDelegate {
+    class SwipeDelegate: NSObject, UIGestureRecognizerDelegate {
         weak var navigationController: UINavigationController?
 
         func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
