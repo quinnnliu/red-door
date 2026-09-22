@@ -66,7 +66,7 @@ struct InstalledListV2ListItem: View {
         .padding(12)
         .background(Color(.systemGray5))
         .overlay(
-            RoundedRectangle(cornerRadius: 6)
+            RoundedRectangle(cornerRadius: 12)
                 .stroke(Color(.systemGray3), lineWidth: 4)
         )
         .frame(maxWidth: .infinity)

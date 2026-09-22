@@ -91,7 +91,7 @@ struct ItemDocumentListItemView: View {
         }
         .padding(8)
         .background(Color(.systemGray5))
-        .cornerRadius(8)
+        .cornerRadius(12)
     }
 }
 
