@@ -17,9 +17,9 @@ final class PullListV2DetailsViewModel {
     var isLoading: Bool = false
     var itemsCache: [String: ItemV2] = [:] // key: itemId, value: ItemV2
 
-    var essentialsGroup: EssentialsGroup? = nil
+    var essentialsGroupState: EssentialsGroup? = nil
     var essentialsAccessories: Accessories? = nil
-    var essentialsGroupEmoji: String = "⭐️"
+    var essentialsGroupEmoji: String? = nil
 
     private var roomsListener: ListenerRegistration? = nil
 
@@ -194,14 +194,14 @@ final class PullListV2DetailsViewModel {
     @MainActor
     func fetchEssentialsGroup() async {
         guard let groupId = pullListState.essentialGroupId else {
-            essentialsGroup = nil
+            essentialsGroupState = nil
             essentialsAccessories = nil
-            essentialsGroupEmoji = "⭐️"
+            essentialsGroupEmoji = nil
             return
         }
         do {
             let group = try await essentialsRepo.get(id: groupId)
-            essentialsGroup = group
+            essentialsGroupState = group
 
             let types = (try? await ConfigurationService.shared.getAll(using: EssentialsGroupTypeRepository())) ?? []
             let lookup = Dictionary(uniqueKeysWithValues: types.map { ($0.id, $0) })
@@ -222,14 +222,14 @@ final class PullListV2DetailsViewModel {
 
     @MainActor
     func removeEssentialsGroup() async {
-        guard let group = essentialsGroup else { return }
+        guard let group = essentialsGroupState else { return }
 
         let batch = essentialsRepo.db.batch()
 
-        let storageFields: [String: Any] = [
-            "location.\(DocumentLocation.CodingKeys.status.stringValue)": LocationStatus.inStorage.rawValue,
-            "location.\(DocumentLocation.CodingKeys.locationId.stringValue)": Warehouse.warehouse1.id
-        ]
+        let storageFields: [String: Any] = DocumentLocation(
+            status: .inStorage,
+            locationId: Warehouse.warehouse1.id
+        ).firebaseUpdateFields // TODO: select from document select
 
         for itemId in group.itemIds {
             itemRepo.update(id: itemId, fields: storageFields, inBatch: batch)
@@ -267,9 +267,9 @@ final class PullListV2DetailsViewModel {
             pullListState.essentialGroupId = nil
             pullListState.unassignedItemIds.removeAll { essentialItemSet.contains($0) }
             unassignedItems.removeAll { essentialItemSet.contains($0.id) }
-            essentialsGroup = nil
+            essentialsGroupState = nil
             essentialsAccessories = nil
-            essentialsGroupEmoji = "⭐️"
+            essentialsGroupEmoji = nil
         } catch {
             alertMessage = "Failed to remove essentials group: \(error.localizedDescription)"
             showAlert = true

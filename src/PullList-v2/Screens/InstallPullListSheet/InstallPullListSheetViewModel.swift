@@ -30,6 +30,7 @@ final class InstallPullListSheetViewModel {
     private let itemRepo: ItemRepository
     private let pullListRepo: PullListRepository
     private let warehouseRepo: WarehouseRepository
+    private let configService: ConfigurationService
     private let installedListRepo: InstalledListRepository
     private let installedRoomRepo: RoomRepository
 
@@ -39,12 +40,13 @@ final class InstallPullListSheetViewModel {
 
     // MARK: init
 
-    init(from list: PullListV2, rooms: [RoomV2] = [], itemsByRoom: [String: [ItemV2]] = [:]) {
+    init(from list: PullListV2, rooms: [RoomV2] = [], itemsByRoom: [String: [ItemV2]] = [:], configService: ConfigurationService = .shared) {
         self.pullListState = list
         self.roomRepo = RoomRepository(list: list)
         self.itemRepo = ItemRepository()
         self.pullListRepo = PullListRepository()
         self.warehouseRepo = WarehouseRepository()
+        self.configService = configService
         self.installedListRepo = InstalledListRepository()
         self.installedRoomRepo = RoomRepository(parentCollectionName: InstalledListV2.collectionName, listId: list.id)
         self.rooms = rooms
@@ -176,7 +178,11 @@ final class InstallPullListSheetViewModel {
     
     // MARK: getWarehouses
     func getWarehouses() async {
-        warehouses = await warehouseRepo.getWarehouses()
+        do {
+            warehouses = try await configService.getAll(using: warehouseRepo)
+        } catch {
+            print("Error loading warehouses: \(error.localizedDescription)")
+        }
     }
 
     // MARK: confirmInstallSummary

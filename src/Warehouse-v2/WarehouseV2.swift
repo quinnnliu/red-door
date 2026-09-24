@@ -5,26 +5,29 @@
 //  Created by Quinn Liu on 6/7/26.
 //
 
+// TODO: Rename WarehouseV2 to StorageLocation (and update all references)
+
 import Foundation
 
-struct WarehouseV2: RDDocument {
-    static var collectionName: String = "warehouses"
-    static var orderByField: String = "id"
-    static var searchField: String = "id"
-    
+struct WarehouseV2: ConfigurationOption {
+    static let configurationType: String = "warehouses"
+    static let collectionName: String = "warehouse_types"
+    static let orderByField: String = CodingKeys.baseName.stringValue
+    static let searchField: String = CodingKeys.baseName.stringValue
+
     var id: String
     var baseName: String
     var address: Address
-    
+
     init(baseName: String, address: Address) {
         self.id = baseName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: " ", with: "-")
         self.baseName = baseName
         self.address = address
     }
-    
-}
 
-extension WarehouseV2 {
-    static let warehouse1 = WarehouseV2(baseName: "Warehouse 1", address: Address(street: "123 Main St", city: "Anytown", state: "CA", zipcode: "12345", isWarehouse: true))
-    static let warehouse2 = WarehouseV2(baseName: "Warehouse 2", address: Address(street: "456 Main St", city: "Anytown", state: "CA", zipcode: "12345", isWarehouse: true))
+    enum CodingKeys: String, CodingKey {
+        case id
+        case baseName = "base_name"
+        case address
+    }
 }

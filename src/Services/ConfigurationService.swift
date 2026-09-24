@@ -58,6 +58,9 @@ final class ConfigurationService {
             group.addTask {
                 _ = try? await self.getAll(using: AccessoriesTypeRepository())
             }
+            group.addTask {
+                _ = try? await self.getAll(using: WarehouseRepository())
+            }
         }
     }
 }

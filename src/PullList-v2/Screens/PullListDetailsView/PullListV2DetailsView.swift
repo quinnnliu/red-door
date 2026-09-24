@@ -30,7 +30,7 @@ struct PullListV2DetailsView: View {
                 LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
                     PrimaryImageView(image: viewModel.pullListState.image)
 
-                    if viewModel.essentialsGroup != nil {
+                    if viewModel.essentialsGroupState != nil {
                         Section {
                             EssentialsGroupSectionContent
                         } header: {
@@ -274,17 +274,21 @@ extension PullListV2DetailsView {
     // MARK: EssentialsGroupSectionContent
     @ViewBuilder
     var EssentialsGroupSectionContent: some View {
-        if let group = viewModel.essentialsGroup {
+        if let group = viewModel.essentialsGroupState {
             LazyVStack(spacing: 8) {
                 HStack {
-                    Text("\(viewModel.essentialsGroupEmoji) \(group.displayName)")
+                    if let essentialsGroupEmoji = viewModel.essentialsGroupEmoji {
+                        Text(essentialsGroupEmoji)
+                    }
+                    Text(group.displayName)
                         .font(.subheadline)
                     Spacer()
                 }
+                .font(.subheadline)
                 .padding(12)
                 .background(Color(.systemGray6))
                 .cornerRadius(8)
-
+                
                 if let accessories = viewModel.essentialsAccessories {
                     HStack {
                         Image(systemName: SFSymbols.wrenchFill)
