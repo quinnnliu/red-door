@@ -69,6 +69,7 @@ enum SmallCTAType {
 }
 
 struct SmallCTA: View {
+    @Environment(\.isEnabled) private var isEnabled
     var isButton: Bool = true
 
     let type: SmallCTAType
@@ -127,6 +128,7 @@ struct SmallCTA: View {
                 .stroke(type.borderColor ?? Color.clear, lineWidth: type.borderWidth)
         )
         .clipShape(.capsule)
+        .opacity(isEnabled ? 1.0 : 0.5)
     }
 }
 
