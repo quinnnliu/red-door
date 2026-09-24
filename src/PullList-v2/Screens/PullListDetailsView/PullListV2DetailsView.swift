@@ -16,7 +16,7 @@ struct PullListV2DetailsView: View {
     @State private var showInstallListSheet: Bool = false
     @State private var showDetails: Bool = false
     @State private var showUnassignedItems: Bool = false
-    @State private var showRemoveEssentialsAlert: Bool = false
+    @State private var showSelectWarehouseSheet: Bool = false
 
     init(viewModel: PullListV2DetailsViewModel) {
         self.viewModel = viewModel
@@ -93,13 +93,14 @@ struct PullListV2DetailsView: View {
         } message: {
             Text(viewModel.getInstallBlockedMessage())
         }
-        .alert("Remove Essentials Group", isPresented: $showRemoveEssentialsAlert) {
-            Button("Remove", role: .destructive) {
-                Task { await viewModel.removeEssentialsGroup() }
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("All items and accessories will be returned to storage.")
+        .sheet(isPresented: $showSelectWarehouseSheet) {
+            SelectDocumentSheet(
+                title: "Select Storage Location",
+                documents: viewModel.availableWarehouses,
+                action: handleAction(_:),
+                refreshAction: { Task { await viewModel.fetchAvailableWarehouses() } }
+            )
+            .task { await viewModel.fetchAvailableWarehouses() }
         }
         .sheet(isPresented: $showAddRoomsSheet) {
             EditRoomV2Sheet { newRoomName in
@@ -260,7 +261,7 @@ extension PullListV2DetailsView {
             Spacer()
 
             Button {
-                showRemoveEssentialsAlert = true
+                showSelectWarehouseSheet = true
             } label: {
                 Image(systemName: SFSymbols.xmarkCircleFill)
                     .foregroundStyle(.secondary)
@@ -406,6 +407,13 @@ extension PullListV2DetailsView {
             switch roomListItemAction {
             case .refreshRoom(let roomId):
                 viewModel.refreshRoom(roomId)
+            }
+        }
+
+        if let warehouseAction = actionArgument as? SelectDocumentSheetAction<WarehouseV2> {
+            switch warehouseAction {
+            case .selected(let warehouse):
+                Task { await viewModel.removeEssentialsGroup(to: warehouse) }
             }
         }
     }

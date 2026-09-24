@@ -20,6 +20,7 @@ final class PullListV2DetailsViewModel {
     var essentialsGroupState: EssentialsGroup? = nil
     var essentialsAccessories: Accessories? = nil
     var essentialsGroupEmoji: String? = nil
+    var availableWarehouses: [WarehouseV2] = []
 
     private var roomsListener: ListenerRegistration? = nil
 
@@ -218,18 +219,29 @@ final class PullListV2DetailsViewModel {
         }
     }
 
+    // MARK: fetchAvailableWarehouses
+
+    func fetchAvailableWarehouses() async {
+        do {
+            availableWarehouses = try await ConfigurationService.shared.getAll(using: WarehouseRepository())
+        } catch {
+            alertMessage = "Failed to load storage locations: \(error.localizedDescription)"
+            showAlert = true
+        }
+    }
+
     // MARK: removeEssentialsGroup
 
     @MainActor
-    func removeEssentialsGroup() async {
+    func removeEssentialsGroup(to warehouse: WarehouseV2) async {
         guard let group = essentialsGroupState else { return }
 
         let batch = essentialsRepo.db.batch()
 
         let storageFields: [String: Any] = DocumentLocation(
             status: .inStorage,
-            locationId: Warehouse.warehouse1.id
-        ).firebaseUpdateFields // TODO: select from document select
+            locationId: warehouse.id
+        ).firebaseUpdateFields
 
         for itemId in group.itemIds {
             itemRepo.update(id: itemId, fields: storageFields, inBatch: batch)
@@ -270,6 +282,7 @@ final class PullListV2DetailsViewModel {
             essentialsGroupState = nil
             essentialsAccessories = nil
             essentialsGroupEmoji = nil
+            availableWarehouses = []
         } catch {
             alertMessage = "Failed to remove essentials group: \(error.localizedDescription)"
             showAlert = true

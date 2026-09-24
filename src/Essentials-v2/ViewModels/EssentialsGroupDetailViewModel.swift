@@ -156,8 +156,8 @@ final class EssentialsGroupDetailViewModel {
 
         let batch = essentialsRepo.db.batch()
         let locationFields: [String: Any] = DocumentLocation(
-            status: .inStorage,
-            locationId: Warehouse.warehouse1.id
+            status: .inPullList,
+            locationId: pullList.id
         ).firebaseUpdateFields
 
         for itemId in groupState.itemIds {

@@ -128,6 +128,7 @@ private extension EssentialsGroupDetailView {
                     showEditSheet = true
                 }
                 .clipShape(Circle())
+                .disabled(!viewModel.groupState.location.status.isAvailable)
             }
         )
     }
