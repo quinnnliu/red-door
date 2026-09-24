@@ -16,18 +16,27 @@ struct PullListV2DetailsView: View {
     @State private var showInstallListSheet: Bool = false
     @State private var showDetails: Bool = false
     @State private var showUnassignedItems: Bool = false
+    @State private var showRemoveEssentialsAlert: Bool = false
 
-    init(list: PullListV2) {
-        viewModel = PullListV2DetailsViewModel(from: list)
+    init(viewModel: PullListV2DetailsViewModel) {
+        self.viewModel = viewModel
     }
 
     var body: some View {
         VStack(spacing: 0) {
             TopBar
-            
+
             ScrollView {
                 LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
                     PrimaryImageView(image: viewModel.pullListState.image)
+
+                    if viewModel.essentialsGroup != nil {
+                        Section {
+                            EssentialsGroupSectionContent
+                        } header: {
+                            EssentialsGroupSectionHeader
+                        }
+                    }
 
                     Section {
                         UnassignedItemsContent
@@ -42,13 +51,13 @@ struct PullListV2DetailsView: View {
                     }
                 }
             }
-            
+
             Spacer(minLength: 0)
-            
+
             if showDetails {
                 ListDetails
             }
-            
+
             HStack {
                 RDButton(
                     variant: viewModel.canOpenInstallSheet ? .red : .secondary,
@@ -58,7 +67,7 @@ struct PullListV2DetailsView: View {
                 ) {
                     handleInstallListAction()
                 }
-                
+
                 ShowDetailsButton
             }
             .padding(.top, 12)
@@ -68,8 +77,8 @@ struct PullListV2DetailsView: View {
         .frameHorizontalPadding()
         .frameBottomPadding()
         .toolbar(.hidden)
-        .onAppear {
-            viewModel.startListening()
+        .task {
+            await viewModel.startListening()
         }
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("Ok", role: .cancel) {}
@@ -83,6 +92,14 @@ struct PullListV2DetailsView: View {
             }
         } message: {
             Text(viewModel.getInstallBlockedMessage())
+        }
+        .alert("Remove Essentials Group", isPresented: $showRemoveEssentialsAlert) {
+            Button("Remove", role: .destructive) {
+                Task { await viewModel.removeEssentialsGroup() }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("All items and accessories will be returned to storage.")
         }
         .sheet(isPresented: $showAddRoomsSheet) {
             EditRoomV2Sheet { newRoomName in
@@ -101,17 +118,17 @@ struct PullListV2DetailsView: View {
 }
 
 extension PullListV2DetailsView {
-    
+
     // MARK: ShowDetailsButton
     var ShowDetailsButton: some View {
-        
+
         RDButton(variant: showDetails ? .red : .secondary, leadingIcon: SFSymbols.infoCircleFill, label: "Details") {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                 showDetails.toggle()
             }
         }
     }
-    
+
     var ListDetails: some View {
         Button {
             withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
@@ -153,7 +170,7 @@ extension PullListV2DetailsView {
             }
         )
     }
-    
+
     // MARK: TopBar Right Icon Menu
     var TopBarMenu: some View {
         Menu {
@@ -161,7 +178,7 @@ extension PullListV2DetailsView {
                 Button("Edit Details", systemImage: SFSymbols.pencil) {
                     showEditListSheet = true
                 }
-                
+
                 Button("Refresh", systemImage: SFSymbols.arrowCounterclockwise) {
                     viewModel.refreshPullListAndRooms()
                 }
@@ -189,7 +206,7 @@ extension PullListV2DetailsView {
             ) { }.clipShape(.circle)
         }
     }
-    
+
     // MARK: PullListDetailsSection
     func PullListDetailsSection(_ list: PullListV2) -> some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -201,7 +218,7 @@ extension PullListV2DetailsView {
                 Text(list.address.formattedAddress)
                     .foregroundColor(.primary)
             )
-            
+
             (
                 Text("Install Date: ")
                     .foregroundColor(.red)
@@ -210,7 +227,7 @@ extension PullListV2DetailsView {
                 Text(list.installDate)
                     .foregroundColor(.primary)
             )
-            
+
             (
                 Text("Uninstall Date: ")
                     .foregroundColor(.red)
@@ -219,7 +236,7 @@ extension PullListV2DetailsView {
                 Text(list.uninstallDate)
                     .foregroundColor(.primary)
             )
-            
+
             (
                 Text("Client: ")
                     .foregroundColor(.red)
@@ -232,7 +249,59 @@ extension PullListV2DetailsView {
         .font(.footnote)
         .frame(maxWidth: .infinity, alignment: .leading)
     }
-    
+
+    // MARK: EssentialsGroupSectionHeader
+    var EssentialsGroupSectionHeader: some View {
+        HStack(spacing: .zero) {
+            Text("Essentials")
+                .foregroundStyle(.red)
+                .font(.headline)
+
+            Spacer()
+
+            Button {
+                showRemoveEssentialsAlert = true
+            } label: {
+                Image(systemName: SFSymbols.xmarkCircleFill)
+                    .foregroundStyle(.secondary)
+                    .font(.title3)
+            }
+        }
+        .padding(.vertical, 12)
+        .background(Color(.systemBackground))
+    }
+
+    // MARK: EssentialsGroupSectionContent
+    @ViewBuilder
+    var EssentialsGroupSectionContent: some View {
+        if let group = viewModel.essentialsGroup {
+            LazyVStack(spacing: 8) {
+                HStack {
+                    Text("\(viewModel.essentialsGroupEmoji) \(group.displayName)")
+                        .font(.subheadline)
+                    Spacer()
+                }
+                .padding(12)
+                .background(Color(.systemGray6))
+                .cornerRadius(8)
+
+                if let accessories = viewModel.essentialsAccessories {
+                    HStack {
+                        Image(systemName: SFSymbols.wrenchFill)
+                            .foregroundStyle(.secondary)
+                            .font(.caption)
+                        Text(accessories.displayName)
+                            .font(.subheadline)
+                        Spacer()
+                    }
+                    .padding(12)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(8)
+                }
+            }
+        }
+    }
+
     // MARK: UnassignedItemsHeader
     var UnassignedItemsHeader: some View {
         HStack(spacing: .zero) {
@@ -305,7 +374,7 @@ extension PullListV2DetailsView {
             RoomList
         }
     }
-    
+
     var RoomList: some View {
         LazyVStack(spacing: 12) {
             ForEach(viewModel.rooms, id: \.id) { room in
@@ -328,7 +397,7 @@ extension PullListV2DetailsView {
 extension PullListV2DetailsView {
     func handleAction(_ actionArgument: Any?) {
         guard actionArgument != nil else { return }
-        
+
         if let roomListItemAction = actionArgument as? RoomListItemViewAction {
             switch roomListItemAction {
             case .refreshRoom(let roomId):
@@ -336,7 +405,7 @@ extension PullListV2DetailsView {
             }
         }
     }
-    
+
     func handleInstallListAction() {
         if viewModel.canOpenInstallSheet {
             Task {

@@ -17,23 +17,38 @@ final class PullListV2DetailsViewModel {
     var isLoading: Bool = false
     var itemsCache: [String: ItemV2] = [:] // key: itemId, value: ItemV2
 
+    var essentialsGroup: EssentialsGroup? = nil
+    var essentialsAccessories: Accessories? = nil
+    var essentialsGroupEmoji: String = "⭐️"
+
     private var roomsListener: ListenerRegistration? = nil
 
     private let roomRepo: RoomRepository
     private let itemRepo: ItemRepository
     private let pullListRepo: PullListRepository
-    
+    private let essentialsRepo: EssentialsRepository
+    private let accessoriesRepo: AccessoriesRepository
+
     var showAlert: Bool = false
     var alertMessage: String = ""
     var showInstallBlockedAlert: Bool = false
 
     // MARK: init
-    
-    init(from list: PullListV2) {
+
+    init(
+        list: PullListV2,
+        roomRepo: RoomRepository,
+        itemRepo: ItemRepository,
+        pullListRepo: PullListRepository,
+        essentialsRepo: EssentialsRepository,
+        accessoriesRepo: AccessoriesRepository
+    ) {
         self.pullListState = list
-        self.roomRepo = RoomRepository(list: list)
-        self.itemRepo = ItemRepository()
-        self.pullListRepo = PullListRepository()
+        self.roomRepo = roomRepo
+        self.itemRepo = itemRepo
+        self.pullListRepo = pullListRepo
+        self.essentialsRepo = essentialsRepo
+        self.accessoriesRepo = accessoriesRepo
     }
 
     deinit {
@@ -42,7 +57,8 @@ final class PullListV2DetailsViewModel {
 
     // MARK: start / stop listening
 
-    func startListening() {
+    @MainActor
+    func startListening() async {
         guard roomsListener == nil else { return }
         isLoading = true
         alertMessage = ""
@@ -56,6 +72,10 @@ final class PullListV2DetailsViewModel {
                     await self?.handleListenerError(error)
                 }
             }
+        }
+
+        Task {
+            await fetchEssentialsGroup()
         }
     }
 
@@ -86,7 +106,7 @@ final class PullListV2DetailsViewModel {
         showAlert = true
         alertMessage = error.localizedDescription
     }
-    
+
     // MARK: fetchUnassignedItems
 
     @MainActor
@@ -106,7 +126,7 @@ final class PullListV2DetailsViewModel {
     }
 
     // MARK: fetchItemsForRoom
-    
+
     @MainActor
     private func fetchItemsForRoom(_ room: RoomV2) async {
         do {
@@ -132,7 +152,7 @@ final class PullListV2DetailsViewModel {
     }
 
     // MARK: refreshRoom
-    
+
     func refreshRoom(_ roomId: String) {
         guard let room = rooms.first(where: { $0.id == roomId }) else { return }
         let roomItemIds = Set(room.itemIds)
@@ -143,7 +163,7 @@ final class PullListV2DetailsViewModel {
             await fetchItemsForRoom(room)
         }
     }
-    
+
     // MARK: refreshPullListAndRooms
 
     func refreshPullListAndRooms() {
@@ -156,18 +176,106 @@ final class PullListV2DetailsViewModel {
             }
         }
     }
-    
+
     // MARK: refreshPullListDetails
-    
+
     func refreshPullListDetails() async {
         do {
             pullListState = try await pullListRepo.get(id: pullListState.id)
+            await fetchEssentialsGroup()
         } catch {
             alertMessage = "Error refreshing pull list, please try again"
             showAlert = true
         }
     }
-    
+
+    // MARK: fetchEssentialsGroup
+
+    @MainActor
+    func fetchEssentialsGroup() async {
+        guard let groupId = pullListState.essentialGroupId else {
+            essentialsGroup = nil
+            essentialsAccessories = nil
+            essentialsGroupEmoji = "⭐️"
+            return
+        }
+        do {
+            let group = try await essentialsRepo.get(id: groupId)
+            essentialsGroup = group
+
+            let types = (try? await ConfigurationService.shared.getAll(using: EssentialsGroupTypeRepository())) ?? []
+            let lookup = Dictionary(uniqueKeysWithValues: types.map { ($0.id, $0) })
+            essentialsGroupEmoji = lookup[group.essentialsTypeId]?.emoji ?? "⭐️"
+
+            if let accessoriesId = group.accessoriesId {
+                essentialsAccessories = try await accessoriesRepo.get(id: accessoriesId)
+            } else {
+                essentialsAccessories = nil
+            }
+        } catch {
+            alertMessage = "Failed to load essentials group: \(error.localizedDescription)"
+            showAlert = true
+        }
+    }
+
+    // MARK: removeEssentialsGroup
+
+    @MainActor
+    func removeEssentialsGroup() async {
+        guard let group = essentialsGroup else { return }
+
+        let batch = essentialsRepo.db.batch()
+
+        let storageFields: [String: Any] = [
+            "location.\(DocumentLocation.CodingKeys.status.stringValue)": LocationStatus.inStorage.rawValue,
+            "location.\(DocumentLocation.CodingKeys.locationId.stringValue)": Warehouse.warehouse1.id
+        ]
+
+        for itemId in group.itemIds {
+            itemRepo.update(id: itemId, fields: storageFields, inBatch: batch)
+        }
+
+        if let accessoriesId = group.accessoriesId {
+            accessoriesRepo.update(id: accessoriesId, fields: storageFields, inBatch: batch)
+        }
+
+        essentialsRepo.update(id: group.id, fields: storageFields, inBatch: batch)
+
+        pullListRepo.update(
+            id: pullListState.id,
+            fields: [
+                PullListV2.CodingKeys.essentialGroupId.stringValue: NSNull(),
+                PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayRemove(group.itemIds)
+            ],
+            inBatch: batch
+        )
+
+        let essentialItemSet = Set(group.itemIds)
+        for room in rooms {
+            let overlap = room.itemIds.intersection(essentialItemSet)
+            if !overlap.isEmpty {
+                roomRepo.update(
+                    id: room.id,
+                    fields: [RoomV2.CodingKeys.itemIds.stringValue: FieldValue.arrayRemove(Array(overlap))],
+                    inBatch: batch
+                )
+            }
+        }
+
+        do {
+            try await batch.commit()
+            pullListState.essentialGroupId = nil
+            pullListState.unassignedItemIds.removeAll { essentialItemSet.contains($0) }
+            unassignedItems.removeAll { essentialItemSet.contains($0.id) }
+            essentialsGroup = nil
+            essentialsAccessories = nil
+            essentialsGroupEmoji = "⭐️"
+        } catch {
+            alertMessage = "Failed to remove essentials group: \(error.localizedDescription)"
+            showAlert = true
+        }
+    }
+
     // MARK: deletePullList
     func deletePullList() async {
         let itemRepo = self.itemRepo

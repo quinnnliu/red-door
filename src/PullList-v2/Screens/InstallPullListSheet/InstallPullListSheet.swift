@@ -12,7 +12,11 @@ struct InstallPullListSheet: View {
     @Environment(NavigationCoordinator.self) private var coordinator
     @State private var viewModel: InstallPullListSheetViewModel
     
-    init(list: PullListV2, rooms: [RoomV2] = [], itemsByRoom: [String: [ItemV2]] = [:]) {
+    init(
+        list: PullListV2,
+        rooms: [RoomV2] = [],
+        itemsByRoom: [String: [ItemV2]] = [:]
+    ) {
         viewModel = InstallPullListSheetViewModel(from: list, rooms: rooms, itemsByRoom: itemsByRoom)
     }
 

@@ -132,8 +132,6 @@ extension PullListRoomDetailsViewModel {
             )
             try await batch.commit()
             itemsCache.removeValue(forKey: item.id)
-            alertMessage = "Removed item: \(item.displayName)"
-            showAlert = true
             roomState.itemIds = updatedItems
         } catch {
             roomState.itemIds = originalItems

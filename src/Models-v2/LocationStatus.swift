@@ -32,4 +32,13 @@ enum LocationStatus: String, Codable, Filterable {
             "Installed"
         }
     }
+    
+    var isAvailable: Bool {
+        switch self {
+        case .inPullList, .inInstalledList:
+            return false
+        case .inStorage:
+            return true
+        }
+    }
 }
