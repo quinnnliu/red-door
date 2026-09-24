@@ -39,14 +39,20 @@ struct PrimaryImageView: View {
     }
 
     var body: some View {
-        Button {
-            if let uiImage = image?.uiImage {
-                expandedImage = RDImage(uiImage: uiImage)
-            } else if image?.imageURL != nil {
-                expandedImage = image
+        Group {
+            if isExpandable {
+                Button {
+                    if let uiImage = image?.uiImage {
+                        expandedImage = RDImage(uiImage: uiImage)
+                    } else if image?.imageURL != nil {
+                        expandedImage = image
+                    }
+                } label: {
+                    PrimaryImageContent(image, editable: false)
+                }
+            } else {
+                PrimaryImageContent(image, editable: false)
             }
-        } label: {
-            PrimaryImageContent(image, editable: false)
         }
         .frame(size)
         .clipped()
