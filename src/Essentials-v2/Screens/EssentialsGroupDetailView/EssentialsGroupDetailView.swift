@@ -54,13 +54,12 @@ struct EssentialsGroupDetailView: View {
         }
         .sheet(isPresented: $showAddItemsSheet) {
             AddItemToDocumentSheetV2(
+                destination: .essentialsGroup(viewModel.groupState),
                 defaultFilters: [
                     "\(ItemV2.CodingKeys.location.rawValue).\(DocumentLocation.CodingKeys.status.rawValue)": LocationStatus.inStorage.rawValue,
                     ItemV2.CodingKeys.essentialGroupId.rawValue: AnyHashable(NSNull())
                 ]
-            ) { item in
-                AddItemDocumentContext.itemToEssentialsGroup(item: item, group: viewModel.groupState)
-            }
+            )
         }
         .sheet(isPresented: $showAssignToPullListSheet) {
             AddEssentialsGroupToPullListSheet(action: handleAction(_:))
@@ -190,7 +189,7 @@ private extension EssentialsGroupDetailView {
             
             LazyVStack(spacing: 8) {
                 ForEach(viewModel.items, id: \.id) { item in
-                    ItemDocumentListItemView(item: item, style: .essentialsGroup, action: handleAction(_:))
+                    ItemListItemView(item: item, style: .essentialsGroup, action: handleAction(_:))
                 }
             }
         }
@@ -200,7 +199,7 @@ private extension EssentialsGroupDetailView {
 private extension EssentialsGroupDetailView {
     func handleAction(_ actionArgument: Any?) {
         switch actionArgument {
-        case let itemListItemAction as ItemDocumentListItemAction:
+        case let itemListItemAction as ItemListItemAction:
             switch itemListItemAction {
             case .removeItem(let item):
                 itemToRemove = item

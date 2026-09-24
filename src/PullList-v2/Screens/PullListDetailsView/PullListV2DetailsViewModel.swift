@@ -257,7 +257,7 @@ final class PullListV2DetailsViewModel {
             id: pullListState.id,
             fields: [
                 PullListV2.CodingKeys.essentialGroupId.stringValue: NSNull(),
-                PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayRemove(group.itemIds)
+                PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayRemove(Array(group.itemIds))
             ],
             inBatch: batch
         )

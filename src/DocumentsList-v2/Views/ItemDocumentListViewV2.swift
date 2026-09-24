@@ -238,7 +238,7 @@ extension ItemDocumentListViewV2 {
             noMoreLabel: "No More Items",
             action: handleItemAction(_:),
             rowContent: { item in
-                ItemDocumentListItemView(
+                ItemListItemView(
                     item: item,
                     action: handleItemAction(_:)
                 )
@@ -366,13 +366,13 @@ private extension ItemDocumentListViewV2 {
             case .loadMore:
                 Task { await itemsVM.loadMore() }
             }
-        case let rowAction as ItemDocumentListItemAction:
+        case let rowAction as ItemListItemAction:
             switch rowAction {
             case .navigate(let item):
                 path.append(NavigationDestination.itemDetailView(item))
             case .copyItem(let item):
                 itemToCopy = item
-            case .removeItem:
+            default:
                 break
             }
         default:

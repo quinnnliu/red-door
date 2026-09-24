@@ -1,3 +1,15 @@
+enum ItemsListDestination: Hashable {
+    case room(RoomV2)
+    case essentialsGroup(EssentialsGroup)
+
+    var document: any ItemsListableDocument {
+        switch self {
+        case .room(let room): return room
+        case .essentialsGroup(let group): return group
+        }
+    }
+}
+
 enum NavigationDestination: Hashable {
     // MARK: Item
     case itemDetailView(_ item: ItemV2)
@@ -20,6 +32,6 @@ enum NavigationDestination: Hashable {
     case accessoriesDetailView(_ accessories: Accessories)
 
     // MARK: Generic Add Item
-    case addItemToDocumentDetailView(context: AddItemDocumentContext)
+    case addItemToDocumentDetailView(item: ItemV2, destination: ItemsListDestination)
 }
 

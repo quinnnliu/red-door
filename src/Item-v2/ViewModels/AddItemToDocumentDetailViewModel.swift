@@ -10,15 +10,17 @@ import FirebaseFirestore
 
 @Observable
 final class AddItemToDocumentDetailViewModel {
-    let context: AddItemDocumentContext
+    let item: ItemV2
+    let destination: ItemsListDestination
     private let itemRepo: ItemRepository = .init()
 
     var isLoading: Bool = false
     var showAlert: Bool = false
     var alertText: String = ""
 
-    init(context: AddItemDocumentContext) {
-        self.context = context
+    init(item: ItemV2, destination: ItemsListDestination) {
+        self.item = item
+        self.destination = destination
     }
 }
 
@@ -29,10 +31,10 @@ extension AddItemToDocumentDetailViewModel {
         isLoading = true
         defer { isLoading = false }
 
-        switch context {
-        case .itemToPullListRoom(let item, let room):
+        switch destination {
+        case .room(let room):
             await addItemToPullListRoom(item: item, room: room)
-        case .itemToEssentialsGroup(let item, let group):
+        case .essentialsGroup(let group):
             await addItemToEssentialsGroup(item: item, group: group)
         }
     }
@@ -95,7 +97,7 @@ private extension AddItemToDocumentDetailViewModel {
                     
                     var newItemIds = currentGroup.itemIds
                     guard !newItemIds.contains(item.id) else { throw AddItemError.itemAlreadyInDestination(item, destinationDocument: group) }
-                    newItemIds.append(item.id)
+                    newItemIds.insert(item.id)
                     
                     essentialsRepo.update(
                         id: group.id,

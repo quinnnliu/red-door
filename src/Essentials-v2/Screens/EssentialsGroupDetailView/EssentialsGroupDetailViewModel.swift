@@ -66,7 +66,7 @@ final class EssentialsGroupDetailViewModel {
         let uncachedIds = snapshot.itemIds.filter { itemsCache[$0] == nil }
         if !uncachedIds.isEmpty {
             do {
-                let fetched = try await itemRepo.get(ids: uncachedIds)
+                let fetched = try await itemRepo.get(ids: Array(uncachedIds))
                 for item in fetched {
                     itemsCache[item.id] = item
                 }
@@ -174,7 +174,7 @@ final class EssentialsGroupDetailViewModel {
             id: pullList.id,
             fields: [
                 PullListV2.CodingKeys.essentialGroupId.stringValue: groupState.id,
-                PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayUnion(groupState.itemIds)
+                PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayUnion(Array(groupState.itemIds))
             ],
             inBatch: batch
         )

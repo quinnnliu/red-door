@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct RoomV2: RDDocument {
+struct RoomV2: ItemsListableDocument {
     static let collectionName: String = "rooms"
     static let orderByField: String = "name"
     static let searchField: String = "base_name"

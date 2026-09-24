@@ -13,8 +13,8 @@ struct AddItemToDocumentDetailView: View {
     @State private var viewModel: AddItemToDocumentDetailViewModel
     @State private var showInformation: Bool = false
 
-    init(context: AddItemDocumentContext) {
-        viewModel = AddItemToDocumentDetailViewModel(context: context)
+    init(item: ItemV2, destination: ItemsListDestination) {
+        viewModel = AddItemToDocumentDetailViewModel(item: item, destination: destination)
     }
 
     // MARK: - Body
@@ -29,7 +29,7 @@ struct AddItemToDocumentDetailView: View {
 
                 ScrollView {
                     VStack(spacing: 12) {
-                        PrimaryImageView(image: viewModel.context.item.primaryImage)
+                        PrimaryImageView(image: viewModel.item.primaryImage)
 
                         VStack(spacing: 12) {
                             Button {
@@ -53,7 +53,7 @@ struct AddItemToDocumentDetailView: View {
                             }
 
                             if showInformation {
-                                ItemDetailSection(item: viewModel.context.item)
+                                ItemDetailSection(item: viewModel.item)
                                     .transition(.opacity.combined(with: .move(edge: .top)))
                             }
                         }
@@ -68,7 +68,7 @@ struct AddItemToDocumentDetailView: View {
                     variant: .red,
                     leadingIcon: SFSymbols.plus,
                     iconBold: true,
-                    label: "Add to \(viewModel.context.destination.displayName)",
+                    label: "Add to \(viewModel.destination.document.displayName)",
                     fullWidth: true
                 ) {
                     Task {
@@ -106,7 +106,7 @@ struct AddItemToDocumentDetailView: View {
                 HStack {
                     Text("Name:")
                         .font(.headline)
-                    Text(viewModel.context.item.displayName)
+                    Text(viewModel.item.displayName)
                 }
             },
             trailingView: {

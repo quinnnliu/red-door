@@ -33,7 +33,7 @@ struct EssentialsGroupType: ConfigurationOption {
 
 // MARK: - EssentialsGroup
 
-struct EssentialsGroup: RDDocument {
+struct EssentialsGroup: ItemsListableDocument {
     static let collectionName: String = "essentials"
     static let orderByField: String = EssentialsGroup.CodingKeys.baseName.stringValue
     static let searchField: String = EssentialsGroup.CodingKeys.baseNameLowercased.stringValue
@@ -44,7 +44,7 @@ struct EssentialsGroup: RDDocument {
     var essentialsTypeId: String // maps to EssentialsGroupType
 
     var location: DocumentLocation
-    var itemIds: [String]
+    var itemIds: Set<String>
     var accessoriesId: String?
     var groupNumber: Int
     var nickname: String?
@@ -65,7 +65,7 @@ struct EssentialsGroup: RDDocument {
         baseName: String,
         location: DocumentLocation = DocumentLocation(status: .inStorage, locationId: Warehouse.warehouse1.id),
         essentialsTypeId: String,
-        itemIds: [String] = [],
+        itemIds: Set<String> = [],
         accessoriesId: String? = nil,
         groupNumber: Int = 0,
         nickname: String? = nil

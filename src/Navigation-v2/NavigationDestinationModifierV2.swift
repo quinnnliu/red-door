@@ -61,8 +61,8 @@ struct NavigationDestinationsModifierV2: ViewModifier {
                         EssentialsGroupDetailView(group: group, emoji: emoji)
                     case .accessoriesDetailView(let accessories):
                         AccessoriesDetailsView(accessories: accessories)
-                    case .addItemToDocumentDetailView(let context):
-                        AddItemToDocumentDetailView(context: context)
+                    case .addItemToDocumentDetailView(let item, let destination):
+                        AddItemToDocumentDetailView(item: item, destination: destination)
                     }
                 }
                 .background(EnableSwipeBack())
