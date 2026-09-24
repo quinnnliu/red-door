@@ -52,14 +52,10 @@ struct PullListRoomDetailsView: View {
             
         }
         .sheet(isPresented: $showAddItemsSheet) {
-            RoomAddItemsSheetV2(room: viewModel.roomState)
+            AddItemsToRoomSheet
         }
         .sheet(isPresented: $showEditRoomSheet) {
-            EditRoomV2Sheet(currentRoomName: viewModel.roomState.displayName) { newRoomName in
-                Task {
-                    await viewModel.renameRoom(roomId: viewModel.roomState.id, newRoomName: newRoomName)
-                }
-            }
+            EditRoomSheet
         }
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("OK", role: .cancel) { }
@@ -217,6 +213,31 @@ struct PullListRoomDetailsView: View {
             }
         default:
             print("[ERROR] Unrtacked Action in PullListRoomDetailsView: \(action)")
+        }
+    }
+}
+
+// MARK: - AddItemsToRoomSheet
+private extension PullListRoomDetailsView {
+    var AddItemsToRoomSheet: some View {
+        AddItemToDocumentSheetV2(
+            defaultFilters: [
+                "\(ItemV2.CodingKeys.location.rawValue).\(DocumentLocation.CodingKeys.status.rawValue)": LocationStatus.inStorage.rawValue,
+                ItemV2.CodingKeys.essentialGroupId.rawValue: NSNull() as AnyHashable
+            ]
+        ) { item in
+            .itemToPullListRoom(item: item, room: viewModel.roomState)
+        }
+    }
+}
+
+// MARK: - EditRoomSheet
+private extension PullListRoomDetailsView {
+    var EditRoomSheet: some View {
+        EditRoomV2Sheet(currentRoomName: viewModel.roomState.displayName) { newRoomName in
+            Task {
+                await viewModel.renameRoom(roomId: viewModel.roomState.id, newRoomName: newRoomName)
+            }
         }
     }
 }

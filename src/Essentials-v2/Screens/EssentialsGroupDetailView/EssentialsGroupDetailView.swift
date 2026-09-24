@@ -46,6 +46,7 @@ struct EssentialsGroupDetailView: View {
             SmallCTA(type: .red, leadingIcon: SFSymbols.pencilAndListClipboard, text: "Assign to Pull List") {
                 showAssignToPullListSheet = true
             }
+            .disabled(!viewModel.groupState.location.status.isAvailable)
             .frameHorizontalPadding()
         }
         .sheet(isPresented: $showEditSheet) {
@@ -184,6 +185,7 @@ private extension EssentialsGroupDetailView {
                 SmallCTA(type: .red, leadingIcon: SFSymbols.plus, text: "Add Items") {
                     showAddItemsSheet = true
                 }
+                .disabled(!viewModel.groupState.location.status.isAvailable)
             }
             
             LazyVStack(spacing: 8) {
@@ -235,6 +237,7 @@ private extension EssentialsGroupDetailView {
                     SmallCTA(type: .red, leadingIcon: SFSymbols.plus, text: "Add Accessories") {
                         showSelectAccessoriesSheet = true
                     }
+                    .disabled(!viewModel.groupState.location.status.isAvailable)
                 }
             }
 

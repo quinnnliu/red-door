@@ -11,13 +11,15 @@ struct AddItemToDocumentSheetV2: View {
     @State private var viewModel: DocumentListViewModelV2<ItemV2>
     @State private var path: NavigationPath = NavigationPath()
     @State private var searchFocused: Bool = false
+    @State private var showFilterSheet: Bool = false
 
     private let title: String
     private let makeContext: (ItemV2) -> AddItemDocumentContext
 
     init(
         title: String = "Available Items",
-        defaultFilters: [String: AnyHashable] = ["\(ItemV2.CodingKeys.location.rawValue).\(DocumentLocation.CodingKeys.status.rawValue)": LocationStatus.inStorage.rawValue],
+        defaultFilters: [String: AnyHashable] =
+        ["\(ItemV2.CodingKeys.location.rawValue).\(DocumentLocation.CodingKeys.status.rawValue)": LocationStatus.inStorage.rawValue,],
         makeContext: @escaping (ItemV2) -> AddItemDocumentContext
     ) {
         self.title = title
@@ -44,6 +46,16 @@ struct AddItemToDocumentSheetV2: View {
                 await viewModel.refresh()
             }
             .rootNavigationDestinationsV2(path: $path)
+            .sheet(isPresented: $showFilterSheet) {
+                let allFilters = viewModel.activeFilters
+                    .merging(viewModel.defaultFilters ?? [:]) { current, _ in current }
+                ItemV2DocumentFilterSheet(
+                    action: handleAction(_:),
+                    initialFilters: allFilters,
+                    availableGroups: [],
+                    lockedFilterKeys: viewModel.defaultFilterKeys
+                )
+            }
         }
     }
 }
@@ -64,9 +76,14 @@ extension AddItemToDocumentSheetV2 {
                 EmptyView()
             },
             trailingView: {
-                RDButton(variant: .outline, size: .icon, leadingIcon: SFSymbols.magnifyingglass, iconBold: true, fullWidth: false) {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                        searchFocused = true
+                HStack(spacing: 8) {
+                    RDButton(variant: viewModel.activeFiltersApplied ? .red : .outline, size: .icon, leadingIcon: SFSymbols.sliderHorizontal3, iconBold: true, fullWidth: false) {
+                        showFilterSheet = true
+                    }
+                    RDButton(variant: .outline, size: .icon, leadingIcon: SFSymbols.magnifyingglass, iconBold: true, fullWidth: false) {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            searchFocused = true
+                        }
                     }
                 }
             }
@@ -123,6 +140,11 @@ private extension AddItemToDocumentSheetV2 {
                 Task { await viewModel.search(text: text) }
             case .cancel:
                 Task { await viewModel.removeFilter(key: ItemV2.searchField) }
+            }
+        case let filterAction as DocumentFilterSheetAction:
+            switch filterAction {
+            case .applyFilters(let filters):
+                Task { await viewModel.setFilters(filters) }
             }
         default:
             print("[ERROR]: Untracked action")

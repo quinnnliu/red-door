@@ -24,9 +24,12 @@ final class DocumentListViewModelV2<T: RDDocument> {
     private let pageSize: Int
     private var cursor: DocumentSnapshot? = nil
     private(set) var activeFilters: [String: AnyHashable] = [:]
-    private var defaultFilters: [String: AnyHashable]?
+    private(set) var defaultFilters: [String: AnyHashable]?
     var activeFiltersApplied: Bool {
         !activeFilters.isEmpty
+    }
+    var defaultFilterKeys: Set<String> {
+        defaultFilters.map { Set($0.keys) } ?? []
     }
     /// Incremented on every reload. After a Firestore await resumes, a fetch
     /// checks that its captured generation still matches — if not, it was

@@ -13,6 +13,9 @@ struct AddEssentialsGroupToPullListSheet: View {
 
     private let action: (Any?) -> Void
 
+    @State private var searchFocused: Bool = false
+    @State private var showFilterSheet: Bool = false
+
     init(action: @escaping (Any?) -> Void) {
         self.action = action
         self.viewModel = DocumentListViewModelV2<PullListV2>()
@@ -22,7 +25,11 @@ struct AddEssentialsGroupToPullListSheet: View {
         VStack(spacing: 12) {
             DragIndicator()
 
-            TopBar
+            if searchFocused {
+                SearchBarV2(isActive: $searchFocused, action: handleAction(_:))
+            } else {
+                TopBar
+            }
 
             PullListList
         }
@@ -30,6 +37,12 @@ struct AddEssentialsGroupToPullListSheet: View {
         .frameHorizontalPadding()
         .task {
             await viewModel.refresh()
+        }
+        .sheet(isPresented: $showFilterSheet) {
+            PullListV2DocumentFilterSheet(
+                initialFilters: viewModel.activeFilters,
+                action: handleAction(_:)
+            )
         }
     }
 }
@@ -49,7 +62,16 @@ private extension AddEssentialsGroupToPullListSheet {
                 EmptyView()
             },
             trailingView: {
-                EmptyView()
+                HStack(spacing: 8) {
+                    RDButton(variant: viewModel.activeFiltersApplied ? .red : .outline, size: .icon, leadingIcon: SFSymbols.sliderHorizontal3, iconBold: true, fullWidth: false) {
+                        showFilterSheet = true
+                    }
+                    RDButton(variant: .outline, size: .icon, leadingIcon: SFSymbols.magnifyingglass, iconBold: true, fullWidth: false) {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            searchFocused = true
+                        }
+                    }
+                }
             }
         )
     }
@@ -71,6 +93,13 @@ private extension AddEssentialsGroupToPullListSheet {
 
     func handleAction(_ emittedAction: Any?) {
         switch emittedAction {
+        case let searchAction as SearchBarAction:
+            Task { await viewModel.handleSearchAction(searchAction) }
+        case let filterAction as DocumentFilterSheetAction:
+            switch filterAction {
+            case .applyFilters(let filters):
+                Task { await viewModel.setFilters(filters) }
+            }
         case let sectionAction as DocumentListSectionAction:
             switch sectionAction {
             case .loadMore:
