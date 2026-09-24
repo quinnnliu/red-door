@@ -206,7 +206,7 @@ final class EssentialsGroupDetailViewModel {
             let batch = essentialsRepo.db.batch()
             essentialsRepo.update(
                 id: groupState.id,
-                fields: [EssentialsGroup.CodingKeys.itemIds.stringValue: updatedItemIds],
+                fields: [EssentialsGroup.CodingKeys.itemIds.stringValue: Array(updatedItemIds)],
                 inBatch: batch
             )
             itemRepo.update(

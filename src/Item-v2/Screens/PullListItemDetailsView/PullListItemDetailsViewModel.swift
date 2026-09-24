@@ -124,8 +124,8 @@ final class PullListItemDetailsViewModel {
                     var updatedNewIds = fetchedNewRoom.itemIds
                     updatedNewIds.insert(fetchedItem.id)
 
-                    roomRepo.update(id: fetchedCurrentRoom.id, fields: [RoomV2.CodingKeys.itemIds.stringValue: updatedCurrentIds], transaction: transaction)
-                    roomRepo.update(id: fetchedNewRoom.id, fields: [RoomV2.CodingKeys.itemIds.stringValue: updatedNewIds], transaction: transaction)
+                    roomRepo.update(id: fetchedCurrentRoom.id, fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(updatedCurrentIds)], transaction: transaction)
+                    roomRepo.update(id: fetchedNewRoom.id, fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(updatedNewIds)], transaction: transaction)
                     return true
                 } catch {
                     errorPointer?.pointee = error as NSError

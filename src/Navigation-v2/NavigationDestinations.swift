@@ -1,4 +1,4 @@
-enum ItemsListDestination: Hashable {
+enum AddItemsToListableDestination: Hashable {
     case room(RoomV2)
     case essentialsGroup(EssentialsGroup)
 
@@ -32,6 +32,6 @@ enum NavigationDestination: Hashable {
     case accessoriesDetailView(_ accessories: Accessories)
 
     // MARK: Generic Add Item
-    case addItemToDocumentDetailView(item: ItemV2, destination: ItemsListDestination)
+    case addItemToDocumentDetailView(item: ItemV2, destination: AddItemsToListableDestination)
 }
 

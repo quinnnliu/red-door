@@ -8,54 +8,167 @@
 import SwiftUI
 
 struct AddItemToDocumentSheetV2: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var documentListViewModel: DocumentListViewModelV2<ItemV2>
-//    @State private var viewModel: AddItemToDocumentSheetViewModel
+    @State private var viewModel: AddItemToDocumentSheetViewModel
     @State private var path: NavigationPath = NavigationPath()
     @State private var searchFocused: Bool = false
     @State private var showFilterSheet: Bool = false
 
-    private let destination: ItemsListDestination
     private let title: String
 
     init(
         title: String = "Available Items",
-        destination: ItemsListDestination,
+        destination: AddItemsToListableDestination,
         defaultFilters: [String: AnyHashable] =
         ["\(ItemV2.CodingKeys.location.rawValue).\(DocumentLocation.CodingKeys.status.rawValue)": LocationStatus.inStorage.rawValue,]
     ) {
         self.title = title
-        self.destination = destination
-//        self.viewModel = AddItemToDocumentSheetViewModel()
+        self.viewModel = AddItemToDocumentSheetViewModel(destination: destination)
         self.documentListViewModel = DocumentListViewModelV2<ItemV2>(defaultFilters: defaultFilters)
     }
 
     var body: some View {
         NavigationStack(path: $path) {
-            VStack(spacing: 12) {
-                DragIndicator()
+            ZStack {
+                BodyContent
 
-                if searchFocused {
-                    SearchBarV2(isActive: $searchFocused, action: handleAction(_:))
-                } else {
-                    TopBar
+                if viewModel.isLoading {
+                    Color.black.opacity(0.3).ignoresSafeArea()
+                    LoadingIndicator
                 }
+            }
+        }
+    }
+}
 
-                ItemList
+// MARK: - BodyContent
+
+private extension AddItemToDocumentSheetV2 {
+    var BodyContent: some View {
+        VStack(spacing: 12) {
+            DragIndicator()
+
+            TopRow
+
+            ItemList
+            
+            SelectedItemsSection
+            
+        }
+        .frameTop()
+        .frameHorizontalPadding()
+        .task {
+            await documentListViewModel.refresh()
+        }
+        .rootNavigationDestinationsV2(path: $path)
+        .sheet(isPresented: $showFilterSheet) {
+            let allFilters = documentListViewModel.activeFilters
+                .merging(documentListViewModel.defaultFilters ?? [:]) { current, _ in current }
+            ItemV2DocumentFilterSheet(
+                action: handleAction(_:),
+                initialFilters: allFilters,
+                availableGroups: [],
+                lockedFilterKeys: documentListViewModel.defaultFilterKeys
+            )
+        }
+        .alert(viewModel.alertText, isPresented: $viewModel.showAlert) {
+            Button("OK") { }
+        }
+    }
+}
+
+private extension AddItemToDocumentSheetV2 {
+    var TopRow: some View {
+        Group {
+            if searchFocused {
+                SearchBarV2(isActive: $searchFocused, action: handleAction(_:))
+            } else {
+                TopBar
             }
-            .frameTop()
-            .frameHorizontalPadding()
-            .task {
-                await documentListViewModel.refresh()
+        }
+    }
+}
+
+// MARK: - SelectedItemsSection
+
+private extension AddItemToDocumentSheetV2 {
+     var SelectedItemsSection: some View {
+        VStack(spacing: 12) {
+            if viewModel.showSelectedItems {
+                SelectedItemsList
+                    .padding(8)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(.red, lineWidth: 4)
+                    )
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
-            .rootNavigationDestinationsV2(path: $path)
-            .sheet(isPresented: $showFilterSheet) {
-                let allFilters = documentListViewModel.activeFilters
-                    .merging(documentListViewModel.defaultFilters ?? [:]) { current, _ in current }
-                ItemV2DocumentFilterSheet(
-                    action: handleAction(_:),
-                    initialFilters: allFilters,
-                    availableGroups: [],
-                    lockedFilterKeys: documentListViewModel.defaultFilterKeys
+                
+            SelectedItemsRow
+        }
+    }
+    
+    var SelectedItemsRow: some View {
+        Button {
+            if !viewModel.selectedItems.isEmpty {
+                withAnimation(.spring(response: 0.3)) {
+                    viewModel.showSelectedItems.toggle()
+                }
+            }
+        } label: {
+            HStack {
+                Image(systemName: viewModel.showSelectedItems ? SFSymbols.chevronUp : SFSymbols.chevronDown)
+                    .font(.caption)
+                    .foregroundStyle(!viewModel.selectedItems.isEmpty ? .white : Color(.systemGray5))
+                
+                Text("\(viewModel.selectedItems.count) selected")
+                    .font(.subheadline)
+                    .foregroundStyle(.white)
+                    .bold()
+                
+                Spacer()
+                
+                RDButton(
+                    variant: .red,
+                    size: .sm,
+                    iconBold: true,
+                    label: "Deselect All",
+                    fullWidth: false
+                ) {
+                    withAnimation { viewModel.deselectAll() }
+                }
+                .disabled(viewModel.selectedItems.isEmpty)
+                
+                RDButton(
+                    variant: .secondary,
+                    size: .sm,
+                    leadingIcon: SFSymbols.plus,
+                    iconBold: true,
+                    label: "Add Selected",
+                    fullWidth: false
+                ) {
+                    Task {
+                        let success = await viewModel.addItemsToDocument()
+                        if success { dismiss() }
+                    }
+                }
+                .disabled(viewModel.selectedItems.isEmpty)
+            }
+            .padding(8)
+            .buttonStyle(.plain)
+            .background(.red)
+            .cornerRadius(8)
+        }
+    }
+    
+    var SelectedItemsList: some View {
+        LazyVStack(spacing: 8) {
+            ForEach(Array(viewModel.selectedItems), id: \.id) { item in
+                ItemListItemView(
+                    item: item,
+                    style: .inventoryList,
+                    action: handleAction(_:)
                 )
             }
         }
@@ -99,6 +212,7 @@ extension AddItemToDocumentSheetV2 {
                     ItemListItemView(
                         item: item,
                         style: .addItemToDocument,
+                        isSelected: viewModel.isSelected(item),
                         action: handleAction(_:)
                     )
                 }
@@ -152,16 +266,25 @@ private extension AddItemToDocumentSheetV2 {
         case let itemListItemAction as ItemListItemAction:
             switch itemListItemAction {
             case .navigate(let item):
-                path.append(NavigationDestination.addItemToDocumentDetailView(item: item, destination: destination))
+                path.append(NavigationDestination.addItemToDocumentDetailView(item: item, destination: viewModel.destination))
             case .multiSelectSelection(let item):
-                print("item selected")
+                viewModel.select(item)
             case .multiSelectDeselection(let item):
-                print("item deselected")
+                viewModel.deselect(item)
             default:
                 return
             }
         default:
             print("[ERROR]: Untracked action")
         }
+    }
+}
+
+private extension AddItemToDocumentSheetV2 {
+    var LoadingIndicator: some View {
+        ProgressView("Adding items...")
+            .padding()
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
+            .shadow(radius: 10)
     }
 }

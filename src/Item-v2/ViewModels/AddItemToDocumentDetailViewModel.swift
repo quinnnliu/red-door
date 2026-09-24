@@ -11,14 +11,14 @@ import FirebaseFirestore
 @Observable
 final class AddItemToDocumentDetailViewModel {
     let item: ItemV2
-    let destination: ItemsListDestination
+    let destination: AddItemsToListableDestination
     private let itemRepo: ItemRepository = .init()
 
     var isLoading: Bool = false
     var showAlert: Bool = false
     var alertText: String = ""
 
-    init(item: ItemV2, destination: ItemsListDestination) {
+    init(item: ItemV2, destination: AddItemsToListableDestination) {
         self.item = item
         self.destination = destination
     }
@@ -56,7 +56,7 @@ private extension AddItemToDocumentDetailViewModel {
                     guard !currentRoom.itemIds.contains(currentNewItem.id) else { throw AddItemError.itemAlreadyInDestination(currentNewItem, destinationDocument: currentRoom) }
                     guard currentNewItem.location.status == .inStorage else { throw AddItemError.itemUnavailable(currentNewItem) }
 
-                    let newItemIds: [String] = Array(currentRoom.itemIds.union([item.id]))
+                    let newItemIds = Array(currentRoom.itemIds.union([item.id]))
                     guard let newLocationData = try? Firestore.Encoder().encode(
                         DocumentLocation(status: .inPullList, locationId: room.listId)
                     ) else { return nil }
@@ -101,7 +101,7 @@ private extension AddItemToDocumentDetailViewModel {
                     
                     essentialsRepo.update(
                         id: group.id,
-                        fields: [EssentialsGroup.CodingKeys.itemIds.stringValue: newItemIds],
+                        fields: [EssentialsGroup.CodingKeys.itemIds.stringValue: Array(newItemIds)],
                         transaction: transaction
                     )
                     itemRepo.update(

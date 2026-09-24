@@ -25,7 +25,7 @@ struct ItemListItemView: View {
     private let item: ItemV2
     private var style: ItemListItemStyle
     private let essentialsEmoji: String
-    @State private var isSelected: Bool
+    private let isSelected: Bool
     private var action: ((Any) -> Void)? = nil
 
     init(
@@ -38,7 +38,7 @@ struct ItemListItemView: View {
         self.item = item
         self.style = style
         self.essentialsEmoji = essentialsEmoji
-        self._isSelected = State(initialValue: isSelected)
+        self.isSelected = isSelected
         self.action = action
     }
 
@@ -130,7 +130,6 @@ private extension ItemListItemView {
                         ItemListItemAction.multiSelectDeselection(item)
                         : ItemListItemAction.multiSelectSelection(item)
                     )
-                    isSelected.toggle()
                 } label: {
                     if isSelected {
                         Image(systemName: SFSymbols.checkmarkCircleFill)

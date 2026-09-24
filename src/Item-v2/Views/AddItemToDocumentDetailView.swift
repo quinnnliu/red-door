@@ -12,8 +12,9 @@ struct AddItemToDocumentDetailView: View {
 
     @State private var viewModel: AddItemToDocumentDetailViewModel
     @State private var showInformation: Bool = false
+    @State private var showMoveRoomSheet: Bool = false
 
-    init(item: ItemV2, destination: ItemsListDestination) {
+    init(item: ItemV2, destination: AddItemsToListableDestination) {
         viewModel = AddItemToDocumentDetailViewModel(item: item, destination: destination)
     }
 
@@ -64,16 +65,24 @@ struct AddItemToDocumentDetailView: View {
 
                 Spacer()
 
-                RDButton(
-                    variant: .red,
-                    leadingIcon: SFSymbols.plus,
-                    iconBold: true,
-                    label: "Add to \(viewModel.destination.document.displayName)",
-                    fullWidth: true
-                ) {
-                    Task {
-                        await viewModel.addItem()
-                        dismiss()
+                VStack(spacing: 8) {
+                    if case .room = viewModel.destination {
+                        RDButton(variant: .outline, label: "Move to Another Room", fullWidth: true) {
+                            showMoveRoomSheet = true
+                        }
+                    }
+
+                    RDButton(
+                        variant: .red,
+                        leadingIcon: SFSymbols.plus,
+                        iconBold: true,
+                        label: "Add to \(viewModel.destination.document.displayName)",
+                        fullWidth: true
+                    ) {
+                        Task {
+                            await viewModel.addItem()
+                            dismiss()
+                        }
                     }
                 }
                 .frameHorizontalPadding()
@@ -83,6 +92,11 @@ struct AddItemToDocumentDetailView: View {
             .toolbar(.hidden)
             .alert(viewModel.alertText, isPresented: $viewModel.showAlert) {
                 Button("OK") { }
+            }
+            .sheet(isPresented: $showMoveRoomSheet) {
+                if case .room(let room) = viewModel.destination {
+                    MoveItemV2RoomSheet(room: room, item: viewModel.item)
+                }
             }
 
             if viewModel.isLoading {

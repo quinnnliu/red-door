@@ -55,12 +55,12 @@ final class MoveItemV2RoomSheetViewModel {
                     
                     self.roomRepo.update(
                         id: fetchedCurrentRoom.id,
-                        fields: [RoomV2.CodingKeys.itemIds.stringValue: updatedCurrentRoomItemIds],
+                        fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(updatedCurrentRoomItemIds)],
                         transaction: transaction
                     )
                     self.roomRepo.update(
                         id: fetchedNewRoom.id,
-                        fields: [RoomV2.CodingKeys.itemIds.stringValue: updatedNewRoomItemIds],
+                        fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(updatedNewRoomItemIds)],
                         transaction: transaction
                     )
                     return true
