@@ -82,7 +82,7 @@ private extension AddEssentialsGroupToPullListSheet {
             noMoreLabel: "No More Pull Lists",
             action: handleAction(_:),
             rowContent: { pullList in
-                PullListV2ListItem(
+                PullListListItemV2(
                     list: pullList,
                     action: handleAction(_:),
                     actionType: .assignEssentialsToList(list: pullList)

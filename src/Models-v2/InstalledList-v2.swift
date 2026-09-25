@@ -23,6 +23,7 @@ struct InstalledListV2: RDDocument {
     var uninstallDate: String
     var clientId: String
     var roomIds: [String]
+    var primaryImage: RDImage?
 
     init(from pullList: PullListV2) {
         self.id = pullList.id
@@ -33,6 +34,7 @@ struct InstalledListV2: RDDocument {
         self.uninstallDate = pullList.uninstallDate
         self.clientId = pullList.clientId
         self.roomIds = pullList.roomIds
+        self.primaryImage = pullList.image
     }
 
     enum CodingKeys: String, CodingKey {
@@ -43,5 +45,6 @@ struct InstalledListV2: RDDocument {
         case uninstallDate = "uninstall_date"
         case clientId = "client_id"
         case roomIds = "room_ids"
+        case primaryImage = "primary_image"
     }
 }

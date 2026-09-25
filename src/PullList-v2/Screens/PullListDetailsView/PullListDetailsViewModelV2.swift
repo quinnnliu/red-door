@@ -1,5 +1,5 @@
 //
-//  PullListV2DetailsViewModel.swift
+//  PullListDetailsViewModelV2.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 5/17/26.
@@ -9,7 +9,7 @@ import Foundation
 import Firebase
 
 @Observable
-final class PullListV2DetailsViewModel {
+final class PullListDetailsViewModelV2 {
     var pullListState: PullListV2
     var rooms: [RoomV2] = []
     var itemsByRoom: [String: [ItemV2]] = [:] // key: roomId, value: [ItemV2]
@@ -397,7 +397,7 @@ final class PullListV2DetailsViewModel {
     }
 }
 
-extension PullListV2DetailsViewModel {
+extension PullListDetailsViewModelV2 {
 
     // MARK: createEmptyRoom
 
@@ -429,7 +429,7 @@ extension PullListV2DetailsViewModel {
 
 // MARK: - Unassigned Item Selection
 
-extension PullListV2DetailsViewModel {
+extension PullListDetailsViewModelV2 {
     func isUnassignedSelected(_ item: ItemV2) -> Bool {
         selectedUnassignedItems.contains(item)
     }
@@ -449,7 +449,7 @@ extension PullListV2DetailsViewModel {
 
 // MARK: - Assign Unassigned Items to Room
 
-extension PullListV2DetailsViewModel {
+extension PullListDetailsViewModelV2 {
     @MainActor
     func assignSelectedItemsToRoom(_ room: RoomV2) async {
         guard !selectedUnassignedItems.isEmpty else { return }

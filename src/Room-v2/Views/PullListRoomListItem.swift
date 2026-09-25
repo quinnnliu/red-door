@@ -1,68 +1,86 @@
 //
-//  PullListRoomListItem.swift
+//  RoomListItemView.swift
 //  RedDoor
 //
-//  Created by Quinn Liu on 5/30/26.
+//  Created by Quinn Liu on 9/25/26.
 //
 
 import SwiftUI
 
-struct PullListRoomListItem: View {
+enum RoomListItemStyle {
+    case pullListDetails
+    case installingPullList
+}
+
+enum RoomListItemViewAction {
+    case navigate(room: RoomV2)
+    case refreshRoom(roomId: String)
+}
+
+struct RoomListItemView<Content: View>: View {
     let room: RoomV2
-    let items: [ItemV2]
+    let itemCount: Int
+    let style: RoomListItemStyle
     let action: (Any?) -> Void
-    
-    @State private var showRoomPreview: Bool = false
-    
+    @ViewBuilder let content: () -> Content
+
+    @State private var showContent: Bool = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
+            Button {
+                action(RoomListItemViewAction.navigate(room: room))
+            } label: {
+                Header
+            }
             
-            RoomPreviewHeader
-            
-            if !items.isEmpty && showRoomPreview {
-                RoomPreview
+            if showContent && itemCount > 0 {
+                content()
             }
         }
-        .padding(12)
-        .background(Color(.systemGray6))
-        .cornerRadius(8)
+        .padding(style == .pullListDetails ? 12 : 0)
+        .background(style == .pullListDetails ? Color(.systemGray6) : Color.clear)
+        .cornerRadius(style == .pullListDetails ? 8 : 0)
+    }
+
+    // MARK: Header
+
+    private var Header: some View {
+        HStack(spacing: 0) {
+            HeaderLeadingContent
+
+            Spacer()
+
+            HeaderTrailingContent
+        }
     }
 }
 
-extension PullListRoomListItem {
-    
-    // MARK: RoomHeader
-    private var RoomPreviewHeader: some View {
+private extension RoomListItemView {
+    var HeaderLeadingContent: some View {
         HStack(spacing: 12) {
-            RDButton(
-                variant: .outline,
-                size: .icon,
-                leadingIcon: showRoomPreview ? SFSymbols.minus : SFSymbols.plus,
-                iconBold: true,
-                fullWidth: false
-            ) {
-                withAnimation(Constants.Animation.snappy) {
-                    showRoomPreview.toggle()
-                }
+            if style == .pullListDetails {
+                ExpandToggle
             }
-            .disabled(items.isEmpty)
-            
+
             Text(room.displayName)
+                .font(.headline)
                 .foregroundColor(.primary)
-                .bold()
-            
-            Spacer()
-            
+        }
+    }
+    
+    var HeaderTrailingContent: some View {
+        HStack(spacing: 12) {
             (
                 Text("Items: ")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 +
-                Text("\(items.count)")
+                Text("\(itemCount)")
                     .font(.caption)
                     .foregroundColor(.red)
             )
-            
+
             RDButton(
                 variant: .default,
                 size: .icon,
@@ -70,66 +88,36 @@ extension PullListRoomListItem {
             ) {
                 action(RoomListItemViewAction.refreshRoom(roomId: room.id))
             }
-            
-            Image(systemName: SFSymbols.chevronRight)
-                .frame(32)
-                .foregroundStyle(.gray)
-        }
-    }
-    
-    // MARK: Room Preview
-    
-    private var RoomPreview: some View {
-        LazyVGrid(columns: [
-            GridItem(.flexible()),
-            GridItem(.flexible()),
-        ], spacing: 8) {
-            ForEach(items, id: \.self) { item in
-                ItemListItem(item: item)
+
+            if style == .installingPullList {
+                ExpandToggle
             }
-        }
-    }
-    
-    // MARK: Item List Item
-    @ViewBuilder
-    private func ItemListItem(item: ItemV2) -> some View {
-        NavigationLink(value: NavigationDestination.pullListItemDetailView(item: item, room: room)
-        ) {
-            HStack(alignment: .center, spacing: 12) {
-                PrimaryImageView(image: item.primaryImage, size: Constants.Image.listItemDefault, isExpandable: false)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(item.displayName)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                    
-                    HStack(spacing: 4) {
-                        Image(systemName: item.type.icon ?? SFSymbols.ellipsis)
-                            .foregroundColor(.secondary)
-                        
-                        if let color = item.color.color {
-                            Image(systemName: SFSymbols.circleFill)
-                                .foregroundColor(color)
-                        }
-                    }
-                    .font(.caption)
+
+            if style == .pullListDetails {
+                Button {
+                    action(RoomListItemViewAction.navigate(room: room))
+                } label: {
+                    Image(systemName: SFSymbols.chevronRight)
+                        .frame(32)
+                        .foregroundStyle(.gray)
                 }
-                
-                Spacer(minLength: 0)
-
+                .buttonStyle(.plain)
             }
-            .frame(maxWidth: .infinity)
-            .padding(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 6)
-                    .stroke(item.attention ? Color.yellow.opacity(0.75) : item.location.status == .inStorage ? Color(.systemGray3) : Color.red, lineWidth: 2)
-            )
         }
     }
-}
-
-enum RoomListItemViewAction {
-    case refreshRoom(roomId: String)
+    
+    private var ExpandToggle: some View {
+        RDButton(
+            variant: .outline,
+            size: .icon,
+            leadingIcon: showContent ? SFSymbols.minus : SFSymbols.plus,
+            iconBold: true,
+            fullWidth: false,
+            disabled: itemCount == 0
+        ) {
+            withAnimation(Constants.Animation.snappy) {
+                showContent.toggle()
+            }
+        }
+    }
 }

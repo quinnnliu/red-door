@@ -9,9 +9,9 @@ import Foundation
 import PhotosUI
 import SwiftUI
 
-// MARK: RDImageTypeEnum
+// MARK: RDImageType
 
-enum RDImageTypeEnum: String, Codable {
+enum RDImageType: String, Codable {
     case model_primary, model_secondary, item, rd_list, dirty, misc, delete
     case roomBefore, roomAfter, listV2
     case accessory
@@ -19,9 +19,9 @@ enum RDImageTypeEnum: String, Codable {
     var storagePath: String? {
         switch self {
         case .roomAfter, .roomBefore:
-            "rooms"
+            "rooms_images"
         case .listV2:
-            "list_v2"
+            "list_v2_images"
         case .model_primary, .model_secondary:
             "model_images"
         case .item:
@@ -42,7 +42,7 @@ enum RDImageTypeEnum: String, Codable {
 
 struct RDImage: Identifiable, Codable, Hashable {
     var id: String = UUID().uuidString
-    var imageType: RDImageTypeEnum = .dirty
+    var imageType: RDImageType = .dirty
     var documentId: String? = nil
     var imageURL: URL? = nil
     var thumbnailURL: URL? = nil

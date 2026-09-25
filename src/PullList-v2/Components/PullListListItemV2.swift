@@ -1,5 +1,5 @@
 //
-//  PullListV2ListItem.swift
+//  PullListListItemV2.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 5/17/26.
@@ -12,7 +12,7 @@ enum PullListListItemAction {
     case assignEssentialsToList(list: PullListV2)
 }
 
-struct PullListV2ListItem: View {
+struct PullListListItemV2: View {
     let list: PullListV2
     var action: ((Any?) -> Void)?
     var actionType: PullListListItemAction
@@ -39,11 +39,10 @@ struct PullListV2ListItem: View {
     }
 
     private var cellContent: some View {
-        HStack(alignment: .center, spacing: 12) {
-            PrimaryImageView(image: list.image, size: Constants.Image.listItemLarge, isExpandable: false)
+        HStack(alignment: .center, spacing: 0) {
+            LeadingContent
             
-            Text(list.address.getStreetAddress() ?? "")
-                .font(.headline)
+            Spacer(minLength: 0)
 
             VStack(alignment: .leading, spacing: 6) {
                 (
@@ -64,7 +63,6 @@ struct PullListV2ListItem: View {
             }
             .font(.caption)
 
-            Spacer()
         }
         .padding(12)
         .background(Color(.systemGray5))
@@ -73,5 +71,16 @@ struct PullListV2ListItem: View {
                 .stroke(Color(.systemGray3), lineWidth: 4)
         )
         .frame(maxWidth: .infinity)
+    }
+}
+
+private extension PullListListItemV2 {
+    var LeadingContent: some View {
+        HStack(spacing: 12) {
+            PrimaryImageView(image: list.image, size: Constants.Image.listItemLarge, isExpandable: false)
+            
+            Text(list.displayName)
+                .font(.headline)
+        }
     }
 }

@@ -19,7 +19,7 @@ final class FirebaseImageManager {
 
     // MARK: updateImage()
 
-    func updateImage(_ rdImage: RDImage, resultImageType: RDImageTypeEnum) async throws -> RDImage? {
+    func updateImage(_ rdImage: RDImage, resultImageType: RDImageType) async throws -> RDImage? {
         switch rdImage.imageType {
         case .dirty:
             return try await uploadImage(rdImage, uploadImageType: resultImageType)
@@ -33,7 +33,7 @@ final class FirebaseImageManager {
 
     // MARK: updateImages()
 
-    func updateImages(_ images: [RDImage], resultImageType: RDImageTypeEnum) async throws -> [RDImage] {
+    func updateImages(_ images: [RDImage], resultImageType: RDImageType) async throws -> [RDImage] {
         let clean = images.filter { $0.imageType != .dirty && $0.imageType != .delete }
 
         let updated = try await withThrowingTaskGroup(of: RDImage?.self) { group in
@@ -62,7 +62,7 @@ final class FirebaseImageManager {
         case notDirty, invalidType, noUIImage, cannotCompress, missingDocumentId
     }
 
-    private func validateUploadRDImage(_ rdImage: RDImage, uploadImageType: RDImageTypeEnum) throws -> (uiImage: UIImage, storagePath: String, documentId: String) {
+    private func validateUploadRDImage(_ rdImage: RDImage, uploadImageType: RDImageType) throws -> (uiImage: UIImage, storagePath: String, documentId: String) {
         guard rdImage.imageType == .dirty else { throw ImageUploadError.notDirty }
         guard let storagePath = uploadImageType.storagePath else { throw ImageUploadError.invalidType }
         guard let uiImage = rdImage.uiImage else { throw ImageUploadError.noUIImage }
@@ -77,7 +77,7 @@ final class FirebaseImageManager {
 
     // MARK: uploadImage()
 
-    func uploadImage(_ rdImage: RDImage, uploadImageType: RDImageTypeEnum) async throws -> RDImage {
+    func uploadImage(_ rdImage: RDImage, uploadImageType: RDImageType) async throws -> RDImage {
         let (uiImage, storagePath, documentId): (UIImage, String, String)
 
         do {
@@ -120,7 +120,7 @@ final class FirebaseImageManager {
         case getStoragePathError, missingDocumentId
     }
 
-    private func validateDeleteRDImage(_ rdImage: RDImage, deletedImageType: RDImageTypeEnum) throws -> (documentId: String, storagePath: String) {
+    private func validateDeleteRDImage(_ rdImage: RDImage, deletedImageType: RDImageType) throws -> (documentId: String, storagePath: String) {
         guard let documentId = rdImage.documentId else { throw ImageDeleteError.missingDocumentId }
         guard let storagePath = deletedImageType.storagePath else { throw ImageDeleteError.getStoragePathError }
 
@@ -129,7 +129,7 @@ final class FirebaseImageManager {
 
     // MARK: deleteImage()
 
-    func deleteImage(_ rdImage: RDImage, deletedImageType: RDImageTypeEnum) async throws {
+    func deleteImage(_ rdImage: RDImage, deletedImageType: RDImageType) async throws {
         let (documentId, storagePath): (String, String)
 
         do {
@@ -150,7 +150,7 @@ final class FirebaseImageManager {
 
     // MARK: deleteDocumentImages()
 
-    func deleteDocumentImages(document: any RDDocument, imageType: RDImageTypeEnum) async throws {
+    func deleteDocumentImages(document: any RDDocument, imageType: RDImageType) async throws {
         guard let storagePath = imageType.storagePath else { throw ImageDeleteError.getStoragePathError }
         let folderRef = FirebaseImageManager.storageRef.child(storagePath).child(document.id)
         let result = try await folderRef.listAll()

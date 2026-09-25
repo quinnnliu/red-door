@@ -14,6 +14,7 @@ struct PullListDocumentListViewV2: View {
     @State private var searchFocused: Bool = false
     @State private var showFromInstalledCover: Bool = false
     @State private var showFilterSheet: Bool = false
+    @State private var showCreatePullListSheet: Bool = false
 
     init(
         path: Binding<NavigationPath>
@@ -39,6 +40,9 @@ struct PullListDocumentListViewV2: View {
             }
             .fullScreenCover(isPresented: $showFromInstalledCover) {
                 // TODO: add from installed list functionality
+            }
+            .fullScreenCover(isPresented: $showCreatePullListSheet) {
+                CreatePullListViewV2()
             }
             .sheet(isPresented: $showFilterSheet) {
                 PullListV2DocumentFilterSheet(
@@ -88,7 +92,9 @@ extension PullListDocumentListViewV2 {
                 }
 
                 Menu {
-                    NavigationLink(destination: CreatePullListViewV2()) {
+                    Button {
+                        showCreatePullListSheet = true
+                    } label: {
                         Text("From Scratch")
                         Image(systemName: SFSymbols.checklist)
                     }
@@ -128,7 +134,7 @@ extension PullListDocumentListViewV2 {
             noMoreLabel: "No More Pull Lists",
             action: handleAction(_:),
             rowContent: { pullList in
-                PullListV2ListItem(list: pullList, action: handleAction(_:))
+                PullListListItemV2(list: pullList, action: handleAction(_:))
             }
         )
     }

@@ -1,5 +1,5 @@
 //
-//  PullListV2DetailsView.swift
+//  PullListDetailsViewV2.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 5/17/26.
@@ -7,9 +7,10 @@
 
 import SwiftUI
 
-struct PullListV2DetailsView: View {
+struct PullListDetailsViewV2: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var viewModel: PullListV2DetailsViewModel
+    @Environment(NavigationCoordinator.self) private var coordinator
+    @State private var viewModel: PullListDetailsViewModelV2
     @State private var showAddRoomsSheet: Bool = false
     @State private var showEditListSheet: Bool = false // TODO: implement this
     @State private var showPDFSheet: Bool = false
@@ -19,7 +20,7 @@ struct PullListV2DetailsView: View {
     @State private var showSelectWarehouseSheet: Bool = false
     @State private var showSelectRoomForUnassignedSheet: Bool = false
 
-    init(viewModel: PullListV2DetailsViewModel) {
+    init(viewModel: PullListDetailsViewModelV2) {
         self.viewModel = viewModel
     }
 
@@ -104,7 +105,7 @@ struct PullListV2DetailsView: View {
     }
 }
 
-private extension PullListV2DetailsView {
+private extension PullListDetailsViewV2 {
 
     // MARK: ShowDetailsButton
     var ShowDetailsButton: some View {
@@ -399,22 +400,61 @@ private extension PullListV2DetailsView {
     var RoomList: some View {
         LazyVStack(spacing: 16) {
             ForEach(viewModel.rooms, id: \.id) { room in
-                NavigationLink(value: NavigationDestination.pulllistRoomDetailView(
-                    items: viewModel.itemsByRoom[room.id] ?? [],
-                    room: room
-                )) {
-                    PullListRoomListItem(
-                        room: room,
-                        items: viewModel.itemsByRoom[room.id] ?? [],
-                        action: handleAction(_:)
-                    )
+                let items = viewModel.itemsByRoom[room.id] ?? []
+                RoomListItemView(room: room, itemCount: items.count, style: .pullListDetails, action: handleAction) {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                        ForEach(items, id: \.self) { item in
+                            RoomItemPreview(item, room: room)
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-private extension PullListV2DetailsView {
+private extension PullListDetailsViewV2 {
+    func RoomItemPreview(_ item: ItemV2, room: RoomV2) -> some View {
+        Button {
+            coordinator.appendToSelectedPath(NavigationDestination.pullListItemDetailView(item: item, room: room))
+        } label: {
+            HStack(alignment: .center, spacing: 12) {
+                PrimaryImageView(image: item.primaryImage, size: Constants.Image.listItemDefault, isExpandable: false)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(item.displayName)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+
+                    HStack(spacing: 4) {
+                        Image(systemName: item.type.icon ?? SFSymbols.ellipsis)
+                            .foregroundColor(.secondary)
+
+                        if let color = item.color.color {
+                            Image(systemName: SFSymbols.circleFill)
+                                .foregroundColor(color)
+                        }
+                    }
+                    .font(.caption)
+                }
+
+                Spacer(minLength: 0)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(item.attention ? Color.yellow.opacity(0.75) : item.location.status == .inStorage ? Color(.systemGray3) : Color.red, lineWidth: 2)
+            )
+        }
+    }
+}
+
+// MARK: - FooterContent
+
+private extension PullListDetailsViewV2 {
     var FooterContent: some View {
         HStack {
             RDButton(
@@ -433,12 +473,17 @@ private extension PullListV2DetailsView {
 }
 
 // MARK: Handle Action
-private extension PullListV2DetailsView {
+private extension PullListDetailsViewV2 {
     func handleAction(_ actionArgument: Any?) {
         guard actionArgument != nil else { return }
 
         if let roomListItemAction = actionArgument as? RoomListItemViewAction {
             switch roomListItemAction {
+            case .navigate(let room):
+                coordinator.appendToSelectedPath(NavigationDestination.pulllistRoomDetailView(
+                    items: viewModel.itemsByRoom[room.id] ?? [],
+                    room: room
+                ))
             case .refreshRoom(let roomId):
                 viewModel.refreshRoom(roomId)
             }
