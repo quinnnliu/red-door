@@ -14,6 +14,7 @@ struct AddItemToDocumentSheetV2: View {
     @State private var path: NavigationPath = NavigationPath()
     @State private var searchFocused: Bool = false
     @State private var showFilterSheet: Bool = false
+    @State private var multiSelectEnabled: Bool = false
 
     private let title: String
 
@@ -54,7 +55,6 @@ private extension AddItemToDocumentSheetV2 {
             ItemList
             
             SelectedItemsSection
-            
         }
         .frameTop()
         .frameHorizontalPadding()
@@ -95,6 +95,20 @@ private extension AddItemToDocumentSheetV2 {
 private extension AddItemToDocumentSheetV2 {
      var SelectedItemsSection: some View {
         VStack(spacing: 12) {
+            RDButton(
+                variant: multiSelectEnabled ? .red : .secondary,
+                size: .sm,
+                label: multiSelectEnabled ? "Deselect All" : "Select",
+                fullWidth: false
+            ) {
+                withAnimation(Constants.Animation.snappy) {
+                    multiSelectEnabled.toggle()
+                    if multiSelectEnabled {
+                        viewModel.deselectAll()
+                    }
+                }
+            }
+            
             if viewModel.showSelectedItems {
                 SelectedItemsList
                     .padding(8)
@@ -105,14 +119,16 @@ private extension AddItemToDocumentSheetV2 {
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
                 
-            SelectedItemsRow
+            if multiSelectEnabled {
+                SelectedItemsRow
+            }
         }
     }
     
     var SelectedItemsRow: some View {
         Button {
             if !viewModel.selectedItems.isEmpty {
-                withAnimation(.spring(response: 0.3)) {
+                withAnimation(Constants.Animation.snappy) {
                     viewModel.showSelectedItems.toggle()
                 }
             }
@@ -128,17 +144,6 @@ private extension AddItemToDocumentSheetV2 {
                     .bold()
                 
                 Spacer()
-                
-                RDButton(
-                    variant: .red,
-                    size: .sm,
-                    iconBold: true,
-                    label: "Deselect All",
-                    fullWidth: false
-                ) {
-                    withAnimation { viewModel.deselectAll() }
-                }
-                .disabled(viewModel.selectedItems.isEmpty)
                 
                 RDButton(
                     variant: .secondary,
@@ -167,7 +172,7 @@ private extension AddItemToDocumentSheetV2 {
             ForEach(Array(viewModel.selectedItems), id: \.id) { item in
                 ItemListItemView(
                     item: item,
-                    style: .inventoryList,
+                    style: .display,
                     action: handleAction(_:)
                 )
             }
@@ -196,7 +201,7 @@ extension AddItemToDocumentSheetV2 {
                         showFilterSheet = true
                     }
                     RDButton(variant: .outline, size: .icon, leadingIcon: SFSymbols.magnifyingglass, iconBold: true, fullWidth: false) {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        withAnimation(Constants.Animation.snappy) {
                             searchFocused = true
                         }
                     }
@@ -206,40 +211,17 @@ extension AddItemToDocumentSheetV2 {
     }
 
     private var ItemList: some View {
-        ScrollView {
-            LazyVStack(spacing: 8) {
-                ForEach(documentListViewModel.documents, id: \.id) { item in
-                    ItemListItemView(
-                        item: item,
-                        style: .addItemToDocument,
-                        isSelected: viewModel.isSelected(item),
-                        action: handleAction(_:)
-                    )
-                }
-
-                LoadMoreButton
-            }
-        }
-        .refreshable {
-            await documentListViewModel.refresh()
-        }
-    }
-
-    @ViewBuilder
-    private var LoadMoreButton: some View {
-        if documentListViewModel.isLoading {
-            ProgressView()
-                .frame(maxWidth: .infinity, alignment: .center)
-                .padding()
-        } else if documentListViewModel.hasMore {
-            RDButton(
-                variant: .outline,
-                label: "Load More",
-                fullWidth: true
-            ) {
-                Task { await documentListViewModel.loadMore() }
-            }
-            .padding(.vertical, 4)
+        DocumentListSection(
+            viewModel: documentListViewModel,
+            noMoreLabel: "No More Items",
+            action: handleAction(_:)
+        ) { item in
+            ItemListItemView(
+                item: item,
+                style: multiSelectEnabled ? .addToDocument : .display,
+                isSelected: viewModel.isSelected(item),
+                action: handleAction(_:)
+            )
         }
     }
 }
@@ -263,14 +245,23 @@ private extension AddItemToDocumentSheetV2 {
             case .applyFilters(let filters):
                 Task { await documentListViewModel.setFilters(filters) }
             }
+        case let sectionAction as DocumentListSectionAction:
+            switch sectionAction {
+            case .loadMore:
+                Task { await documentListViewModel.loadMore() }
+            }
         case let itemListItemAction as ItemListItemAction:
             switch itemListItemAction {
             case .navigate(let item):
                 path.append(NavigationDestination.addItemToDocumentDetailView(item: item, destination: viewModel.destination))
             case .multiSelectSelection(let item):
-                viewModel.select(item)
+                withAnimation(Constants.Animation.snappy) {
+                    viewModel.select(item)
+                }
             case .multiSelectDeselection(let item):
-                viewModel.deselect(item)
+                withAnimation(Constants.Animation.snappy) {
+                    viewModel.deselect(item)
+                }
             default:
                 return
             }

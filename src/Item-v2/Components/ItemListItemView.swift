@@ -9,8 +9,9 @@ import SwiftUI
 
 enum ItemListItemStyle {
     case inventoryList
-    case addItemToDocument
+    case addToDocument
     case essentialsGroup
+    case display
 }
 
 enum ItemListItemAction {
@@ -46,7 +47,7 @@ struct ItemListItemView: View {
     var body: some View {
         Group {
             switch style {
-            case .inventoryList, .addItemToDocument:
+            case .inventoryList, .addToDocument, .display:
                 Button {
                     if let action = action {
                         action(ItemListItemAction.navigate(item))
@@ -122,26 +123,6 @@ private extension ItemListItemView {
 private extension ItemListItemView {
     var LeadingContent: some View {
         HStack(spacing: 12) {
-            
-            if style == .addItemToDocument, let action = action {
-                Button {
-                    action(
-                        isSelected ?
-                        ItemListItemAction.multiSelectDeselection(item)
-                        : ItemListItemAction.multiSelectSelection(item)
-                    )
-                } label: {
-                    if isSelected {
-                        Image(systemName: SFSymbols.checkmarkCircleFill)
-                            .foregroundStyle(.red)
-                    } else {
-                        Circle()
-                            .foregroundStyle(.gray)
-                    }
-                }
-                .frame(16)
-            }
-            
             ItemImage
         }
     }
@@ -178,6 +159,23 @@ private extension ItemListItemView {
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
+                case .addToDocument:
+                    Button {
+                        action(
+                            isSelected ?
+                            ItemListItemAction.multiSelectDeselection(item)
+                            : ItemListItemAction.multiSelectSelection(item)
+                        )
+                    } label: {
+                        if isSelected {
+                            Image(systemName: SFSymbols.checkmarkCircleFill)
+                                .foregroundStyle(.red)
+                        } else {
+                            Circle()
+                                .foregroundStyle(.gray)
+                        }
+                    }
+                    .frame(16)
                 default:
                     EmptyView()
                 }

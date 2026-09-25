@@ -41,7 +41,7 @@ extension PullListRoomListItem {
                 iconBold: true,
                 fullWidth: false
             ) {
-                withAnimation(.bouncy) {
+                withAnimation(Constants.Animation.snappy) {
                     showRoomPreview.toggle()
                 }
             }
@@ -96,7 +96,6 @@ extension PullListRoomListItem {
         NavigationLink(value: NavigationDestination.pullListItemDetailView(item: item, room: room)
         ) {
             HStack(alignment: .center, spacing: 12) {
-                
                 PrimaryImageView(image: item.primaryImage, size: Constants.Image.listItemDefault, isExpandable: false)
                 
                 VStack(alignment: .leading, spacing: 4) {
@@ -117,6 +116,9 @@ extension PullListRoomListItem {
                     }
                     .font(.caption)
                 }
+                
+                Spacer(minLength: 0)
+
             }
             .frame(maxWidth: .infinity)
             .padding(12)

@@ -12,17 +12,14 @@ import Firebase
 final class PullListItemDetailsViewModel {
 	// MARK: - State
 
-	var selectedRDImage: RDImage?
-	var isImageSelected = false
-
 	var showAlert = false
 	var alertMessage = ""
-	var showRemoveConfirmationAlert = false
     var showQRCode = false
     var showMoveItemSheet: Bool = false
-    
+
 	var pullList: PullListV2?
 	var rooms: [RoomV2] = []
+	var availableWarehouses: [WarehouseV2] = []
 	var isLoadingMoveData = false
 
 	// MARK: - Properties
@@ -48,8 +45,19 @@ final class PullListItemDetailsViewModel {
 
 	// MARK: - Actions
 
+    func fetchAvailableWarehouses() async {
+        do {
+            availableWarehouses = try await ConfigurationService.shared.getAll(using: WarehouseRepository())
+        } catch {
+            alertMessage = "Failed to load storage locations: \(error.localizedDescription)"
+            showAlert = true
+        }
+    }
+
+    // MARK: - removeItemToWarehouse
+
     @MainActor
-    func removeItemFromRoom() async -> Bool {
+    func removeItemToWarehouse(warehouse: WarehouseV2) async -> Bool {
         let itemRepo = self.itemRepo
         let roomRepo = self.roomRepo
         let itemId = itemState.id
@@ -62,7 +70,7 @@ final class PullListItemDetailsViewModel {
                     currentRoom.itemIds.remove(itemId)
 
                     guard let storageLocationData = try? Firestore.Encoder().encode(
-                        DocumentLocation(status: .inStorage, locationId: Warehouse.warehouse1.id)
+                        DocumentLocation(status: .inStorage, locationId: warehouse.id)
                     ) else { return false }
                     itemRepo.update(
                         id: itemId,
@@ -83,6 +91,46 @@ final class PullListItemDetailsViewModel {
             return result as? Bool ?? false
         } catch {
             alertMessage = "Failed to remove item from room: \(error.localizedDescription)"
+            showAlert = true
+            return false
+        }
+    }
+
+    // MARK: - moveItemToUnassigned
+
+    @MainActor
+    func moveItemToUnassigned() async -> Bool {
+        let roomRepo = self.roomRepo
+        let listRepo = self.listRepo
+        let itemId = itemState.id
+        let roomId = room.id
+        let listId = room.listId
+
+        do {
+            let result = try await roomRepo.db.runTransaction { (transaction, errorPointer) -> Any? in
+                do {
+                    var currentRoom = try roomRepo.get(id: roomId, transaction: transaction)
+                    currentRoom.itemIds.remove(itemId)
+
+                    roomRepo.update(
+                        id: roomId,
+                        fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(currentRoom.itemIds)],
+                        transaction: transaction
+                    )
+                    listRepo.update(
+                        id: listId,
+                        fields: [PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayUnion([itemId])],
+                        transaction: transaction
+                    )
+                } catch {
+                    errorPointer?.pointee = error as NSError
+                    return false
+                }
+                return true
+            }
+            return result as? Bool ?? false
+        } catch {
+            alertMessage = "Failed to unassign item: \(error.localizedDescription)"
             showAlert = true
             return false
         }

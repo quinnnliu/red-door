@@ -48,10 +48,10 @@ struct PrimaryImageView: View {
                         expandedImage = image
                     }
                 } label: {
-                    PrimaryImageContent(image, editable: false)
+                    PrimaryImageContent(image, editable: false, size: size)
                 }
             } else {
-                PrimaryImageContent(image, editable: false)
+                PrimaryImageContent(image, editable: false, size: size)
             }
         }
         .frame(size)
@@ -77,6 +77,7 @@ enum ImageEditorAction {
 struct PrimaryImageEditor: View {
     let image: RDImage?
     let action: (Any?) -> ()
+    let size: CGFloat = Constants.Screen.screenWidthPadding / 2
 
     @State private var showEditAlert = false
     @State private var activeSheet: ImageSourceEnum?
@@ -87,7 +88,7 @@ struct PrimaryImageEditor: View {
         Button {
             showEditAlert = true
         } label: {
-            PrimaryImageContent(image, editable: true)
+            PrimaryImageContent(image, editable: true, size: size)
         }
         .alert(alertText, isPresented: $showAlert, actions: { })
         .alert(
@@ -116,11 +117,8 @@ struct PrimaryImageEditor: View {
                 SingleCameraPickerV2(action: handleResult(_:))
             }
         }
-        .frame(width: Constants.Screen.screenWidthPadding / 2, height: Constants.Screen.screenWidthPadding / 2)
-        .clipped()
         .expandImageOverlay(image)
         .contentShape(Rectangle())
-        .cornerRadius(12)
     }
 
     private func handleResult(_ result: RDImage?) {
@@ -138,10 +136,12 @@ struct PrimaryImageEditor: View {
 private struct PrimaryImageContent: View {
     let image: RDImage?
     let editable: Bool
+    let size: CGFloat
     
-    init(_ image: RDImage?, editable: Bool) {
+    init(_ image: RDImage?, editable: Bool, size: CGFloat) {
         self.image = image
         self.editable = editable
+        self.size = size
     }
 
     var body: some View {
@@ -150,12 +150,17 @@ private struct PrimaryImageContent: View {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFill()
+            } else if let thumbnailURL = image?.thumbnailURL, size < Constants.Screen.screenWidth / 2 {
+                RDImageView(url: thumbnailURL)
             } else if let imageUrl = image?.imageURL {
                 RDImageView(url: imageUrl)
             } else {
                 RDImagePlaceholder(content: .empty(editable: editable))
             }
         }
+        .frame(size)
+        .clipped()
+        .cornerRadius(12)
     }
 }
 

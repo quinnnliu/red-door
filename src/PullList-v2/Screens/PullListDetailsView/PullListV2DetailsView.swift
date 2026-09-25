@@ -17,31 +17,25 @@ struct PullListV2DetailsView: View {
     @State private var showDetails: Bool = false
     @State private var showUnassignedItems: Bool = false
     @State private var showSelectWarehouseSheet: Bool = false
+    @State private var showSelectRoomForUnassignedSheet: Bool = false
 
     init(viewModel: PullListV2DetailsViewModel) {
         self.viewModel = viewModel
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 16) {
             TopBar
 
             ScrollView {
-                LazyVStack(spacing: 0, pinnedViews: .sectionHeaders) {
-                    PrimaryImageView(image: viewModel.pullListState.image)
-
-                    if viewModel.essentialsGroupState != nil {
-                        Section {
-                            EssentialsGroupSectionContent
-                        } header: {
+                LazyVStack(spacing: 16, pinnedViews: .sectionHeaders) {
+                    HStack {
+                        PrimaryImageView(image: viewModel.pullListState.image)
+                        VStack {
                             EssentialsGroupSectionHeader
+                            EssentialsGroupSectionContent
                         }
-                    }
 
-                    Section {
-                        UnassignedItemsContent
-                    } header: {
-                        UnassignedItemsHeader
                     }
 
                     Section {
@@ -58,20 +52,9 @@ struct PullListV2DetailsView: View {
                 ListDetails
             }
 
-            HStack {
-                RDButton(
-                    variant: viewModel.canOpenInstallSheet ? .red : .secondary,
-                    leadingIcon: viewModel.canOpenInstallSheet ?  SFSymbols.truckBoxBadgeClockFill : SFSymbols.lockFill,
-                    label: viewModel.canOpenInstallSheet ? "Begin Install" : "Being Installed...",
-                    fullWidth: true
-                ) {
-                    handleInstallListAction()
-                }
+            UnassignedItemsButton
 
-                ShowDetailsButton
-            }
-            .padding(.top, 12)
-            .cornerRadius(12)
+            FooterContent
         }
         .frameTop()
         .frameHorizontalPadding()
@@ -109,6 +92,9 @@ struct PullListV2DetailsView: View {
                 }
             }
         }
+        .sheet(isPresented: $showUnassignedItems) {
+            UnassignedItemsContent
+        }
         .fullScreenCover(isPresented: $showInstallListSheet) {
             InstallPullListSheet(list: viewModel.pullListState, rooms: viewModel.rooms, itemsByRoom: viewModel.itemsByRoom)
         }
@@ -118,13 +104,12 @@ struct PullListV2DetailsView: View {
     }
 }
 
-extension PullListV2DetailsView {
+private extension PullListV2DetailsView {
 
     // MARK: ShowDetailsButton
     var ShowDetailsButton: some View {
-
         RDButton(variant: showDetails ? .red : .secondary, leadingIcon: SFSymbols.infoCircleFill, label: "Details") {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+            withAnimation(Constants.Animation.snappy) {
                 showDetails.toggle()
             }
         }
@@ -132,7 +117,7 @@ extension PullListV2DetailsView {
 
     var ListDetails: some View {
         Button {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+            withAnimation(Constants.Animation.snappy) {
                 showDetails = false
             }
         } label: {
@@ -146,7 +131,6 @@ extension PullListV2DetailsView {
                     RoundedRectangle(cornerRadius: 12)
                         .stroke(.red, lineWidth: 4)
                 )
-                .padding(.top, 12)
         }
     }
 
@@ -253,8 +237,8 @@ extension PullListV2DetailsView {
 
     // MARK: EssentialsGroupSectionHeader
     var EssentialsGroupSectionHeader: some View {
-        HStack(spacing: .zero) {
-            Text("Essentials")
+        HStack(spacing: 16) {
+            Text("Essentials:")
                 .foregroundStyle(.red)
                 .font(.headline)
 
@@ -264,7 +248,7 @@ extension PullListV2DetailsView {
                 showSelectWarehouseSheet = true
             } label: {
                 Image(systemName: SFSymbols.xmarkCircleFill)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.gray)
                     .font(.title3)
             }
         }
@@ -307,42 +291,75 @@ extension PullListV2DetailsView {
         }
     }
 
-    // MARK: UnassignedItemsHeader
-    var UnassignedItemsHeader: some View {
-        HStack(spacing: .zero) {
-            Text("Unassigned Items")
-                .foregroundStyle(.red)
-                .font(.headline)
-
-            Spacer()
-
-            Button {
-                withAnimation(.bouncy) {
-                    showUnassignedItems.toggle()
-                }
-            } label: {
-                Text("\(showUnassignedItems ? "Hide" : "Show") (\(viewModel.unassignedItems.count))")
-                    .font(.caption)
-                    .foregroundStyle(.red)
-            }
+    // MARK: UnassignedItemsButton
+    var UnassignedItemsButton: some View {
+        RDButton(
+            variant: viewModel.unassignedItems.isEmpty ? .secondary : .red,
+            size: .sm,
+            label: "Unassigned Items: \(viewModel.unassignedItems.count)"
+        ) {
+            showUnassignedItems = true
         }
-        .padding(.vertical, 12)
-        .background(Color(.systemBackground))
+        .disabled(viewModel.unassignedItems.isEmpty)
     }
 
     // MARK: UnassignedItemsContent
-    @ViewBuilder
+
     var UnassignedItemsContent: some View {
-        if showUnassignedItems {
-            LazyVStack(spacing: 8) {
-                ForEach(viewModel.unassignedItems) { item in
-                    Text(item.displayName)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(12)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(8)
+        VStack(spacing: 12) {
+            DragIndicator()
+
+            HStack {
+                Text("Unassigned Items")
+                    .font(.headline)
+                    .foregroundStyle(.red)
+
+                Spacer()
+
+                if !viewModel.selectedUnassignedItems.isEmpty {
+                    Button {
+                        viewModel.deselectAllUnassigned()
+                    } label: {
+                        Text("Deselect All")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
+
+            ScrollView {
+                LazyVStack(spacing: 8) {
+                    ForEach(Array(viewModel.unassignedItems), id: \.id) { item in
+                        ItemListItemView(
+                            item: item,
+                            style: .addToDocument,
+                            isSelected: viewModel.isUnassignedSelected(item),
+                            action: handleAction(_:)
+                        )
+                    }
+                }
+            }
+
+            RDButton(
+                variant: viewModel.selectedUnassignedItems.isEmpty ? .secondary : .red,
+                leadingIcon: SFSymbols.plus,
+                iconBold: true,
+                label: "Assign to Room (\(viewModel.selectedUnassignedItems.count))",
+                fullWidth: true
+            ) {
+                showSelectRoomForUnassignedSheet = true
+            }
+            .disabled(viewModel.selectedUnassignedItems.isEmpty)
+        }
+        .frameTop()
+        .frameHorizontalPadding()
+        .frameBottomPadding()
+        .sheet(isPresented: $showSelectRoomForUnassignedSheet) {
+            SelectDocumentSheet(
+                title: "Select Room",
+                documents: viewModel.rooms,
+                action: handleAction(_:)
+            )
         }
     }
 
@@ -365,7 +382,6 @@ extension PullListV2DetailsView {
                 showAddRoomsSheet = true
             }
         }
-        .padding(.vertical, 12)
         .background(Color(.systemBackground))
     }
 
@@ -381,7 +397,7 @@ extension PullListV2DetailsView {
     }
 
     var RoomList: some View {
-        LazyVStack(spacing: 12) {
+        LazyVStack(spacing: 16) {
             ForEach(viewModel.rooms, id: \.id) { room in
                 NavigationLink(value: NavigationDestination.pulllistRoomDetailView(
                     items: viewModel.itemsByRoom[room.id] ?? [],
@@ -398,8 +414,26 @@ extension PullListV2DetailsView {
     }
 }
 
+private extension PullListV2DetailsView {
+    var FooterContent: some View {
+        HStack {
+            RDButton(
+                variant: viewModel.canOpenInstallSheet ? .red : .secondary,
+                leadingIcon: viewModel.canOpenInstallSheet ?  SFSymbols.truckBoxBadgeClockFill : SFSymbols.lockFill,
+                label: viewModel.canOpenInstallSheet ? "Begin Install" : "Being Installed...",
+                fullWidth: true
+            ) {
+                handleInstallListAction()
+            }
+
+            ShowDetailsButton
+        }
+        .cornerRadius(12)
+    }
+}
+
 // MARK: Handle Action
-extension PullListV2DetailsView {
+private extension PullListV2DetailsView {
     func handleAction(_ actionArgument: Any?) {
         guard actionArgument != nil else { return }
 
@@ -414,6 +448,24 @@ extension PullListV2DetailsView {
             switch warehouseAction {
             case .selected(let warehouse):
                 Task { await viewModel.removeEssentialsGroup(to: warehouse) }
+            }
+        }
+
+        if let itemAction = actionArgument as? ItemListItemAction {
+            switch itemAction {
+            case .multiSelectSelection(let item):
+                viewModel.selectUnassigned(item)
+            case .multiSelectDeselection(let item):
+                viewModel.deselectUnassigned(item)
+            default:
+                break
+            }
+        }
+
+        if let roomAction = actionArgument as? SelectDocumentSheetAction<RoomV2> {
+            switch roomAction {
+            case .selected(let room):
+                Task { await viewModel.assignSelectedItemsToRoom(room) }
             }
         }
     }

@@ -12,9 +12,11 @@ import Firebase
 final class PullListRoomDetailsViewModel {
     private let roomRepo: RoomRepository
     private let itemRepo: ItemRepository
+    private let pullListRepo: PullListRepository
 
     var roomState: RoomV2
     var items: [ItemV2]
+    var availableWarehouses: [WarehouseV2] = []
     var isLoading: Bool = false
     var showAlert: Bool = false
     var alertMessage: String = ""
@@ -28,6 +30,7 @@ final class PullListRoomDetailsViewModel {
     ) {
         self.roomRepo = RoomRepository(room: room)
         self.itemRepo = ItemRepository()
+        self.pullListRepo = PullListRepository()
         self.roomState = room
         self.items = items
 
@@ -109,16 +112,29 @@ final class PullListRoomDetailsViewModel {
 
 
 extension PullListRoomDetailsViewModel {
-    // MARK: - removeItemFromRoom
-    
-    func removeItemFromRoom(item: ItemV2) async {
+
+    // MARK: - fetchAvailableWarehouses
+
+    func fetchAvailableWarehouses() async {
+        do {
+            availableWarehouses = try await ConfigurationService.shared.getAll(using: WarehouseRepository())
+        } catch {
+            alertMessage = "Failed to load storage locations: \(error.localizedDescription)"
+            showAlert = true
+        }
+    }
+
+    // MARK: - removeItemToWarehouse
+
+    func removeItemToWarehouse(item: ItemV2, warehouse: WarehouseV2) async {
         let originalItems = roomState.itemIds
-        let updatedItems = roomState.itemIds.filter { $0 != item.id }
-        
+        var updatedItems = roomState.itemIds
+        updatedItems.remove(item.id)
+
         do {
             let batch = roomRepo.db.batch()
             let storageLocationData = try Firestore.Encoder().encode(
-                DocumentLocation(status: .inStorage, locationId: Warehouse.warehouse1.id)
+                DocumentLocation(status: .inStorage, locationId: warehouse.id)
             )
             itemRepo.update(
                 id: item.id,
@@ -136,6 +152,35 @@ extension PullListRoomDetailsViewModel {
         } catch {
             roomState.itemIds = originalItems
             alertMessage = "Failed to remove item: \(error.localizedDescription)"
+            showAlert = true
+        }
+    }
+
+    // MARK: - moveItemToUnassigned
+
+    func moveItemToUnassigned(item: ItemV2) async {
+        let originalItems = roomState.itemIds
+        var updatedItems = roomState.itemIds
+        updatedItems.remove(item.id)
+
+        do {
+            let batch = roomRepo.db.batch()
+            roomRepo.update(
+                id: roomState.id,
+                fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(updatedItems)],
+                inBatch: batch
+            )
+            pullListRepo.update(
+                id: roomState.listId,
+                fields: [PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayUnion([item.id])],
+                inBatch: batch
+            )
+            try await batch.commit()
+            itemsCache.removeValue(forKey: item.id)
+            roomState.itemIds = updatedItems
+        } catch {
+            roomState.itemIds = originalItems
+            alertMessage = "Failed to unassign item: \(error.localizedDescription)"
             showAlert = true
         }
     }

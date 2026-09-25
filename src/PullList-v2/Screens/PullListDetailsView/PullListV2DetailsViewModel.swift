@@ -13,7 +13,8 @@ final class PullListV2DetailsViewModel {
     var pullListState: PullListV2
     var rooms: [RoomV2] = []
     var itemsByRoom: [String: [ItemV2]] = [:] // key: roomId, value: [ItemV2]
-    var unassignedItems: [ItemV2] = []
+    var unassignedItems: Set<ItemV2> = []
+    var selectedUnassignedItems: Set<ItemV2> = []
     var isLoading: Bool = false
     var itemsCache: [String: ItemV2] = [:] // key: itemId, value: ItemV2
 
@@ -98,6 +99,7 @@ final class PullListV2DetailsViewModel {
             await fetchItemsForRoom(room)
         }
 
+        await refreshPullListDetails()
         await fetchUnassignedItems()
     }
 
@@ -115,11 +117,12 @@ final class PullListV2DetailsViewModel {
         let ids = pullListState.unassignedItemIds
         guard !ids.isEmpty else {
             unassignedItems = []
+            selectedUnassignedItems = []
             return
         }
         do {
             let fetched = try await itemRepo.get(ids: ids)
-            unassignedItems = fetched.sorted { $0.displayName < $1.displayName }
+            unassignedItems = Set(fetched)
         } catch {
             alertMessage = error.localizedDescription
             showAlert = true
@@ -278,7 +281,8 @@ final class PullListV2DetailsViewModel {
             try await batch.commit()
             pullListState.essentialGroupId = nil
             pullListState.unassignedItemIds.removeAll { essentialItemSet.contains($0) }
-            unassignedItems.removeAll { essentialItemSet.contains($0.id) }
+            unassignedItems = unassignedItems.filter { !essentialItemSet.contains($0.id) }
+            selectedUnassignedItems = selectedUnassignedItems.filter { !essentialItemSet.contains($0.id) }
             essentialsGroupState = nil
             essentialsAccessories = nil
             essentialsGroupEmoji = nil
@@ -419,6 +423,87 @@ extension PullListV2DetailsViewModel {
             alertMessage = "error adding \(newRoom.displayName): \(error.localizedDescription)"
             showAlert = true
             return
+        }
+    }
+}
+
+// MARK: - Unassigned Item Selection
+
+extension PullListV2DetailsViewModel {
+    func isUnassignedSelected(_ item: ItemV2) -> Bool {
+        selectedUnassignedItems.contains(item)
+    }
+
+    func selectUnassigned(_ item: ItemV2) {
+        selectedUnassignedItems.insert(item)
+    }
+
+    func deselectUnassigned(_ item: ItemV2) {
+        selectedUnassignedItems.remove(item)
+    }
+
+    func deselectAllUnassigned() {
+        selectedUnassignedItems.removeAll()
+    }
+}
+
+// MARK: - Assign Unassigned Items to Room
+
+extension PullListV2DetailsViewModel {
+    @MainActor
+    func assignSelectedItemsToRoom(_ room: RoomV2) async {
+        guard !selectedUnassignedItems.isEmpty else { return }
+
+        let roomRepo = self.roomRepo
+        let itemRepo = self.itemRepo
+        let pullListRepo = self.pullListRepo
+        let itemIds = selectedUnassignedItems.map { $0.id }
+        let pullListId = pullListState.id
+
+        do {
+            let _ = try await roomRepo.db.runTransaction({ (transaction, errorPointer) -> Any? in
+                do {
+                    let currentRoom = try roomRepo.get(id: room.id, transaction: transaction)
+                    let newItemIds = currentRoom.itemIds.union(Set(itemIds))
+
+                    guard let locationData = try? Firestore.Encoder().encode(
+                        DocumentLocation(status: .inPullList, locationId: room.listId)
+                    ) else { return nil }
+
+                    roomRepo.update(
+                        id: room.id,
+                        fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(newItemIds)],
+                        transaction: transaction
+                    )
+
+                    for itemId in itemIds {
+                        itemRepo.update(
+                            id: itemId,
+                            fields: [ItemV2.CodingKeys.location.stringValue: locationData],
+                            transaction: transaction
+                        )
+                    }
+
+                    pullListRepo.update(
+                        id: pullListId,
+                        fields: [PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayRemove(itemIds)],
+                        transaction: transaction
+                    )
+
+                    return nil
+                } catch {
+                    errorPointer?.pointee = error as NSError
+                    return nil
+                }
+            })
+
+            // Update local state on success
+            unassignedItems.subtract(selectedUnassignedItems)
+            pullListState.unassignedItemIds.removeAll { itemIds.contains($0) }
+            selectedUnassignedItems.removeAll()
+        } catch {
+            alertMessage = "Failed to assign items to \(room.displayName): \(error.localizedDescription)"
+            showAlert = true
         }
     }
 }

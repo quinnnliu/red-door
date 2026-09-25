@@ -20,7 +20,7 @@ struct PullListRoomDetailsView: View {
     // MARK: State Variables
     @State private var showAddItemsSheet: Bool = false
     @State private var showEditRoomSheet: Bool = false
-    @State private var showRemoveItemAlert: Bool = false
+    @State private var showSelectWarehouseSheet: Bool = false
     
     // MARK: Body
     
@@ -60,20 +60,23 @@ struct PullListRoomDetailsView: View {
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("OK", role: .cancel) { }
         }
-        .alert("Remove Item", isPresented: $showRemoveItemAlert) {
-            Button("Remove", role: .destructive) {
-                if let item = itemToRemove {
-                    Task {
-                        await viewModel.removeItemFromRoom(item: item)
+        .sheet(isPresented: $showSelectWarehouseSheet) {
+            SelectDocumentSheet(
+                title: "Select Storage Location",
+                documents: viewModel.availableWarehouses,
+                action: { action in
+                    if let warehouseAction = action as? SelectDocumentSheetAction<WarehouseV2>,
+                       case .selected(let warehouse) = warehouseAction,
+                       let item = itemToRemove {
+                        Task {
+                            await viewModel.removeItemToWarehouse(item: item, warehouse: warehouse)
+                            itemToRemove = nil
+                        }
                     }
-                }
-            }
-            Button("Cancel", role: .cancel) {
-                itemToRemove = nil
-                showRemoveItemAlert = false
-            }
-        } message: {
-            Text("Are you sure you want to remove this item from \(viewModel.roomState.displayName)?")
+                },
+                refreshAction: { Task { await viewModel.fetchAvailableWarehouses() } }
+            )
+            .task { await viewModel.fetchAvailableWarehouses() }
         }
         .onAppear {
             viewModel.startListening()
@@ -187,7 +190,14 @@ struct PullListRoomDetailsView: View {
             
             RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.trash, fullWidth: false) {
                 itemToRemove = item
-                showRemoveItemAlert = true
+                if item.essentialGroupId != nil {
+                    Task {
+                        await viewModel.moveItemToUnassigned(item: item)
+                        itemToRemove = nil
+                    }
+                } else {
+                    showSelectWarehouseSheet = true
+                }
             }
         }
         .padding(12)

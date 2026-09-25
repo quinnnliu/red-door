@@ -5,7 +5,6 @@
 //  Created by Quinn Liu on 6/5/26.
 //
 
-import CachedAsyncImage
 import SwiftUI
 
 struct PullListItemDetailsView: View {
@@ -15,6 +14,7 @@ struct PullListItemDetailsView: View {
 
 	@State private var showInformation: Bool = false
     @State private var showQRCodeSheet: Bool = false
+    @State private var showSelectWarehouseSheet: Bool = false
 
 	init(
 		item: ItemV2,
@@ -36,7 +36,7 @@ struct PullListItemDetailsView: View {
 
 				ScrollView {
 					VStack(spacing: 12) {
-                        ItemImageView
+                        PrimaryImageView(image: viewModel.itemState.primaryImage)
 
 						ItemDetails
 
@@ -62,31 +62,21 @@ struct PullListItemDetailsView: View {
 					dismiss()
 				}
 			}
-			.alert("Remove Item", isPresented: $viewModel.showRemoveConfirmationAlert) {
-				Button("Remove", role: .destructive) {
-					Task {
-						let success = await viewModel.removeItemFromRoom()
-						if success {
-							dismiss()
-						}
-					}
-				}
-				Button("Cancel", role: .cancel) {
-					viewModel.showRemoveConfirmationAlert = false
-				}
-			} message: {
-				Text("Are you sure you want to remove this item from \(viewModel.room.displayName)?")
-			}
+            .sheet(isPresented: $showSelectWarehouseSheet) {
+                SelectDocumentSheet(
+                    title: "Select Storage Location",
+                    documents: viewModel.availableWarehouses,
+                    action: handleAction(_:),
+                    refreshAction: { Task { await viewModel.fetchAvailableWarehouses() } }
+                )
+                .task { await viewModel.fetchAvailableWarehouses() }
+            }
 			.frameTop()
 			.frameBottomPadding()
 			.toolbar(.hidden)
 			.fullScreenCover(isPresented: $viewModel.showQRCode) {
                 ItemV2LabelView(item: viewModel.itemState)
 			}
-			.overlay(
-				ModelRDImageOverlay(selectedRDImage: viewModel.selectedRDImage, isImageSelected: $viewModel.isImageSelected)
-					.animation(Constants.Animation.snappy, value: viewModel.isImageSelected)
-			)
 		}
 	}
     
@@ -99,6 +89,14 @@ struct PullListItemDetailsView: View {
             switch sheetAction {
             case .selected(let newRoom):
                 Task { await viewModel.moveItemToNewRoom(newRoom: newRoom) }
+            }
+        case let warehouseAction as SelectDocumentSheetAction<WarehouseV2>:
+            switch warehouseAction {
+            case .selected(let warehouse):
+                Task {
+                    let success = await viewModel.removeItemToWarehouse(warehouse: warehouse)
+                    if success { dismiss() }
+                }
             }
         default:
             break
@@ -216,38 +214,6 @@ struct PullListItemDetailsView: View {
 		}
 	}
     
-	// TODO: abstract this to avoid duplicate code
-	// MARK: - Item Image View
-
-    private var ItemImageView: some View {
-		Button {
-			if viewModel.itemState.primaryImage.imageURL != nil {
-				viewModel.selectedRDImage = viewModel.itemState.primaryImage
-			} else if let uiImage = viewModel.itemState.primaryImage.uiImage {
-				viewModel.selectedRDImage = RDImage(uiImage: uiImage)
-			}
-			viewModel.isImageSelected = true
-		} label: {
-            CachedAsyncImage(url: viewModel.itemState.primaryImage.imageURL) { image in
-                image
-                    .resizable()
-                    .scaledToFill()
-                    .frame(Constants.Screen.screenWidthPadding / 2)
-                    .cornerRadius(8)
-            } placeholder: {
-                RoundedRectangle(cornerRadius: 12)
-                    .foregroundColor(Color(.systemGray5))
-                    .frame(Constants.Screen.screenWidthPadding / 2)
-                    .overlay(Image(systemName: SFSymbols.photoBadgePlus)
-                        .font(.largeTitle)
-                        .bold()
-                        .foregroundColor(.secondary)
-                    )
-            }
-		}
-		.buttonStyle(PlainButtonStyle())
-	}
-
 	// MARK: - Footer
 
 	@ViewBuilder
@@ -258,7 +224,14 @@ struct PullListItemDetailsView: View {
 			}
 
             RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.trash, label: "Remove from \(viewModel.room.displayName)", fullWidth: true, font: .caption2) {
-				viewModel.showRemoveConfirmationAlert = true
+                if viewModel.itemState.essentialGroupId != nil {
+                    Task {
+                        let success = await viewModel.moveItemToUnassigned()
+                        if success { dismiss() }
+                    }
+                } else {
+                    showSelectWarehouseSheet = true
+                }
 			}
 		}
 	}
