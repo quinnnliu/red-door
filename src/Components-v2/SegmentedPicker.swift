@@ -41,7 +41,7 @@ struct SegmentedPicker: View {
                 }
                 .buttonStyle(.plain)
                 .scaleEffect(isSelected ? 1.05 : 1.0)
-                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
+                .animation(Constants.Animation.snappy, value: isSelected)
                 
                 if index < segments.count - 1 {
                     Divider()

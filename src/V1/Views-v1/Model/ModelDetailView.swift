@@ -46,7 +46,7 @@ struct ModelDetailView: View {
 
                         VStack(spacing: 12) {
                             Button(action: {
-                                withAnimation(.spring(response: 0.3)) {
+                                withAnimation(Constants.Animation.snappy) {
                                     showInformation.toggle()
                                 }
                             }) {

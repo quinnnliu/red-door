@@ -20,7 +20,7 @@ struct EnumGridPicker<T: Hashable>: View {
             ForEach(items, id: \.self) { item in
                 Button {
                     selectedItem = item
-                    withAnimation(.spring(response: 0.3)) {
+                    withAnimation(Constants.Animation.snappy) {
                         isActive = false
                     }
                 } label: {

@@ -144,7 +144,7 @@ struct PullListDocumentView: View {
     private func StagingListSection() -> some View {
         VStack(spacing: 12) {
             Button {
-                withAnimation {
+                withAnimation(Constants.Animation.snappy) {
                     showStagingLists.toggle()
                 }
             } label: {

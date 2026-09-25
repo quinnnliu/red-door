@@ -91,7 +91,7 @@ struct RoomItemView: View {
             }
             .overlay(
                 ModelRDImageOverlay(selectedRDImage: selectedRDImage, isImageSelected: $isImageSelected)
-                    .animation(.easeInOut(duration: 0.3), value: isImageSelected)
+                    .animation(Constants.Animation.snappy, value: isImageSelected)
             )
         }
     }
@@ -168,7 +168,7 @@ struct RoomItemView: View {
         VStack(spacing: 12) {
             HStack {
                 Button(action: {
-                    withAnimation(.spring(response: 0.3)) {
+                    withAnimation(Constants.Animation.snappy) {
                         showInformation.toggle()
                     }
                 }) {

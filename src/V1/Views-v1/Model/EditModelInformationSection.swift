@@ -223,7 +223,7 @@ struct MaterialPickerToggle: View {
     var body: some View {
         // Button to show/hide picker
         Button(action: {
-            withAnimation(.spring(response: 0.3)) {
+            withAnimation(Constants.Animation.snappy) {
                 isActive.toggle()
             }
         }) {
@@ -252,7 +252,7 @@ struct ColorPickerToggle: View {
     var body: some View {
         // Button to show/hide picker
         Button(action: {
-            withAnimation(.spring(response: 0.3)) {
+            withAnimation(Constants.Animation.snappy) {
                 isActive.toggle()
             }
         }) {

@@ -65,7 +65,7 @@ struct InstalledListDocumentView: View {
                 HStack(spacing: 12) {
                     if !searchFocused {
                         RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", iconBold: true, fullWidth: false) {
-                            withAnimation {
+                            withAnimation(Constants.Animation.snappy) {
                                 searchTextFocused = true
                                 searchFocused = true
                             }
@@ -118,7 +118,7 @@ struct InstalledListDocumentView: View {
     private func InstalledListSection() -> some View {
         VStack(spacing: 12) {
             Button {
-                withAnimation {
+                withAnimation(Constants.Animation.snappy) {
                     showInstalledLists.toggle()
                 }
             } label: {

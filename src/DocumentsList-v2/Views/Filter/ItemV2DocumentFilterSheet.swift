@@ -146,7 +146,7 @@ private extension ItemV2DocumentFilterSheet {
                 .foregroundStyle(.primary)
             Spacer()
             Button {
-                withAnimation(.snappy) {
+                withAnimation(Constants.Animation.snappy) {
                     selectedAttention = selectedAttention == nil ? true : nil
                 }
             } label: {

@@ -38,11 +38,11 @@ struct SearchBarV2: View {
             .padding(8)
             .clipShape(.rect(cornerRadius: 8))
             .scaleEffect(isFocused ? 1.02 : 1.0)
-            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: isFocused)
+            .animation(Constants.Animation.snappy, value: isFocused)
 
             Button("Cancel", role: .destructive) {
                 searchText = ""
-                withAnimation {
+                withAnimation(Constants.Animation.snappy) {
                     isFocused = false
                     isActive = false
                 }

@@ -228,7 +228,7 @@ struct EditItemDetailSection: View {
         selectedMaterial: ItemMaterial
     ) -> some View {
         Button {
-            withAnimation(.spring(response: 0.3)) {
+            withAnimation(Constants.Animation.snappy) {
                 isActive.wrappedValue.toggle()
             }
         } label: {
@@ -253,7 +253,7 @@ struct EditItemDetailSection: View {
         selectedColor: ItemColor
     ) -> some View {
         Button {
-            withAnimation(.spring(response: 0.3)) {
+            withAnimation(Constants.Animation.snappy) {
                 isActive.wrappedValue.toggle()
             }
         } label: {

@@ -24,7 +24,7 @@ struct FilterPickerRow<T: Filterable>: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Button {
-                withAnimation(.spring(response: 0.3)) {
+                withAnimation(Constants.Animation.snappy) {
                     isActive.toggle()
                 }
             } label: {
@@ -55,7 +55,7 @@ struct FilterPickerRow<T: Filterable>: View {
             if isActive {
                 FilterEnumGridPicker(selectedItem: $selectedItem, isActive: $isActive, items: items)
                     .padding(.bottom, 8)
-                    .animation(.bouncy, value: isActive)
+                    .animation(Constants.Animation.snappy, value: isActive)
             }
         }
         .overlay(alignment: .bottom) {

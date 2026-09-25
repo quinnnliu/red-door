@@ -84,7 +84,7 @@ struct CreateItemsViewV2: View {
         .task { await viewModel.loadGroups() }
         .overlay(
             ModelRDImageOverlay(selectedRDImage: viewModel.selectedRDImage, isImageSelected: $viewModel.isImageSelected)
-                .animation(.easeInOut(duration: 0.3), value: viewModel.isImageSelected)
+                .animation(Constants.Animation.snappy, value: viewModel.isImageSelected)
         )
     }
     

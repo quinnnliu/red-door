@@ -165,7 +165,7 @@ struct InstallPullListRoomListItem: View {
                 fullWidth: false,
                 disabled: itemCount == 0
             ) {
-                withAnimation {
+                withAnimation(Constants.Animation.snappy) {
                     showItems.toggle()
                 }
             }

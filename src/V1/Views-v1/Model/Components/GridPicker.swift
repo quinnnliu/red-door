@@ -40,7 +40,7 @@ struct GridPicker: View {
                         isSelected: selectedItem == item
                     ) {
                         selectedItem = item
-                        withAnimation(.spring(response: 0.3)) {
+                        withAnimation(Constants.Animation.snappy) {
                             isActive = false
                         }
                     }

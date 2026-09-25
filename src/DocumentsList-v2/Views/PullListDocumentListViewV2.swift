@@ -82,7 +82,7 @@ extension PullListDocumentListViewV2 {
         HStack(spacing: 8) {
             Group {
                 RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", iconBold: true, fullWidth: false) {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    withAnimation(Constants.Animation.snappy) {
                         searchFocused = true
                     }
                 }

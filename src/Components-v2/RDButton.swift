@@ -199,13 +199,13 @@ struct RDButton: View {
             DragGesture(minimumDistance: 0)
                 .onChanged { _ in
                     if !disabled {
-                        withAnimation(.easeInOut(duration: 0.1)) {
+                        withAnimation(Constants.Animation.snappy) {
                             isPressed = true
                         }
                     }
                 }
                 .onEnded { _ in
-                    withAnimation(.easeInOut(duration: 0.1)) {
+                    withAnimation(Constants.Animation.snappy) {
                         isPressed = false
                     }
                 }

@@ -104,7 +104,7 @@ extension ItemDetailsViewV2 {
                 }
                 
                 Button {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                    withAnimation(Constants.Animation.snappy) {
                         showInformation.toggle()
                     }
                 } label: {
@@ -117,7 +117,7 @@ extension ItemDetailsViewV2 {
                         Image(systemName: SFSymbols.chevronDown)
                             .foregroundColor(.white)
                             .rotationEffect(.degrees(showInformation ? 0 : -90))
-                            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: showInformation)
+                            .animation(Constants.Animation.snappy, value: showInformation)
                     }
                     .font(.subheadline)
                     .frame(maxWidth: .infinity, alignment: .center)

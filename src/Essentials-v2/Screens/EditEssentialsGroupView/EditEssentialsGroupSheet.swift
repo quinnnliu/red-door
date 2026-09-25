@@ -166,7 +166,7 @@ private extension EditEssentialsGroupSheet {
                 Spacer()
 
                 Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
+                    withAnimation(Constants.Animation.snappy) {
                         viewModel.showNewTypeField.toggle()
                         if !viewModel.showNewTypeField { viewModel.newGroupTypeName = "" }
                     }
@@ -196,7 +196,7 @@ private extension EditEssentialsGroupSheet {
                         .cornerRadius(8)
 
                     RDButton(variant: .default, size: .sm, label: "Create", fullWidth: false) {
-                        withAnimation(.easeInOut(duration: 0.2)) {
+                        withAnimation(Constants.Animation.snappy) {
                             if let newType = viewModel.createAndSelectNewGroupType() {
                                 applyGroupType(newType)
                             }

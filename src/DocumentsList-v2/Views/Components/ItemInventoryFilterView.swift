@@ -25,7 +25,7 @@ struct ItemInventoryFilterView: View {
             HStack(spacing: 8) {
                 ForEach(ItemType.allCases, id: \.rawValue) { type in
                     Button(action: {
-                        withAnimation(.snappy) {
+                        withAnimation(Constants.Animation.snappy) {
                             let newType: ItemType? = selectedType == type ? nil : type
                             selectedType = newType
                             action(ItemInventoryFilterViewAction.selectItemType(newType: newType))

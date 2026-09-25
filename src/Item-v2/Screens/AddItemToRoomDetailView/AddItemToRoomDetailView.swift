@@ -41,7 +41,7 @@ struct AddItemToRoomDetailView: View {
                         
                         VStack(spacing: 12) {
                             Button {
-                                withAnimation(.spring(response: 0.3)) {
+                                withAnimation(Constants.Animation.snappy) {
                                     showInformation.toggle()
                                 }
                             } label: {
@@ -96,7 +96,7 @@ struct AddItemToRoomDetailView: View {
                     selectedRDImage: viewModel.selectedRDImage,
                     isImageSelected: $viewModel.isImageSelected
                 )
-                .animation(.easeInOut(duration: 0.3), value: viewModel.isImageSelected)
+                .animation(Constants.Animation.snappy, value: viewModel.isImageSelected)
             )
             
             if viewModel.isLoading {

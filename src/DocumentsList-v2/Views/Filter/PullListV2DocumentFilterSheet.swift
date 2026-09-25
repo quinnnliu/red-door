@@ -126,7 +126,7 @@ private struct DateFilterRow: View {
                 Spacer()
                 if selectedDate != nil {
                     Button {
-                        withAnimation(.snappy) { selectedDate = nil }
+                        withAnimation(Constants.Animation.snappy) { selectedDate = nil }
                     } label: {
                         Image(systemName: SFSymbols.xmark)
                             .font(.system(size: 12, weight: .semibold))
@@ -143,7 +143,7 @@ private struct DateFilterRow: View {
                     .labelsHidden()
                 } else {
                     Button {
-                        withAnimation(.snappy) { selectedDate = .init() }
+                        withAnimation(Constants.Animation.snappy) { selectedDate = .init() }
                     } label: {
                         Text("Any")
                             .font(.subheadline)

@@ -85,7 +85,7 @@ struct PullListItemDetailsView: View {
 			}
 			.overlay(
 				ModelRDImageOverlay(selectedRDImage: viewModel.selectedRDImage, isImageSelected: $viewModel.isImageSelected)
-					.animation(.easeInOut(duration: 0.3), value: viewModel.isImageSelected)
+					.animation(Constants.Animation.snappy, value: viewModel.isImageSelected)
 			)
 		}
 	}
@@ -188,7 +188,7 @@ struct PullListItemDetailsView: View {
 		VStack(spacing: 12) {
 			HStack {
 				Button(action: {
-					withAnimation(.spring(response: 0.3)) {
+					withAnimation(Constants.Animation.snappy) {
 						showInformation.toggle()
 					}
 				}) {

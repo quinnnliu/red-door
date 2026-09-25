@@ -74,7 +74,7 @@ struct EditModelInformationSheet: View {
             .toolbar(.hidden)
             .overlay(
                 ModelRDImageOverlay(selectedRDImage: selectedRDImage, isImageSelected: $isImageSelected)
-                    .animation(.easeInOut(duration: 0.3), value: isImageSelected)
+                    .animation(Constants.Animation.snappy, value: isImageSelected)
             )
             
             if isLoading {

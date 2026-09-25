@@ -67,7 +67,7 @@ private extension AddEssentialsGroupToPullListSheet {
                         showFilterSheet = true
                     }
                     RDButton(variant: .outline, size: .icon, leadingIcon: SFSymbols.magnifyingglass, iconBold: true, fullWidth: false) {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        withAnimation(Constants.Animation.snappy) {
                             searchFocused = true
                         }
                     }

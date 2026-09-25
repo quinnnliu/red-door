@@ -20,6 +20,10 @@ enum Constants {
         static let listItemDefault: CGFloat = 48
         static let listItemLarge: CGFloat = 80
     }
+
+    enum Animation {
+        static let snappy: SwiftUI.Animation = .spring(duration: 0.2, bounce: 0.1)
+    }
 }
 
 enum SFSymbols {

@@ -38,7 +38,7 @@ struct FilterEnumGridPicker<T: Filterable>: View {
     private func itemCell(_ item: T) -> some View {
         let isSelected = selectedItem == item
         return Button {
-            withAnimation(.spring(response: 0.3)) {
+            withAnimation(Constants.Animation.snappy) {
                 selectedItem = isSelected ? nil : item
                 isActive = false
             }

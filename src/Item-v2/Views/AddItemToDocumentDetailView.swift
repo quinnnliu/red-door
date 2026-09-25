@@ -34,7 +34,7 @@ struct AddItemToDocumentDetailView: View {
 
                         VStack(spacing: 12) {
                             Button {
-                                withAnimation(.spring(response: 0.3)) {
+                                withAnimation(Constants.Animation.snappy) {
                                     showInformation.toggle()
                                 }
                             } label: {

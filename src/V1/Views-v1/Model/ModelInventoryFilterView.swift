@@ -17,7 +17,7 @@ struct ModelInventoryFilterView: View {
             HStack(spacing: 8) {
                 ForEach(ModelType.allCases, id: \.rawValue) { type in
                     Button(action: {
-                        withAnimation(.snappy) {
+                        withAnimation(Constants.Animation.snappy) {
                             if selectedType == type {
                                 selectedType = nil
                             } else {

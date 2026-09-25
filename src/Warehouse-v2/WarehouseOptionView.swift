@@ -56,7 +56,7 @@ struct WarehouseOptionView: View {
                 }
 
                 RDButton(variant: .outline, size: .icon, leadingIcon: viewModel.showWarehouseSection ? "chevron.up" : "chevron.down", iconBold: true, fullWidth: false) {
-                    withAnimation {
+                    withAnimation(Constants.Animation.snappy) {
                         viewModel.showWarehouseSection.toggle()
                         viewModel.editingWarehouses = false
                     }
