@@ -187,8 +187,7 @@ private extension PullListDetailsViewV2 {
             RDButton(
                 variant: .red,
                 size: .icon,
-                leadingIcon: SFSymbols.ellipsis,
-                iconBold: true
+                leadingIcon: SFSymbols.ellipsis
             ) { }.clipShape(.circle)
         }
     }
@@ -342,7 +341,6 @@ private extension PullListDetailsViewV2 {
             RDButton(
                 variant: viewModel.selectedUnassignedItems.isEmpty ? .secondary : .red,
                 leadingIcon: SFSymbols.plus,
-                iconBold: true,
                 label: "Assign to Room (\(viewModel.selectedUnassignedItems.count))",
                 fullWidth: true
             ) {

@@ -52,7 +52,6 @@ struct EditAccessoriesSheet: View {
                     variant: .red,
                     size: .default,
                     leadingIcon: "checkmark",
-                    iconBold: true,
                     label: "Save",
                     fullWidth: false
                 ) {
@@ -149,7 +148,7 @@ private extension EditAccessoriesSheet {
     var TopBar: some View {
         TopAppBar(
             leadingView: {
-                RDButton(variant: .red, size: .icon, leadingIcon: "xmark", iconBold: true, fullWidth: false) {
+                RDButton(variant: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
                     dismiss()
                 }
                 .clipShape(Circle())

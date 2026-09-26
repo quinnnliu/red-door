@@ -99,7 +99,7 @@ struct UnstageInstalledListCover: View {
 
     @ViewBuilder
     private func ExitButton() -> some View {
-        RDButton(variant: .red, size: .icon, leadingIcon: "xmark", iconBold: true, fullWidth: false) {
+        RDButton(variant: .red, size: .icon, leadingIcon: "xmark",  fullWidth: false) {
             dismiss()
         }
     }

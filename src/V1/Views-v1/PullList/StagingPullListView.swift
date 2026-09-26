@@ -142,7 +142,7 @@ struct StagingPullListView: View {
 
     @ViewBuilder
     private var RefreshButton: some View {
-        RDButton(variant: .red, size: .icon, leadingIcon: "arrow.counterclockwise", iconBold: true, fullWidth: false) {
+        RDButton(variant: .red, size: .icon, leadingIcon: "arrow.counterclockwise", fullWidth: false) {
             Task {
                 await viewModel.refreshRDList()
             }

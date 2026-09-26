@@ -115,12 +115,12 @@ struct OptionsView: View {
                 Spacer()
 
                 if showWarehouseSection {
-                    RDButton(variant: editingWarehouses ? .red : .outline, size: .icon, leadingIcon: "square.and.pencil", iconBold: true, fullWidth: false) {
+                    RDButton(variant: editingWarehouses ? .red : .outline, size: .icon, leadingIcon: "square.and.pencil", fullWidth: false) {
                         editingWarehouses.toggle()
                     }
                 }
 
-                RDButton(variant: .outline, size: .icon, leadingIcon: showWarehouseSection ? "chevron.up" : "chevron.down", iconBold: true, fullWidth: false) {
+                RDButton(variant: .outline, size: .icon, leadingIcon: showWarehouseSection ? "chevron.up" : "chevron.down", fullWidth: false) {
                     withAnimation(Constants.Animation.snappy) {
                         showWarehouseSection.toggle()
                         editingWarehouses = false

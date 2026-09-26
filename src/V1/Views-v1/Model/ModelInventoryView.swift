@@ -86,17 +86,17 @@ struct ModelInventoryView: View {
                 HStack(spacing: 8) {
                     Group {
                         if !searchFocused {
-                            RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", iconBold: true, fullWidth: false) {
+                            RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", fullWidth: false) {
                                 searchFocused = true
                                 searchTextFocused = true
                             }
                         }
 
-                        RDButton(variant: .outline, size: .icon, leadingIcon: "qrcode.viewfinder", iconBold: true, fullWidth: false) {
+                        RDButton(variant: .outline, size: .icon, leadingIcon: "qrcode.viewfinder", fullWidth: false) {
                             showScannerSheet = true
                         }
 
-                        RDButton(variant: .outline, size: .icon, leadingIcon: "plus", iconBold: true, fullWidth: false) {
+                        RDButton(variant: .outline, size: .icon, leadingIcon: "plus", fullWidth: false) {
                             showCreateModelCover = true
                         }
                     }

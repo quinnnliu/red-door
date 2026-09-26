@@ -97,7 +97,7 @@ private extension CreateEssentialsGroupView {
     var TopBar: some View {
         TopAppBar(
             leadingView: {
-                RDButton(variant: .red, size: .icon, leadingIcon: "xmark", iconBold: true, fullWidth: false) {
+                RDButton(variant: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
                     dismiss()
                 }
                 .clipShape(Circle())

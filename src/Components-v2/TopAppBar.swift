@@ -45,7 +45,6 @@ struct BackButton: View {
             variant: .red,
             size: .icon,
             leadingIcon: icon, // TODO: consider the environment variable injection instead of UIKit (isModallyPresented)
-            iconBold: true,
             fullWidth: false
         ) {
             if let action = self.action {

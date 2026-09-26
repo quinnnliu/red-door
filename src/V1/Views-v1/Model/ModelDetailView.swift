@@ -120,7 +120,7 @@ struct ModelDetailView: View {
                 ModelNameView()
             },
             trailingView: {
-                RDButton(variant: .red, size: .icon, leadingIcon: "square.and.pencil", iconBold: true, fullWidth: false) {
+                RDButton(variant: .red, size: .icon, leadingIcon: "square.and.pencil", fullWidth: false) {
                     showEditSheet = true
                 }
                 .clipShape(Circle())

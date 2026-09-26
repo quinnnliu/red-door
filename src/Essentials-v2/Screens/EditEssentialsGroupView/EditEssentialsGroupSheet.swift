@@ -43,8 +43,7 @@ struct EditEssentialsGroupSheet: View {
                 RDButton(
                     variant: .red,
                     size: .default,
-                    leadingIcon: "checkmark",
-                    iconBold: true,
+                    leadingIcon: "checkmark"
                     label: "Save",
                     fullWidth: false
                 ) {

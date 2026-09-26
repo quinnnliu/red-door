@@ -111,7 +111,6 @@ private extension RoomListItemView {
             variant: .outline,
             size: .icon,
             leadingIcon: showContent ? SFSymbols.minus : SFSymbols.plus,
-            iconBold: true,
             fullWidth: false,
             disabled: itemCount == 0
         ) {

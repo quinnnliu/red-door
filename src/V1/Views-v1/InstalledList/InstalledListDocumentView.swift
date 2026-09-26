@@ -64,7 +64,7 @@ struct InstalledListDocumentView: View {
             trailingView: {
                 HStack(spacing: 12) {
                     if !searchFocused {
-                        RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", iconBold: true, fullWidth: false) {
+                        RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", fullWidth: false) {
                             withAnimation(Constants.Animation.snappy) {
                                 searchTextFocused = true
                                 searchFocused = true
@@ -72,7 +72,7 @@ struct InstalledListDocumentView: View {
                         }
                     }
 
-                    RDButton(variant: .outline, size: .icon, leadingIcon: "arrow.counterclockwise", iconBold: true, fullWidth: false) {
+                    RDButton(variant: .outline, size: .icon, leadingIcon: "arrow.counterclockwise", fullWidth: false) {
                         Task {
                             await viewModel.fetchPrimaryLists()
                             await viewModel.fetchSecondaryLists(initial: true)

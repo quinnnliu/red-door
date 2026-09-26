@@ -95,7 +95,7 @@ struct EditItemSheetV2: View {
     private func TopBar() -> some View {
         TopAppBar(
             leadingView: {
-                RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.xmark, iconBold: true, fullWidth: false) {
+                RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.xmark, fullWidth: false) {
                     dismiss()
                 }
                 .clipShape(Circle())
@@ -107,7 +107,7 @@ struct EditItemSheetV2: View {
                 }
             },
             trailingView: {
-                RDButton(variant: .red, size: .icon, leadingIcon: "checkmark", iconBold: true, fullWidth: false) {
+                RDButton(variant: .red, size: .icon, leadingIcon: "checkmark", fullWidth: false) {
                     saveItem()
                 }
                 .clipShape(Circle())

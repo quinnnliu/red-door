@@ -142,7 +142,6 @@ struct RDButton: View {
     var size: RDButtonSize = .default
     var leadingIcon: String? = nil
     var trailingIcon: String? = nil
-    var iconBold: Bool = false
     var label: String? = nil
     var fullWidth: Bool = false
     var disabled: Bool = false
@@ -158,7 +157,7 @@ struct RDButton: View {
                 if let leadingIcon {
                     Image(systemName: leadingIcon)
                         .font(.system(size: size.iconSize))
-                        .fontWeight(iconBold ? .bold : .medium)
+                        .fontWeight(.bold)
                 }
                 
                 if let label, size != .icon {

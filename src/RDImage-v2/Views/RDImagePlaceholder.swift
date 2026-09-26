@@ -15,9 +15,15 @@ struct RDImagePlaceholder: View {
     }
 
     let content: Content
+    let size: CGFloat
+    
+    init(content: Content, size: CGFloat = Constants.Screen.screenWidth / 2) {
+        self.content = content
+        self.size = size
+    }
 
     var body: some View {
-        Color(.systemGray5)
+        Color(.systemGray6)
             .overlay {
                 switch content {
                 case .loading:
@@ -25,7 +31,12 @@ struct RDImagePlaceholder: View {
                 case .empty(let editable):
                     if editable {
                         Image(systemName: SFSymbols.photoBadgePlus)
-                            .font(.largeTitle)
+                            .frame(size)
+                            .bold()
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Image(systemName: SFSymbols.photoBadgeExclamationmarkFill)
+                            .frame(size)
                             .bold()
                             .foregroundStyle(.secondary)
                     }

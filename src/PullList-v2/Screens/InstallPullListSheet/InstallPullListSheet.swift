@@ -27,7 +27,7 @@ struct InstallPullListSheet: View {
             
             Spacer()
             
-            RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.plus, iconBold: true, label: "Create Installed List", fullWidth: true) {
+            RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.plus, label: "Create Installed List", fullWidth: true) {
                 viewModel.showConfirmSheet = true
             }
             .disabled(viewModel.itemsByRoom.values.allSatisfy { $0.isEmpty })

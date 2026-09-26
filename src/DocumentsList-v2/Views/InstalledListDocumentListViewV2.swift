@@ -70,7 +70,7 @@ extension InstalledListDocumentListViewV2 {
     private var TrailingIconGroup: some View {
         HStack(spacing: 8) {
             Group {
-                RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", iconBold: true, fullWidth: false) {
+                RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", fullWidth: false) {
                     withAnimation(Constants.Animation.snappy) {
                         searchFocused = true
                     }

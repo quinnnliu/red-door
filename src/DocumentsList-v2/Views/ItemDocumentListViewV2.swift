@@ -125,13 +125,13 @@ extension ItemDocumentListViewV2 {
     private var TrailingIconGroup: some View {
         HStack(spacing: 8) {
             Group {
-                RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", iconBold: true, fullWidth: false) {
+                RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", fullWidth: false) {
                     withAnimation(Constants.Animation.snappy) {
                         searchFocused = true
                     }
                 }
 
-                RDButton(variant: .outline, size: .icon, leadingIcon: "qrcode.viewfinder", iconBold: true, fullWidth: false) {
+                RDButton(variant: .outline, size: .icon, leadingIcon: "qrcode.viewfinder", fullWidth: false) {
                     showScannerSheet = true
                 }
 
@@ -165,8 +165,7 @@ extension ItemDocumentListViewV2 {
         RDButton(
             variant: filtersActive ? .red : .secondary,
             size: .icon,
-            leadingIcon: SFSymbols.sliderHorizontal3,
-            iconBold: true
+            leadingIcon: SFSymbols.sliderHorizontal3
         ) {
             filterDocumentSheetType = selectedSegment
         }
@@ -215,15 +214,15 @@ extension ItemDocumentListViewV2 {
                     showCopyItemSheet = true
                 }
             } label: {
-                RDButton(variant: .outline, size: .icon, leadingIcon: "plus", iconBold: true, fullWidth: false) { }
+                RDButton(variant: .outline, size: .icon, leadingIcon: "plus", fullWidth: false) { }
                     .allowsHitTesting(false)
             }
         case .essentials:
-            RDButton(variant: .outline, size: .icon, leadingIcon: "plus", iconBold: true, fullWidth: false) {
+            RDButton(variant: .outline, size: .icon, leadingIcon: "plus", fullWidth: false) {
                 createDocumentSheetType = .essentials
             }
         case .accessories:
-            RDButton(variant: .outline, size: .icon, leadingIcon: "plus", iconBold: true, fullWidth: false) {
+            RDButton(variant: .outline, size: .icon, leadingIcon: "plus", fullWidth: false) {
                 createDocumentSheetType = .accessories
             }
         }

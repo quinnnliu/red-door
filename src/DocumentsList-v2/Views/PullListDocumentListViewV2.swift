@@ -85,7 +85,7 @@ extension PullListDocumentListViewV2 {
     private var TrailingIconGroup: some View {
         HStack(spacing: 8) {
             Group {
-                RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", iconBold: true, fullWidth: false) {
+                RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", fullWidth: false) {
                     withAnimation(Constants.Animation.snappy) {
                         searchFocused = true
                     }
@@ -105,7 +105,7 @@ extension PullListDocumentListViewV2 {
                         Image(systemName: SFSymbols.documentOnDocument)
                     }
                 } label: {
-                    RDButton(variant: .outline, size: .icon, leadingIcon: "plus", iconBold: true, fullWidth: false, action: { })
+                    RDButton(variant: .outline, size: .icon, leadingIcon: "plus", fullWidth: false, action: { })
                 }
             }
             .foregroundColor(.red)
@@ -118,8 +118,7 @@ extension PullListDocumentListViewV2 {
         RDButton(
             variant: filtersActive ? .red : .secondary,
             size: .icon,
-            leadingIcon: SFSymbols.sliderHorizontal3,
-            iconBold: true
+            leadingIcon: SFSymbols.sliderHorizontal3
         ) {
             showFilterSheet = true
         }

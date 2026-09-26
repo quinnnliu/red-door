@@ -84,7 +84,7 @@ struct EditPullListDetailsSheet: View {
     @ViewBuilder
     private func TopBar() -> some View {
         TopAppBar(leadingView: {
-            RDButton(variant: .red, size: .icon, leadingIcon: "xmark", iconBold: true, fullWidth: false) {
+            RDButton(variant: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
                 dismiss()
             }
             .clipShape(Circle())
@@ -93,7 +93,7 @@ struct EditPullListDetailsSheet: View {
                 showAddressSheet = true
             }
         }, trailingView: {
-            RDButton(variant: .red, size: .icon, leadingIcon: "checkmark", iconBold: true, fullWidth: false) {
+            RDButton(variant: .red, size: .icon, leadingIcon: "checkmark", fullWidth: false) {
                 let installDateString = installDate.formatted(.dateTime.year().month().day())
                 if installDateString != viewModel.selectedList.installDate {
                     viewModel.selectedList.installDate = installDateString

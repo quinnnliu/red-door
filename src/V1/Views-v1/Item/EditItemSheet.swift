@@ -105,7 +105,7 @@ struct EditItemSheet: View {
     @ViewBuilder
     private func TopBar() -> some View {
         TopAppBar(leadingView: {
-            RDButton(variant: .red, size: .icon, leadingIcon: "xmark", iconBold: true, fullWidth: false) {
+            RDButton(variant: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
                 dismiss()
             }
             .clipShape(Circle())
@@ -118,7 +118,7 @@ struct EditItemSheet: View {
                 Text(model.name)
             }
         }, trailingView: {
-            RDButton(variant: .red, size: .icon, leadingIcon: "checkmark", iconBold: true, fullWidth: false) {
+            RDButton(variant: .red, size: .icon, leadingIcon: "checkmark", fullWidth: false) {
                 focusAttentionReason = false
                 saveItem()
             }

@@ -77,7 +77,6 @@ struct AddItemToRoomDetailView: View {
                 RDButton(
                     variant: .red,
                     leadingIcon: SFSymbols.plus,
-                    iconBold: true,
                     label: "Add to \(viewModel.room.displayName)",
                     fullWidth: true
                 ) {

@@ -92,7 +92,7 @@ struct InstalledListDetailView: View {
             }
 
         } label: {
-            RDButton(variant: .red, size: .icon, leadingIcon: "ellipsis", iconBold: true, fullWidth: false, action: { })
+            RDButton(variant: .red, size: .icon, leadingIcon: "ellipsis", fullWidth: false, action: { })
                 .clipShape(Circle())
         }
         .tint(.red)

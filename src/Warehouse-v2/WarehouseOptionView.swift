@@ -50,12 +50,12 @@ struct WarehouseOptionView: View {
                 Spacer()
 
                 if viewModel.showWarehouseSection {
-                    RDButton(variant: viewModel.editingWarehouses ? .red : .outline, size: .icon, leadingIcon: "square.and.pencil", iconBold: true, fullWidth: false) {
+                    RDButton(variant: viewModel.editingWarehouses ? .red : .outline, size: .icon, leadingIcon: "square.and.pencil", fullWidth: false) {
                         viewModel.editingWarehouses.toggle()
                     }
                 }
 
-                RDButton(variant: .outline, size: .icon, leadingIcon: viewModel.showWarehouseSection ? "chevron.up" : "chevron.down", iconBold: true, fullWidth: false) {
+                RDButton(variant: .outline, size: .icon, leadingIcon: viewModel.showWarehouseSection ? "chevron.up" : "chevron.down", fullWidth: false) {
                     withAnimation(Constants.Animation.snappy) {
                         viewModel.showWarehouseSection.toggle()
                         viewModel.editingWarehouses = false

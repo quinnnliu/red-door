@@ -96,7 +96,7 @@ struct RoomAddItemsSheet: View {
             },
             trailingView: {
                 if !searchFocused {
-                    RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", iconBold: true, fullWidth: false) {
+                    RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", fullWidth: false) {
                         searchFocused = true
                         searchTextFocused = true
                     }

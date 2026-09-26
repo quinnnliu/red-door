@@ -24,17 +24,15 @@ struct PrimaryImageView: View {
     let size: CGFloat
     let isExpandable: Bool
     
-    @State private var expandedImage: RDImage?
+    @State private var expandedImage: RDImage? = nil
     
     init(
         image: RDImage?,
-        expandedImage: RDImage? = nil,
-        size: CGFloat? = Constants.Screen.screenWidthPadding / 2,
+        size: CGFloat = Constants.Screen.screenWidthPadding / 2,
         isExpandable: Bool = true
     ) {
         self.image = image
-        self.expandedImage = expandedImage
-        self.size = size ?? Constants.Screen.screenWidthPadding / 2
+        self.size = size
         self.isExpandable = isExpandable
     }
 
@@ -139,6 +137,10 @@ private struct PrimaryImageContent: View {
     let editable: Bool
     let size: CGFloat
     
+    var isThumbnail: Bool {
+        size < Constants.Screen.screenWidthPadding / 2
+    }
+    
     init(_ image: RDImage?, editable: Bool, size: CGFloat) {
         self.image = image
         self.editable = editable
@@ -151,12 +153,12 @@ private struct PrimaryImageContent: View {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFill()
-            } else if let thumbnailURL = image?.thumbnailURL, size < Constants.Screen.screenWidth / 2 {
+            } else if let thumbnailURL = image?.thumbnailURL, isThumbnail {
                 RDImageView(url: thumbnailURL)
             } else if let imageUrl = image?.imageURL {
                 RDImageView(url: imageUrl)
             } else {
-                RDImagePlaceholder(content: .empty(editable: editable))
+                RDImagePlaceholder(content: .empty(editable: editable), size: size / 2)
             }
         }
         .frame(size)

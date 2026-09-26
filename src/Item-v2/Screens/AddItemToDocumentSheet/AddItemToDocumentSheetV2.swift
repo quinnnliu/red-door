@@ -149,7 +149,6 @@ private extension AddItemToDocumentSheetV2 {
                     variant: .secondary,
                     size: .sm,
                     leadingIcon: SFSymbols.plus,
-                    iconBold: true,
                     label: "Add Selected",
                     fullWidth: false
                 ) {
@@ -197,10 +196,10 @@ extension AddItemToDocumentSheetV2 {
             },
             trailingView: {
                 HStack(spacing: 8) {
-                    RDButton(variant: documentListViewModel.activeFiltersApplied ? .red : .outline, size: .icon, leadingIcon: SFSymbols.sliderHorizontal3, iconBold: true, fullWidth: false) {
+                    RDButton(variant: documentListViewModel.activeFiltersApplied ? .red : .outline, size: .icon, leadingIcon: SFSymbols.sliderHorizontal3, fullWidth: false) {
                         showFilterSheet = true
                     }
-                    RDButton(variant: .outline, size: .icon, leadingIcon: SFSymbols.magnifyingglass, iconBold: true, fullWidth: false) {
+                    RDButton(variant: .outline, size: .icon, leadingIcon: SFSymbols.magnifyingglass, fullWidth: false) {
                         withAnimation(Constants.Animation.snappy) {
                             searchFocused = true
                         }

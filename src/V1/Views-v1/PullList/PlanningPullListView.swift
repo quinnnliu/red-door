@@ -112,7 +112,7 @@ struct PlanningPullListView: View {
                 }
             }.tint(.red)
         } label: {
-            RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.ellipsis, iconBold: true, fullWidth: false, action: { })
+            RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.ellipsis, fullWidth: false, action: { })
                 .clipShape(Circle())
         }
     }

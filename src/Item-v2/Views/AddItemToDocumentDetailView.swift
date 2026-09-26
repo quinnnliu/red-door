@@ -75,7 +75,6 @@ struct AddItemToDocumentDetailView: View {
                     RDButton(
                         variant: .red,
                         leadingIcon: SFSymbols.plus,
-                        iconBold: true,
                         label: "Add to \(viewModel.destination.document.displayName)",
                         fullWidth: true
                     ) {

@@ -11,7 +11,9 @@ struct InstalledListDetailsViewV2: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(NavigationCoordinator.self) private var coordinator
     @State private var viewModel: InstalledListDetailsViewModelV2
+    
     @State private var showDetails: Bool = false
+    @State private var showUninstallListCover: Bool = false
 
     init(viewModel: InstalledListDetailsViewModelV2) {
         self.viewModel = viewModel
@@ -115,8 +117,7 @@ private extension InstalledListDetailsViewV2 {
             RDButton(
                 variant: .red,
                 size: .icon,
-                leadingIcon: SFSymbols.ellipsis,
-                iconBold: true
+                leadingIcon: SFSymbols.ellipsis
             ) { }.clipShape(.circle)
         }
     }
@@ -246,7 +247,13 @@ private extension InstalledListDetailsViewV2 {
 
 private extension InstalledListDetailsViewV2 {
     var FooterContent: some View {
-        ShowDetailsButton
+        HStack {
+            RDButton(variant: .red, leadingIcon: SFSymbols.shippingbox ,label: "Uninstall List") {
+                showUninstallListCover = true
+            }
+            
+            ShowDetailsButton
+        }
     }
 }
 
