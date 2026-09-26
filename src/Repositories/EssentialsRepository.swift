@@ -22,6 +22,17 @@ final class EssentialsRepository: GenericRepository<EssentialsGroup> {
         ])
     }
 
+    func updateEmoji(_ newEmoji: String, forTypeId typeId: String) async throws {
+        let snapshot = try await collectionRef
+            .whereField(EssentialsGroup.CodingKeys.essentialsTypeId.stringValue, isEqualTo: typeId)
+            .getDocuments()
+        let batch = db.batch()
+        for doc in snapshot.documents {
+            batch.updateData([EssentialsGroup.CodingKeys.emoji.stringValue: newEmoji], forDocument: doc.reference)
+        }
+        try await batch.commit()
+    }
+
     func maxGroupNumber(forTypeId typeId: String) async -> Int {
         do {
             return try await maxNumber(

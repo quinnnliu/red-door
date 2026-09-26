@@ -20,7 +20,6 @@ final class PullListDetailsViewModelV2 {
 
     var essentialsGroupState: EssentialsGroup? = nil
     var essentialsAccessories: Accessories? = nil
-    var essentialsGroupEmoji: String? = nil
     var availableWarehouses: [WarehouseV2] = []
 
     private var roomsListener: ListenerRegistration? = nil
@@ -200,16 +199,11 @@ final class PullListDetailsViewModelV2 {
         guard let groupId = pullListState.essentialGroupId else {
             essentialsGroupState = nil
             essentialsAccessories = nil
-            essentialsGroupEmoji = nil
             return
         }
         do {
             let group = try await essentialsRepo.get(id: groupId)
             essentialsGroupState = group
-
-            let types = (try? await ConfigurationService.shared.getAll(using: EssentialsGroupTypeRepository())) ?? []
-            let lookup = Dictionary(uniqueKeysWithValues: types.map { ($0.id, $0) })
-            essentialsGroupEmoji = lookup[group.essentialsTypeId]?.emoji ?? "⭐️"
 
             if let accessoriesId = group.accessoriesId {
                 essentialsAccessories = try await accessoriesRepo.get(id: accessoriesId)
@@ -285,7 +279,6 @@ final class PullListDetailsViewModelV2 {
             selectedUnassignedItems = selectedUnassignedItems.filter { !essentialItemSet.contains($0.id) }
             essentialsGroupState = nil
             essentialsAccessories = nil
-            essentialsGroupEmoji = nil
             availableWarehouses = []
         } catch {
             alertMessage = "Failed to remove essentials group: \(error.localizedDescription)"

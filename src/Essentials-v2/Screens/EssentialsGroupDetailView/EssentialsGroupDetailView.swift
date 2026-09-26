@@ -17,11 +17,8 @@ struct EssentialsGroupDetailView: View {
     @State private var showRemoveAccessoriesAlert: Bool = false
     @State private var showAssignToPullListSheet: Bool = false
 
-    let emoji: String
-
-    init(group: EssentialsGroup, emoji: String = "⭐️") {
+    init(group: EssentialsGroup) {
         viewModel = EssentialsGroupDetailViewModel(group: group)
-        self.emoji = emoji
     }
 
     // MARK: - Body
@@ -138,7 +135,7 @@ private extension EssentialsGroupDetailView {
 private extension EssentialsGroupDetailView {
     var DetailsSection: some View {
         VStack {
-            Text("\(emoji) \(viewModel.groupState.displayName)")
+            Text("\(viewModel.groupState.emoji) \(viewModel.groupState.displayName)")
                 .font(.headline)
                 .bold()
                 .frame(maxWidth: .infinity, alignment: .leading)

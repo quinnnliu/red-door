@@ -263,9 +263,7 @@ private extension PullListDetailsViewV2 {
         if let group = viewModel.essentialsGroupState {
             LazyVStack(spacing: 8) {
                 HStack {
-                    if let essentialsGroupEmoji = viewModel.essentialsGroupEmoji {
-                        Text(essentialsGroupEmoji)
-                    }
+                    Text(group.emoji)
                     Text(group.displayName)
                         .font(.subheadline)
                     Spacer()

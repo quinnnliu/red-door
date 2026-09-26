@@ -98,6 +98,7 @@ final class CreateEssentialsGroupViewModel {
             let group = EssentialsGroup(
                 baseName: groupType.displayName,
                 essentialsTypeId: groupType.id,
+                emoji: groupType.emoji,
                 accessoriesId: selectedAccessory?.id,
                 groupNumber: maxNumber + 1,
                 nickname: nickname.isEmpty ? nil : nickname

@@ -42,6 +42,7 @@ struct EssentialsGroup: ItemsListableDocument {
     var baseName: String
     var baseNameLowercased: String
     var essentialsTypeId: String // maps to EssentialsGroupType
+    var emoji: String
 
     var location: DocumentLocation
     var itemIds: Set<String>
@@ -50,7 +51,7 @@ struct EssentialsGroup: ItemsListableDocument {
     var nickname: String?
 
     enum CodingKeys: String, CodingKey {
-        case id, nickname
+        case id, nickname, emoji
         case accessoriesId = "accessories_id"
         case itemIds = "item_ids"
         case baseName = "base_name"
@@ -65,6 +66,7 @@ struct EssentialsGroup: ItemsListableDocument {
         baseName: String,
         location: DocumentLocation = DocumentLocation(status: .inStorage, locationId: Warehouse.warehouse1.id),
         essentialsTypeId: String,
+        emoji: String = "⭐️",
         itemIds: Set<String> = [],
         accessoriesId: String? = nil,
         groupNumber: Int = 0,
@@ -75,6 +77,7 @@ struct EssentialsGroup: ItemsListableDocument {
         self.baseNameLowercased = baseName.lowercased()
         self.location = location
         self.essentialsTypeId = essentialsTypeId
+        self.emoji = emoji
         self.itemIds = itemIds
         self.accessoriesId = accessoriesId
         self.groupNumber = groupNumber

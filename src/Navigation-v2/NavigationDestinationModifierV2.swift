@@ -57,8 +57,8 @@ struct NavigationDestinationsModifierV2: ViewModifier {
                         AddItemToRoomDetailView(item: item, room: room)
                     case .installedListDetailView(let list):
                         Text(list.displayName)
-                    case .essentialsGroupDetailView(let group, let emoji):
-                        EssentialsGroupDetailView(group: group, emoji: emoji)
+                    case .essentialsGroupDetailView(let group):
+                        EssentialsGroupDetailView(group: group)
                     case .accessoriesDetailView(let accessories):
                         AccessoriesDetailsView(accessories: accessories)
                     case .addItemToDocumentDetailView(let item, let destination):

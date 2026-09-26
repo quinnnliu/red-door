@@ -26,7 +26,6 @@ struct ItemDocumentListViewV2: View {
     @State private var itemsVM: DocumentListViewModelV2<ItemV2> = DocumentListViewModelV2<ItemV2>()
     @State private var essentialsVM: DocumentListViewModelV2<EssentialsGroup> = DocumentListViewModelV2<EssentialsGroup>(pageSize: 50)
     @State private var accessoriesVM: DocumentListViewModelV2<Accessories> = DocumentListViewModelV2<Accessories>(pageSize: 50)
-    @State private var groupTypesLookup: [String: EssentialsGroupType] = [:]
 
     // MARK: - UI State
 
@@ -256,7 +255,7 @@ extension ItemDocumentListViewV2 {
             rowContent: { group in
                 EssentialsGroupListItemView(
                     group: group,
-                    emoji: groupTypesLookup[group.essentialsTypeId]?.emoji,
+                    emoji: group.emoji,
                     action: handleEssentialsAction(_:)
                 )
             }
@@ -265,8 +264,6 @@ extension ItemDocumentListViewV2 {
             if essentialsVM.documents.isEmpty {
                 await essentialsVM.refresh()
             }
-            let types = (try? await ConfigurationService.shared.getAll(using: EssentialsGroupTypeRepository())) ?? []
-            groupTypesLookup = Dictionary(uniqueKeysWithValues: types.map { ($0.id, $0) })
         }
     }
 
@@ -394,8 +391,7 @@ private extension ItemDocumentListViewV2 {
         case let rowAction as EssentialsGroupListItemAction:
             switch rowAction {
             case .navigate(let group):
-                let emoji = groupTypesLookup[group.essentialsTypeId]?.emoji ?? "⭐️"
-                path.append(NavigationDestination.essentialsGroupDetailView(group, emoji: emoji))
+                path.append(NavigationDestination.essentialsGroupDetailView(group))
             }
         default:
             break

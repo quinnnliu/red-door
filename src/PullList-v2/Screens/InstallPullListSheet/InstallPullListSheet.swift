@@ -30,6 +30,7 @@ struct InstallPullListSheet: View {
             RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.plus, iconBold: true, label: "Create Installed List", fullWidth: true) {
                 viewModel.showConfirmSheet = true
             }
+            .disabled(viewModel.itemsByRoom.values.allSatisfy { $0.isEmpty })
         }
         .frameTop()
         .frameHorizontalPadding()

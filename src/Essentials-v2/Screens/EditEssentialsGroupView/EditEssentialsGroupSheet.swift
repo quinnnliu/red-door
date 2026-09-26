@@ -144,7 +144,8 @@ struct EditEssentialsGroupSheet: View {
                 EssentialsGroup.CodingKeys.baseName.stringValue: editingGroup.baseName,
                 EssentialsGroup.CodingKeys.baseNameLowercased.stringValue: editingGroup.baseNameLowercased,
                 EssentialsGroup.CodingKeys.groupNumber.stringValue: editingGroup.groupNumber,
-                EssentialsGroup.CodingKeys.nickname.stringValue: editingGroup.nickname ?? nil
+                EssentialsGroup.CodingKeys.nickname.stringValue: editingGroup.nickname ?? nil,
+                EssentialsGroup.CodingKeys.emoji.stringValue: editingGroup.emoji
             ]
 
             try? await essentialsRepo.update(id: editingGroup.id, fields: fields)
