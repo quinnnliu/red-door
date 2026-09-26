@@ -139,10 +139,15 @@ final class FirebaseImageManager {
             throw error
         }
 
-        let storageRef = FirebaseImageManager.storageRef.child(storagePath).child(documentId).child(rdImage.id)
+        let fullRef = FirebaseImageManager.storageRef.child(storagePath).child(documentId).child(rdImage.id)
+        let thumbRef = FirebaseImageManager.storageRef.child(storagePath).child(documentId).child("\(rdImage.id)_thumb")
 
         do {
-            try await storageRef.delete()
+            try await withThrowingTaskGroup(of: Void.self) { group in
+                group.addTask { try await fullRef.delete() }
+                group.addTask { try await thumbRef.delete() }
+                try await group.waitForAll()
+            }
         } catch {
             print("Error deleting imageID: \(error)")
         }

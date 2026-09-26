@@ -321,7 +321,7 @@ private extension PullListDetailsViewV2 {
                     } label: {
                         Text("Deselect All")
                             .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.red)
                     }
                 }
             }
@@ -497,9 +497,13 @@ private extension PullListDetailsViewV2 {
         if let itemAction = actionArgument as? ItemListItemAction {
             switch itemAction {
             case .multiSelectSelection(let item):
-                viewModel.selectUnassigned(item)
+                withAnimation(Constants.Animation.snappy) {
+                    viewModel.selectUnassigned(item)
+                }
             case .multiSelectDeselection(let item):
-                viewModel.deselectUnassigned(item)
+                withAnimation(Constants.Animation.snappy) {
+                    viewModel.deselectUnassigned(item)
+                }
             default:
                 break
             }

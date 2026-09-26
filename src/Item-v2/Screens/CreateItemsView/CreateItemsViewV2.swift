@@ -25,12 +25,7 @@ struct CreateItemsViewV2: View {
         ZStack {
             VStack(spacing: 12) {
 
-                VStack(spacing: 4) {
-                    TopBar()
-                    
-                    NicknameEntry
-                        .frame(maxWidth: .infinity, alignment: .center)
-                }
+                TopBar()
                 
                 ScrollView {
                     ItemImageEditor(
@@ -119,14 +114,6 @@ struct CreateItemsViewV2: View {
             .disabled(viewModel.templateState != nil)
     }
     
-    var NicknameEntry: some View {
-        TextField("Nickname (optional)", text: nicknameBinding)
-            .font(.caption)
-            .multilineTextAlignment(.center)
-            .foregroundStyle(.secondary)
-            .disabled(viewModel.templateState != nil)
-    }
-    
     // MARK: Item Count Picker
     
     private var ItemCountPicker: some View {
@@ -137,14 +124,6 @@ struct CreateItemsViewV2: View {
     }
 }
 
-extension CreateItemsViewV2 {
-    private var nicknameBinding: Binding<String> {
-        Binding(
-            get: { viewModel.itemState.nickname ?? "" },
-            set: { viewModel.itemState.nickname = $0.isEmpty ? nil : $0 }
-        )
-    }
-}
 
 #Preview {
     CreateItemsViewV2()

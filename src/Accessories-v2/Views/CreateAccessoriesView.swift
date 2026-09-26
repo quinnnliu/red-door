@@ -134,6 +134,8 @@ private extension CreateAccessoriesView {
         VStack {
             DragIndicator()
             
+            Spacer(minLength: .zero)
+            
             Text("Select Accessories Type")
                 .bold()
                 .foregroundStyle(.red)

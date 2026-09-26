@@ -90,6 +90,7 @@ struct PrimaryImageEditor: View {
         } label: {
             PrimaryImageContent(image, editable: true, size: size)
         }
+        .tint(.gray)
         .alert(alertText, isPresented: $showAlert, actions: { })
         .alert(
             (image?.imageExists ?? false) ? "Update Image" : "Upload Image",
