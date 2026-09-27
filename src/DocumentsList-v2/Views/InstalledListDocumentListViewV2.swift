@@ -8,8 +8,13 @@
 import SwiftUI
 
 struct InstalledListDocumentListViewV2: View {
-    @State private var viewModel: DocumentListViewModelV2<InstalledListV2> = DocumentListViewModelV2<InstalledListV2>()
+    @State private var viewModel: DocumentListViewModelV2<InstalledListV2> = DocumentListViewModelV2<InstalledListV2>(defaultFilters: ["uninstalled": true])
+    @State private var installedListRepository = InstalledListRepository()
     @Binding var path: NavigationPath
+
+    @State private var installedLists: [InstalledListV2] = []
+    @State private var isLoadingInstalled: Bool = false
+    @State private var showInstalledSection: Bool = true
 
     @State private var searchFocused: Bool = false
     @State private var showFromInstalledCover: Bool = false
@@ -29,12 +34,15 @@ struct InstalledListDocumentListViewV2: View {
                     TopBar
                 }
 
+                InstalledSection
                 InstalledListListSection
             }
             .frameTop()
             .frameHorizontalPadding()
             .task {
-                await viewModel.refresh()
+                async let mainRefresh: () = viewModel.refresh()
+                async let installedLoad: () = loadInstalledLists()
+                _ = await (mainRefresh, installedLoad)
             }
             .fullScreenCover(isPresented: $showFromInstalledCover) {
                 // TODO: add from installed list functionality
@@ -80,17 +88,81 @@ extension InstalledListDocumentListViewV2 {
         }
     }
 
+    // MARK: Installed Section
+
+    @ViewBuilder
+    private var InstalledSection: some View {
+        VStack(spacing: 12) {
+            Button {
+                withAnimation(Constants.Animation.snappy) {
+                    showInstalledSection.toggle()
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Text("Installed")
+                        .font(.headline)
+                        .foregroundColor(.red)
+
+                    Image(systemName: SFSymbols.checkmarkCircleFill)
+                        .font(.headline)
+                        .foregroundColor(.red)
+
+                    Spacer()
+
+                    Text("(\(installedLists.count))")
+                        .foregroundColor(.secondary)
+
+                    Image(systemName: showInstalledSection ? SFSymbols.chevronUp : SFSymbols.chevronDown)
+                        .bold()
+                        .foregroundColor(.red)
+                }
+            }
+            .disabled(installedLists.isEmpty)
+
+            if !installedLists.isEmpty && showInstalledSection {
+                if isLoadingInstalled {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding()
+                } else {
+                    LazyVStack(alignment: .leading, spacing: 8) {
+                        ForEach(installedLists) { list in
+                            InstalledListV2ListItem(list: list, action: handleAction(_:))
+                        }
+                    }
+                }
+            }
+        }
+        .padding(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(Color.red, lineWidth: 4)
+        )
+    }
+
     // MARK: InstalledList List
 
     private var InstalledListListSection: some View {
         DocumentListSection(
             viewModel: viewModel,
-            noMoreLabel: "No More Installed Lists",
+            noMoreLabel: "No More Uninstalled Lists",
             action: handleAction(_:),
             rowContent: { list in
                 InstalledListV2ListItem(list: list, action: handleAction(_:))
             }
         )
+    }
+}
+
+private extension InstalledListDocumentListViewV2 {
+    func loadInstalledLists() async {
+        isLoadingInstalled = true
+        defer { isLoadingInstalled = false }
+        do {
+            installedLists = try await installedListRepository.getAllInstalled()
+        } catch {
+            print("[InstalledListDocumentListViewV2] failed to load installed lists: \(error)")
+        }
     }
 }
 

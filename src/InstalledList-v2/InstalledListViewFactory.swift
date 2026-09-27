@@ -14,21 +14,24 @@ struct InstalledListViewFactory {
     private let accessoriesRepo: AccessoriesRepository = AccessoriesRepository()
     private let uninstallSessionRepo: UninstallSessionRepository = UninstallSessionRepository()
     private let warehouseRepo: WarehouseRepository = WarehouseRepository()
+    private let pullListRepo: PullListRepository = PullListRepository()
     
-    func makeItemDetailsView(item: ItemV2, room: RoomV2) -> InstalledListItemDetailsView {
+    func makeItemDetailsView(item: ItemV2, room: RoomV2, uninstalled: Bool) -> InstalledListItemDetailsView {
         let vm = InstalledListItemDetailsViewModel(
             item: item,
             room: room,
+            uninstalled: uninstalled,
             roomRepo: RoomRepository(parentCollectionName: InstalledListV2.collectionName, listId: room.listId)
         )
         return InstalledListItemDetailsView(viewModel: vm)
     }
 
-    func makeRoomDetailsView(items: [ItemV2], room: RoomV2) -> InstalledListRoomDetailsView {
+    func makeRoomDetailsView(items: [ItemV2], room: RoomV2, uninstalled: Bool = false) -> InstalledListRoomDetailsView {
         let vm = InstalledListRoomDetailsViewModel(
             room: room,
             roomRepo: RoomRepository(parentCollectionName: InstalledListV2.collectionName, listId: room.listId),
-            items: items
+            items: items,
+            uninstalled: uninstalled
         )
         return InstalledListRoomDetailsView(viewModel: vm)
     }
@@ -43,6 +46,7 @@ struct InstalledListViewFactory {
             ),
             itemRepo: itemRepo,
             sessionRepo: uninstallSessionRepo,
+            pullListRepo: pullListRepo,
             warehouseRepo: warehouseRepo
         )
         return UninstallInstalledListSheet(viewModel: vm)

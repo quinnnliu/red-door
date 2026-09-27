@@ -8,7 +8,7 @@
 import Foundation
 import Firebase
 
-/// Split across `+Loading`, `+Session`, `+Plan`, and `+Commit` files. Stored
+/// Split across `+Loading`, `+Session`, `+Assignment`, and `+Commit` files. Stored
 /// properties have to live here (Swift extensions can't add them), and the
 /// session flags are `internal` rather than `private` so those extensions can
 /// reach them across file boundaries.
@@ -64,6 +64,7 @@ final class UninstallInstalledListSheetViewModel {
     let installedListRepo: InstalledListRepository
     let itemRepo: ItemRepository
     let sessionRepo: UninstallSessionRepository
+    let pullListRepo: PullListRepository
     let warehouseRepo: WarehouseRepository
     let configService: ConfigurationService
 
@@ -79,6 +80,7 @@ final class UninstallInstalledListSheetViewModel {
         installedRoomRepo: RoomRepository,
         itemRepo: ItemRepository,
         sessionRepo: UninstallSessionRepository,
+        pullListRepo: PullListRepository,
         warehouseRepo: WarehouseRepository,
         configService: ConfigurationService = .shared
     ) {
@@ -87,6 +89,7 @@ final class UninstallInstalledListSheetViewModel {
         self.installedRoomRepo = installedRoomRepo
         self.itemRepo = itemRepo
         self.sessionRepo = sessionRepo
+        self.pullListRepo = pullListRepo
         self.warehouseRepo = warehouseRepo
         self.configService = configService
         self.loader = ItemsListLoader(itemRepo: itemRepo)

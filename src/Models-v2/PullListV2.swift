@@ -70,25 +70,36 @@ struct PullListV2: RDDocument {
         self.image = image
     }
     
-    // TODO: - Init from Existing List (need to re-implement for InstalledListV2
-    
-//    init(
-//        list: PullListV2,
-//        listType: DocumentType
-//    ) {
-//        self.id = list.id
-//        self.listType = listType
-//        
-//        self.address = list.address
-//        self.addressId = list.address.id
-//        
-//        self.createdDate = list.createdDate
-//        self.installDate = list.installDate
-//        self.uninstallDate = list.uninstallDate
-//        
-//        self.clientId = list.clientId
-//        self.roomIds = list.roomIds
-//    }
+    // MARK: Init from an installed list
+
+    /// Builds the copy pull list produced by uninstalling an installed list.
+    /// Address, dates, and client are inherited; they're edited afterward on
+    /// the new list's own screen.
+    ///
+    /// `id` is supplied because it's pre-generated on the uninstall session so
+    /// items can be routed here before the document exists.
+    init(
+        from installedList: InstalledListV2,
+        id: String,
+        roomIds: [String],
+        essentialGroupId: String? = nil
+    ) {
+        self.id = id
+
+        self.address = installedList.address
+        self.addressId = installedList.address.id
+
+        self.createdDate = installedList.createdDate
+        self.installDate = installedList.installDate
+        self.uninstallDate = installedList.uninstallDate
+
+        self.clientId = installedList.clientId
+        self.roomIds = roomIds
+        self.unassignedItemIds = [] // copied items land in their original rooms
+        self.essentialGroupId = essentialGroupId
+        self.installingSession = nil
+        self.image = installedList.image
+    }
     
     enum CodingKeys: String, CodingKey {
         case id, address

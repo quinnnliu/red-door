@@ -19,15 +19,22 @@ final class InstalledListRoomDetailsViewModel {
     var isLoading: Bool = false
     var showAlert: Bool = false
     var alertMessage: String = ""
+    var uninstalled: Bool
 
     private var roomListener: ListenerRegistration? = nil
     private let loader: ItemsListLoader
 
-    init(room: RoomV2, roomRepo: RoomRepository, items: [ItemV2] = []) {
+    init(
+        room: RoomV2,
+        roomRepo: RoomRepository,
+        items: [ItemV2] = [],
+        uninstalled: Bool = false
+    ) {
         self.roomRepo = roomRepo
         self.itemRepo = ItemRepository()
         self.roomState = room
         self.items = items
+        self.uninstalled = uninstalled
         self.loader = ItemsListLoader(itemRepo: self.itemRepo, seed: items)
     }
 

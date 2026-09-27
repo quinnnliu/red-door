@@ -264,7 +264,13 @@ private extension InstalledListDetailsViewV2 {
 private extension InstalledListDetailsViewV2 {
     func RoomItemPreview(_ item: ItemV2, room: RoomV2) -> some View {
         Button {
-            coordinator.appendToSelectedPath(NavigationDestination.installedListItemDetailView(item: item, room: room))
+            coordinator.appendToSelectedPath(
+                NavigationDestination.installedListItemDetailView(
+                    item: item,
+                    room: room,
+                    uninstalled: viewModel.installedListState.uninstalled
+                )
+            )
         } label: {
             HStack(alignment: .center, spacing: 12) {
                 PrimaryImageView(image: item.primaryImage, size: Constants.Image.listItemDefault, isExpandable: false)
@@ -326,7 +332,8 @@ private extension InstalledListDetailsViewV2 {
             case .navigate(let room):
                 coordinator.appendToSelectedPath(NavigationDestination.installedListRoomDetailView(
                     items: viewModel.itemsByRoom[room.id] ?? [],
-                    room: room
+                    room: room,
+                    uninstalled: viewModel.installedListState.uninstalled
                 ))
             case .refreshRoom(let roomId):
                 viewModel.refreshRoom(roomId)

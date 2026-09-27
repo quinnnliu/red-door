@@ -39,8 +39,10 @@ struct InstalledListItemDetailsView: View {
                     .frameHorizontalPadding()
                 }
 
-                Footer()
-                    .frameHorizontalPadding()
+                if !viewModel.uninstalled {
+                    Footer()
+                        .frameHorizontalPadding()
+                }
             }
             .fullScreenCover(isPresented: $showQRCodeSheet) {
                 ItemV2LabelView(item: viewModel.itemState)

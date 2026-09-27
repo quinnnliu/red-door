@@ -81,6 +81,13 @@ final class UninstallSessionRepository: GenericRepository<UninstallSession> {
         try await update(id: sessionId, fields: fields)
     }
 
+    func setCopyPullListId(sessionId: String, _ copyId: String) async throws {
+        try await update(
+            id: sessionId,
+            fields: [UninstallSession.CodingKeys.copyPullListId.stringValue: copyId]
+        )
+    }
+
     func unassign(sessionId: String, itemIds: [String]) async throws {
         guard !itemIds.isEmpty else { return }
         let prefix = UninstallSession.CodingKeys.itemDestinations.stringValue

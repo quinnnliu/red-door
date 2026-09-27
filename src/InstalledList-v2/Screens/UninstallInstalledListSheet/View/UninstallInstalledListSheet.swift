@@ -68,6 +68,8 @@ struct UninstallInstalledListSheet: View {
             UninstallDestinationSheet(
                 selectedItems: viewModel.selectedItems,
                 warehouses: viewModel.warehouses,
+                copyLabel: "Copy of \(viewModel.installedListState.displayName)",
+                roomNames: viewModel.rooms.map(\.displayName),
                 action: handleAction
             )
         }
@@ -235,21 +237,12 @@ private extension UninstallInstalledListSheet {
         HStack(spacing: 8) {
             ItemListItemView(item: item, style: .installation(room: room))
 
-            VStack(alignment: .trailing, spacing: 4) {
-                if let label = viewModel.destinationLabel(for: item.id) {
-                    Text(label)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                }
-
-                RDButton(
-                    variant: .default,
-                    size: .icon,
-                    leadingIcon: SFSymbols.arrowUturnBackward
-                ) {
-                    handleAction(UninstallItemAction.unassign(itemId: item.id))
-                }
+            RDButton(
+                variant: .default,
+                size: .icon,
+                leadingIcon: SFSymbols.arrowUturnBackward
+            ) {
+                handleAction(UninstallItemAction.unassign(itemId: item.id))
             }
         }
     }
@@ -313,6 +306,15 @@ private extension UninstallInstalledListSheet {
                     await viewModel.assignSelection(
                         to: UninstallDestination(type: .warehouse, locationId: warehouseId)
                     )
+                    viewModel.showDestinationSheet = false
+                }
+
+            case .chooseCopy:
+                Task { @MainActor in
+                    // The copy's ID is minted on first use, so this can fail
+                    // and leave the sheet open rather than assigning nothing.
+                    guard let destination = await viewModel.copyDestination() else { return }
+                    await viewModel.assignSelection(to: destination)
                     viewModel.showDestinationSheet = false
                 }
             }

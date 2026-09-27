@@ -34,14 +34,10 @@ struct UninstallSession: RDDocument {
     /// The single existing pull list targeted by this session, if any.
     var existingPullListId: String?
 
-    /// Keyed by item ID. An absent key means "unassigned" — which is what makes
-    /// un-assigning a single-key delete with no cross-user conflict, and lets a
-    /// bulk assign write every selected item in one update.
+    /// Keyed by item ID.
     var itemDestinations: [String: UninstallDestination]
 
-    /// The essentials group moves as one unit: this single destination covers
-    /// the group document, all of its `itemIds`, and its `accessoriesId`.
-    /// Modelling it as one value makes a half-assigned group unrepresentable.
+    /// The essentials group moves as one unit: this single destination covers the group document.
     var essentialsDestination: UninstallDestination?
 
     init(
@@ -87,6 +83,15 @@ enum UninstallDestinationType: String, Codable {
     case warehouse
     case copy
     case existingList = "existing_list"
+}
+
+extension UninstallSession {
+    func itemIds(for type: UninstallDestinationType) -> [String] {
+        itemDestinations.filter { $0.value.type == type }.map(\.key)
+    }
+    var targetsCopy: Bool {
+        itemDestinations.values.contains { $0.type == .copy }
+    }
 }
 
 extension UninstallDestination {

@@ -53,9 +53,11 @@ extension UninstallInstalledListSheetViewModel {
 
         do {
             try await sessionRepo.commit(
-                installedListId: installedListState.id,
+                installedList: installedListState,
+                rooms: rooms,
                 itemRepo: itemRepo,
-                installedListRepo: installedListRepo
+                installedListRepo: installedListRepo,
+                pullListRepo: pullListRepo
             )
             didCommit = true
             installedListState.uninstalled = true

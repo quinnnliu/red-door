@@ -58,6 +58,27 @@ extension UninstallInstalledListSheetViewModel {
         }
     }
 
+    /// Mints the copy pull list's ID the first time anything is routed to it.
+    /// The `PullListV2` document itself isn't created until commit, so opening
+    /// this option and then backing out leaves nothing behind.
+    @MainActor
+    func copyDestination() async -> UninstallDestination? {
+        guard let session = sessionState else { return nil }
+
+        if let existing = session.copyPullListId {
+            return UninstallDestination(type: .copy, locationId: existing)
+        }
+
+        let newId = UUID().uuidString
+        do {
+            try await sessionRepo.setCopyPullListId(sessionId: session.id, newId)
+            return UninstallDestination(type: .copy, locationId: newId)
+        } catch {
+            present(error)
+            return nil
+        }
+    }
+
     @MainActor
     func unassign(itemId: String) async {
         guard let session = sessionState else { return }

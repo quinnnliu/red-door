@@ -9,14 +9,24 @@ import SwiftUI
 
 enum UninstallDestinationSheetAction {
     case chooseWarehouse(warehouseId: String)
+    case chooseCopy
 }
 
-/// Warehouse-only for now. The segmented picker and the "New list" / "Existing"
-/// options arrive with the later destination phases.
+/// Warehouse and new-list destinations. The "Existing" segment arrives with
+/// the existing-pull-list phase.
 struct UninstallDestinationSheet: View {
     let selectedItems: [ItemV2]
     let warehouses: [WarehouseV2]
+    let copyLabel: String
+    let roomNames: [String]
     let action: (Any?) -> Void
+
+    private enum Segment: Int {
+        case warehouse
+        case newList
+    }
+
+    @State private var segment: Segment = .warehouse
 
     var body: some View {
         VStack(spacing: 16) {
@@ -26,8 +36,13 @@ struct UninstallDestinationSheet: View {
 
             SelectedItemsStrip
 
+            DestinationPicker
+
             ScrollView {
-                WarehouseOptions
+                switch segment {
+                case .warehouse: WarehouseOptions
+                case .newList: NewListOption
+                }
             }
 
             Spacer(minLength: 0)
@@ -77,6 +92,18 @@ private extension UninstallDestinationSheet {
         }
     }
 
+    // MARK: DestinationPicker
+
+    var DestinationPicker: some View {
+        SegmentedPicker(
+            segments: [
+                .init("Warehouse", selectedColor: .gray) { segment = .warehouse },
+                .init("New list", selectedColor: .red) { segment = .newList }
+            ],
+            selectedIndex: segment.rawValue
+        )
+    }
+
     // MARK: WarehouseOptions
 
     var WarehouseOptions: some View {
@@ -105,5 +132,44 @@ private extension UninstallDestinationSheet {
                 .buttonStyle(.plain)
             }
         }
+    }
+
+    // MARK: NewListOption
+
+    var NewListOption: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Button {
+                action(UninstallDestinationSheetAction.chooseCopy)
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: SFSymbols.plus)
+                        .foregroundStyle(.red)
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(copyLabel)
+                            .font(.headline)
+                            .foregroundStyle(.primary)
+
+                        Text("Inherits client and dates")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer(minLength: 0)
+                }
+            }
+            .buttonStyle(.plain)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Rooms copied 1:1")
+                    .font(.subheadline)
+                    .bold()
+
+                Text("Items keep their source rooms (\(roomNames.joined(separator: ", "))).")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

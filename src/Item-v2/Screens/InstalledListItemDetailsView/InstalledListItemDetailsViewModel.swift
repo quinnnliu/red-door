@@ -20,6 +20,8 @@ final class InstalledListItemDetailsViewModel {
     var installedList: InstalledListV2?
     var rooms: [RoomV2] = []
     var availableWarehouses: [WarehouseV2] = []
+    
+    var uninstalled: Bool
 
     // MARK: - Properties
 
@@ -32,9 +34,15 @@ final class InstalledListItemDetailsViewModel {
 
     // MARK: - Initialization
 
-    init(item: ItemV2, room: RoomV2, roomRepo: RoomRepository) {
+    init(
+        item: ItemV2,
+        room: RoomV2,
+        uninstalled: Bool = false,
+        roomRepo: RoomRepository
+    ) {
         self.itemState = item
         self.room = room
+        self.uninstalled = uninstalled
         self.roomRepo = roomRepo
     }
 

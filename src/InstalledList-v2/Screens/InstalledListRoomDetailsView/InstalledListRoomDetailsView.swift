@@ -37,8 +37,10 @@ struct InstalledListRoomDetailsView: View {
 
                         Spacer()
 
-                        SmallCTA(type: .red, leadingIcon: SFSymbols.plus, text: "Add Items") {
-                            showAddItemsSheet = true
+                        if !viewModel.uninstalled {
+                            SmallCTA(type: .red, leadingIcon: SFSymbols.plus, text: "Add Items") {
+                                showAddItemsSheet = true
+                            }
                         }
                     }
 
@@ -126,7 +128,11 @@ struct InstalledListRoomDetailsView: View {
     private var RoomItemList: some View {
         LazyVStack(spacing: 12) {
             ForEach(viewModel.items, id: \.self) { item in
-                NavigationLink(value: NavigationDestination.installedListItemDetailView(item: item, room: viewModel.roomState)) {
+                NavigationLink(value: NavigationDestination.installedListItemDetailView(
+                    item: item,
+                    room: viewModel.roomState,
+                    uninstalled: viewModel.uninstalled
+                )) {
                     RoomItemListItemView(item: item)
                 }
             }
@@ -161,9 +167,11 @@ struct InstalledListRoomDetailsView: View {
 
             Spacer()
 
-            RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.trash, fullWidth: false) {
-                itemToRemove = item
-                showSelectWarehouseSheet = true
+            if !viewModel.uninstalled {
+                RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.trash, fullWidth: false) {
+                    itemToRemove = item
+                    showSelectWarehouseSheet = true
+                }
             }
         }
         .padding(12)
