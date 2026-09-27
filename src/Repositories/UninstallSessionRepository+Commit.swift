@@ -50,7 +50,20 @@ extension UninstallSessionRepository {
                     )
                 }
 
-                // 3. Mark the list uninstalled. Rooms and their itemIds are
+                // 3. Hand copied-to-existing items over as unassigned; whoever
+                //    works that pull list assigns rooms later.
+                if let existingId = session.existingPullListId, session.targetsExistingList {
+                    pullListRepo.update(
+                        id: existingId,
+                        fields: [
+                            PullListV2.CodingKeys.unassignedItemIds.stringValue:
+                                FieldValue.arrayUnion(session.itemIds(for: .existingList))
+                        ],
+                        transaction: transaction
+                    )
+                }
+
+                // 4. Mark the list uninstalled. Rooms and their itemIds are
                 //    deliberately left intact as the historical record of what
                 //    was installed where.
                 installedListRepo.update(
@@ -59,7 +72,7 @@ extension UninstallSessionRepository {
                     transaction: transaction
                 )
 
-                // 4. Consume the claim token.
+                // 5. Consume the claim token.
                 self.delete(id: installedListId, transaction: transaction)
 
                 return nil

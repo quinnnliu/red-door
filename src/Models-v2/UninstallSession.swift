@@ -92,6 +92,9 @@ extension UninstallSession {
     var targetsCopy: Bool {
         itemDestinations.values.contains { $0.type == .copy }
     }
+    var targetsExistingList: Bool {
+        itemDestinations.values.contains { $0.type == .existingList }
+    }
 }
 
 extension UninstallDestination {

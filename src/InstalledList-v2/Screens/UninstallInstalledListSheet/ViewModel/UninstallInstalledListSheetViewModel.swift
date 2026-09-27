@@ -25,6 +25,10 @@ final class UninstallInstalledListSheetViewModel {
     /// Server truth for the uninstall plan, replaced wholesale by the listener.
     var sessionState: UninstallSession? = nil
 
+    /// Resolved for display only. Fetched by ID when the session names a target
+    /// list, rather than loading every pull list up front.
+    var existingPullList: PullListV2? = nil
+
     // MARK: - Local UI state
 
     /// Ephemeral per-user state. Deliberately NOT stored on the session:

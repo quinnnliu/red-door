@@ -317,6 +317,13 @@ private extension UninstallInstalledListSheet {
                     await viewModel.assignSelection(to: destination)
                     viewModel.showDestinationSheet = false
                 }
+
+            case .chooseExistingList(let list):
+                Task { @MainActor in
+                    guard let destination = await viewModel.existingListDestination(list) else { return }
+                    await viewModel.assignSelection(to: destination)
+                    viewModel.showDestinationSheet = false
+                }
             }
 
         default:

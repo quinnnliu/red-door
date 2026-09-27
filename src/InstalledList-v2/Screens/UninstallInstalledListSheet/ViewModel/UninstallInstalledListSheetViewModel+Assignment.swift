@@ -80,6 +80,19 @@ extension UninstallInstalledListSheetViewModel {
     }
 
     @MainActor
+    func existingListDestination(_ list: PullListV2) async -> UninstallDestination? {
+        guard let session = sessionState else { return nil }
+        do {
+            try await sessionRepo.setExistingPullListId(sessionId: session.id, list.id)
+            existingPullList = list
+            return UninstallDestination(type: .existingList, locationId: list.id)
+        } catch {
+            present(error)
+            return nil
+        }
+    }
+
+    @MainActor
     func unassign(itemId: String) async {
         guard let session = sessionState else { return }
         do {
@@ -150,7 +163,7 @@ extension UninstallInstalledListSheetViewModel {
         case .copy:
             return "Copy of \(installedListState.displayName)"
         case .existingList:
-            return "Pull list"
+            return existingPullList?.displayName ?? "Pull list"
         }
     }
 }

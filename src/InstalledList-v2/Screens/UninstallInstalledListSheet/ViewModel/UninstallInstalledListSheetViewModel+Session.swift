@@ -50,9 +50,20 @@ extension UninstallInstalledListSheetViewModel {
     // MARK: handleSessionSnapshot
 
     @MainActor
+    func resolveExistingPullList(_ id: String) async {
+        do {
+            existingPullList = try await pullListRepo.get(id: id)
+        } catch {
+            existingPullList = nil
+        }
+    }
+
+    @MainActor
     func handleSessionSnapshot(_ result: Result<UninstallSession?, Error>) {
         switch result {
         case .success(let session):
+            let previousExistingId = sessionState?.existingPullListId
+
             guard let session else {
                 sessionState = nil
                 myGeneration = nil
@@ -71,6 +82,10 @@ extension UninstallInstalledListSheetViewModel {
 
             didObserveSession = true
             sessionState = session
+
+            if let existingId = session.existingPullListId, existingId != previousExistingId {
+                Task { await resolveExistingPullList(existingId) }
+            }
 
         case .failure(let error):
             present(error)

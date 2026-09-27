@@ -334,6 +334,13 @@ private extension PullListDetailsViewV2 {
                             isSelected: viewModel.isUnassignedSelected(item),
                             action: handleAction(_:)
                         )
+                        .onTapGesture {
+                            handleAction(
+                                viewModel.isUnassignedSelected(item) ?
+                                ItemListItemAction.multiSelectDeselection(item)
+                                : ItemListItemAction.multiSelectSelection(item)
+                            )
+                        }
                     }
                 }
             }

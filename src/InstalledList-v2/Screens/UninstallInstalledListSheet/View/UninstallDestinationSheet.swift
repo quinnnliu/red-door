@@ -10,10 +10,9 @@ import SwiftUI
 enum UninstallDestinationSheetAction {
     case chooseWarehouse(warehouseId: String)
     case chooseCopy
+    case chooseExistingList(PullListV2)
 }
 
-/// Warehouse and new-list destinations. The "Existing" segment arrives with
-/// the existing-pull-list phase.
 struct UninstallDestinationSheet: View {
     let selectedItems: [ItemV2]
     let warehouses: [WarehouseV2]
@@ -21,12 +20,26 @@ struct UninstallDestinationSheet: View {
     let roomNames: [String]
     let action: (Any?) -> Void
 
-    private enum Segment: Int {
+    private enum Segment: Int, CaseIterable, Identifiable {
         case warehouse
         case newList
+        case existing
+
+        var title: String {
+            switch self {
+            case .warehouse: "Warehouse"
+            case .newList: "New list"
+            case .existing: "Existing"
+            }
+        }
+
+        var id: String { "\(self)" }
     }
 
     @State private var segment: Segment = .warehouse
+
+    @State private var pullLists = DocumentListViewModelV2<PullListV2>()
+    @State private var didLoadPullLists: Bool = false
 
     var body: some View {
         VStack(spacing: 16) {
@@ -42,6 +55,7 @@ struct UninstallDestinationSheet: View {
                 switch segment {
                 case .warehouse: WarehouseOptions
                 case .newList: NewListOption
+                case .existing: ExistingListOptions
                 }
             }
 
@@ -51,6 +65,11 @@ struct UninstallDestinationSheet: View {
         .frameHorizontalPadding()
         .frameBottomPadding()
         .presentationDetents([.medium, .large])
+        .task(id: segment) {
+            guard segment == .existing, !didLoadPullLists else { return }
+            didLoadPullLists = true
+            await pullLists.refresh()
+        }
     }
 }
 
@@ -95,13 +114,12 @@ private extension UninstallDestinationSheet {
     // MARK: DestinationPicker
 
     var DestinationPicker: some View {
-        SegmentedPicker(
-            segments: [
-                .init("Warehouse", selectedColor: .gray) { segment = .warehouse },
-                .init("New list", selectedColor: .red) { segment = .newList }
-            ],
-            selectedIndex: segment.rawValue
-        )
+        Picker("Destination", selection: $segment) {
+            ForEach(Segment.allCases, id: \.self) { segment in
+                Text(segment.title).tag(segment)
+            }
+        }
+        .pickerStyle(.segmented)
     }
 
     // MARK: WarehouseOptions
@@ -171,5 +189,43 @@ private extension UninstallDestinationSheet {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: ExistingListOptions
+
+    var ExistingListOptions: some View {
+        LazyVStack(spacing: 8) {
+            ForEach(pullLists.documents, id: \.id) { list in
+                Button {
+                    action(UninstallDestinationSheetAction.chooseExistingList(list))
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: SFSymbols.pencilAndListClipboard)
+                            .foregroundStyle(.secondary)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(list.displayName)
+                                .font(.headline)
+                                .foregroundStyle(.primary)
+
+                            Text("\(list.address.getCityStateZipcode() ?? "") · \(list.roomIds.count) rooms")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+
+                        Spacer(minLength: 0)
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+
+            DocumentLoadMoreButton(
+                isLoading: pullLists.isLoading,
+                hasMore: pullLists.hasMore,
+                noMoreLabel: "No more pull lists"
+            ) {
+                await pullLists.loadMore()
+            }
+        }
     }
 }
