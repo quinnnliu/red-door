@@ -7,6 +7,11 @@
 
 import SwiftUI
 
+enum UninstallItemAction {
+    case toggleItem(itemId: String)
+    case unassign(itemId: String)
+}
+
 struct UninstallInstalledListSheet: View {
     @State private var viewModel: UninstallInstalledListSheetViewModel
 
@@ -23,6 +28,10 @@ struct UninstallInstalledListSheet: View {
             ItemListContent
 
             Spacer(minLength: 0)
+
+            if viewModel.selectionCount > 0 {
+                SelectionBar
+            }
         }
         .frameTop()
         .frameHorizontalPadding()
@@ -36,6 +45,13 @@ struct UninstallInstalledListSheet: View {
         }
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("Ok", role: .cancel) {}
+        }
+        .sheet(isPresented: $viewModel.showDestinationSheet) {
+            UninstallDestinationSheet(
+                selectedItems: viewModel.selectedItems,
+                warehouses: viewModel.warehouses,
+                action: handleAction
+            )
         }
     }
 }
@@ -80,39 +96,178 @@ private extension UninstallInstalledListSheet {
                 .tint(.red)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         } else {
-            RoomList
+            ItemList
         }
     }
 
-    // MARK: RoomList
-
-    var RoomList: some View {
+    var ItemList: some View {
         ScrollView {
-            LazyVStack(spacing: 8) {
-                ForEach(viewModel.rooms) { room in
-                    let items = viewModel.itemsByRoom[room.id] ?? []
-                    RoomListItemView(room: room, itemCount: items.count, style: .installingPullList, action: handleAction) {
-                        LazyVStack(spacing: 8) {
-                            ForEach(items) { item in
-                                ItemListItemView(item: item, style: .installation(room: room))
-                            }
+            LazyVStack(spacing: 8, pinnedViews: .sectionHeaders) {
+                Section {
+                    UnassignedRoomGroups
+                } header: {
+                    SectionHeader(
+                        "Unassigned",
+                        count: viewModel.unassignedItemsByRoom.reduce(0) { $0 + $1.items.count }
+                    )
+                }
+
+                Section {
+                    AssignedDestinationGroups
+                } header: {
+                    SectionHeader("Assigned", count: viewModel.assignedItemCount)
+                }
+            }
+        }
+    }
+
+    // MARK: UnassignedRoomGroups
+
+    /// Nothing has moved yet, so unassigned items are still grouped by the
+    /// room they're physically in.
+    var UnassignedRoomGroups: some View {
+        LazyVStack(spacing: 8) {
+            ForEach(viewModel.unassignedItemsByRoom, id: \.room.id) { entry in
+                RoomListItemView(room: entry.room, itemCount: entry.items.count, style: .installingPullList, action: handleAction) {
+                    LazyVStack(spacing: 8) {
+                        ForEach(entry.items) { item in
+                            SelectableItemRow(item, room: entry.room)
                         }
                     }
-                    .padding(4)
                 }
+                .padding(4)
+            }
+        }
+    }
+
+    // MARK: AssignedDestinationGroups
+
+    /// Once assigned, room of origin is no longer the organizing question —
+    /// items are flattened and grouped by where they're headed instead.
+    var AssignedDestinationGroups: some View {
+        LazyVStack(alignment: .leading, spacing: 16) {
+            ForEach(viewModel.assignedItemsByDestination, id: \.label) { group in
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text(group.label)
+                            .font(.subheadline)
+                            .bold()
+
+                        Spacer()
+
+                        Text("(\(group.items.count))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    ForEach(group.items, id: \.item.id) { entry in
+                        AssignedItemRow(entry.item, room: entry.room)
+                    }   
+                }
+            }
+        }
+    }
+
+    // MARK: SectionHeader
+
+    func SectionHeader(_ title: String, count: Int? = nil) -> some View {
+        HStack {
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(.red)
+
+            Spacer()
+
+            if let count = count {
+                Text("(\(count))")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .background(Color(.systemBackground))
+    }
+
+    // MARK: SelectableItemRow
+
+    /// `ItemListItemView` renders its own selection circle when handed an
+    /// action. The surrounding tap gesture makes the whole row a target too,
+    /// per the design's "tap rows to add or remove".
+    func SelectableItemRow(_ item: ItemV2, room: RoomV2) -> some View {
+        ItemListItemView(
+            item: item,
+            style: .installation(room: room),
+            isSelected: viewModel.isSelected(item.id)
+        ) { _ in
+            handleAction(UninstallItemAction.toggleItem(itemId: item.id))
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            handleAction(UninstallItemAction.toggleItem(itemId: item.id))
+        }
+    }
+
+    // MARK: AssignedItemRow
+
+    /// No action passed, so no selection circle — an assigned item is changed
+    /// by reverting it, not by re-selecting it.
+    func AssignedItemRow(_ item: ItemV2, room: RoomV2) -> some View {
+        HStack(spacing: 8) {
+            ItemListItemView(item: item, style: .installation(room: room))
+
+            VStack(alignment: .trailing, spacing: 4) {
+                if let label = viewModel.destinationLabel(for: item.id) {
+                    Text(label)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
+
+                RDButton(
+                    variant: .default,
+                    size: .icon,
+                    leadingIcon: SFSymbols.arrowUturnBackward
+                ) {
+                    handleAction(UninstallItemAction.unassign(itemId: item.id))
+                }
+            }
+        }
+    }
+
+    // MARK: SelectionBar
+
+    var SelectionBar: some View {
+        HStack(spacing: 12) {
+            Text("\(viewModel.selectionCount) selected")
+                .font(.subheadline)
+
+            Spacer()
+
+            RDButton(variant: .ghost, size: .sm, label: "Clear") {
+                viewModel.clearSelection()
+            }
+
+            RDButton(variant: .red, size: .sm, label: "Send to…") {
+                viewModel.showDestinationSheet = true
             }
         }
     }
 }
 
-// MARK: Handle Action
+// MARK: - Handle Action
 
 private extension UninstallInstalledListSheet {
     func handleAction(_ actionArgument: Any?) {
-        guard let action = actionArgument else { return }
+        switch actionArgument {
+        case let action as UninstallItemAction:
+            switch action {
+            case .toggleItem(let itemId):
+                viewModel.toggleSelection(itemId)
+            case .unassign(let itemId):
+                Task { await viewModel.unassign(itemId: itemId) }
+            }
 
-        if let roomAction = action as? RoomListItemViewAction {
-            switch roomAction {
+        case let action as RoomListItemViewAction:
+            switch action {
             case .refreshRoom(let roomId):
                 viewModel.refreshRoom(roomId)
             case .navigate:
@@ -120,6 +275,20 @@ private extension UninstallInstalledListSheet {
                 // add/remove actions would race the session's own writes.
                 return
             }
+
+        case let action as UninstallDestinationSheetAction:
+            switch action {
+            case .chooseWarehouse(let warehouseId):
+                Task { @MainActor in
+                    await viewModel.assignSelection(
+                        to: UninstallDestination(type: .warehouse, locationId: warehouseId)
+                    )
+                    viewModel.showDestinationSheet = false
+                }
+            }
+
+        default:
+            break
         }
     }
 }

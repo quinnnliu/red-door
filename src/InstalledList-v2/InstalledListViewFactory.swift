@@ -12,7 +12,9 @@ struct InstalledListViewFactory {
     private let installedListRepo: InstalledListRepository = InstalledListRepository()
     private let essentialsRepo: EssentialsRepository = EssentialsRepository()
     private let accessoriesRepo: AccessoriesRepository = AccessoriesRepository()
-
+    private let uninstallSessionRepo: UninstallSessionRepository = UninstallSessionRepository()
+    private let warehouseRepo: WarehouseRepository = WarehouseRepository()
+    
     func makeItemDetailsView(item: ItemV2, room: RoomV2) -> InstalledListItemDetailsView {
         let vm = InstalledListItemDetailsViewModel(
             item: item,
@@ -38,7 +40,9 @@ struct InstalledListViewFactory {
                 parentCollectionName: InstalledListV2.collectionName,
                 listId: list.id
             ),
-            itemRepo: itemRepo
+            itemRepo: itemRepo,
+            sessionRepo: uninstallSessionRepo,
+            warehouseRepo: warehouseRepo
         )
         return UninstallInstalledListSheet(viewModel: vm)
     }
