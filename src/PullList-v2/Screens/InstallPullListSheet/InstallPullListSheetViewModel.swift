@@ -23,7 +23,10 @@ final class InstallPullListSheetViewModel {
     var itemsCache: [String: ItemV2] = [:] // key: itemId, value: ItemV2
     var itemLocationState: [String: DocumentLocation] = [:] // key: itemId
     var warehouses: [WarehouseV2] = []
-    
+
+    var essentialsGroupState: EssentialsGroup? = nil
+    var essentialsAccessories: Accessories? = nil
+
     private var roomsListener: ListenerRegistration? = nil
 
     private let roomRepo: RoomRepository
@@ -33,6 +36,8 @@ final class InstallPullListSheetViewModel {
     private let configService: ConfigurationService
     private let installedListRepo: InstalledListRepository
     private let installedRoomRepo: RoomRepository
+    private let essentialsRepo: EssentialsRepository
+    private let accessoriesRepo: AccessoriesRepository
 
     var showAlert: Bool = false
     var alertText: String = ""
@@ -49,6 +54,8 @@ final class InstallPullListSheetViewModel {
         self.configService = configService
         self.installedListRepo = InstalledListRepository()
         self.installedRoomRepo = RoomRepository(parentCollectionName: InstalledListV2.collectionName, listId: list.id)
+        self.essentialsRepo = EssentialsRepository()
+        self.accessoriesRepo = AccessoriesRepository()
         self.rooms = rooms
         self.itemsByRoom = itemsByRoom
         for item in itemsByRoom.values.joined() {
@@ -97,6 +104,8 @@ final class InstallPullListSheetViewModel {
         for room in self.rooms {
             await fetchItemsForRoom(room)
         }
+
+        await fetchEssentialsGroup()
     }
 
     @MainActor
@@ -159,6 +168,30 @@ final class InstallPullListSheetViewModel {
         }
     }
 
+    // MARK: fetchEssentialsGroup
+
+    @MainActor
+    func fetchEssentialsGroup() async {
+        guard let groupId = pullListState.essentialGroupId else {
+            essentialsGroupState = nil
+            essentialsAccessories = nil
+            return
+        }
+        do {
+            let group = try await essentialsRepo.get(id: groupId)
+            essentialsGroupState = group
+
+            if let accessoriesId = group.accessoriesId {
+                essentialsAccessories = try await accessoriesRepo.get(id: accessoriesId)
+            } else {
+                essentialsAccessories = nil
+            }
+        } catch {
+            alertText = "Failed to load essentials group: \(error.localizedDescription)"
+            showAlert = true
+        }
+    }
+
     // MARK: clearInstallingSession
 
     func clearInstallingSession() async {
@@ -211,11 +244,14 @@ final class InstallPullListSheetViewModel {
         let installedList = InstalledListV2(from: pullListState)
         let roomSnapshot = rooms
         let stateSnapshot = itemLocationState
+        let essentialsGroupSnapshot = essentialsGroupState
         let installedListRepo = self.installedListRepo
         let installedRoomRepo = self.installedRoomRepo
         let itemRepo = self.itemRepo
         let roomRepo = self.roomRepo
         let pullListRepo = self.pullListRepo
+        let essentialsRepo = self.essentialsRepo
+        let accessoriesRepo = self.accessoriesRepo
 
         isLoading = true
         defer { isLoading = false }
@@ -240,12 +276,22 @@ final class InstallPullListSheetViewModel {
                 )
             }
 
-            // 4. Delete original pull list rooms
+            // 4. Update essentials group and accessories location to installed list
+            if let group = essentialsGroupSnapshot {
+                let installedListLocation = DocumentLocation(status: .inInstalledList, locationId: installedList.id)
+                essentialsRepo.update(id: group.id, fields: installedListLocation.firebaseUpdateFields, inBatch: batch)
+
+                if let accessoriesId = group.accessoriesId {
+                    accessoriesRepo.update(id: accessoriesId, fields: installedListLocation.firebaseUpdateFields, inBatch: batch)
+                }
+            }
+
+            // 5. Delete original pull list rooms
             for room in roomSnapshot {
                 roomRepo.delete(id: room.id, inBatch: batch)
             }
 
-            // 5. Delete original pull list document
+            // 6. Delete original pull list document
             pullListRepo.delete(id: installedList.id, inBatch: batch)
 
             try await batch.commit()

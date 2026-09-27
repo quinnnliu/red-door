@@ -30,7 +30,7 @@ struct InstallPullListSheet: View {
             RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.plus, label: "Create Installed List", fullWidth: true) {
                 viewModel.showConfirmSheet = true
             }
-            .disabled(viewModel.itemsByRoom.values.allSatisfy { $0.isEmpty })
+            .disabled(viewModel.itemsByRoom.values.contains(where: { $0.isEmpty }))
         }
         .frameTop()
         .frameHorizontalPadding()
@@ -88,6 +88,7 @@ extension InstallPullListSheet {
                             ForEach(items) { item in
                                 InstallItemListItemView(
                                     item: item,
+                                    room: room,
                                     installStates: viewModel.itemLocationState,
                                     warehouses: viewModel.warehouses,
                                     action: handleAction

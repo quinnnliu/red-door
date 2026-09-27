@@ -13,6 +13,7 @@ enum LocationStatus: String, Codable, Filterable {
     case inInstalledList = "in_installed_list"
 
     var title: String { displayTitle }
+    
     var icon: String? {
         switch self {
         case .inInstalledList: SFSymbols.houseFill
@@ -20,6 +21,7 @@ enum LocationStatus: String, Codable, Filterable {
         case .inStorage: SFSymbols.shippingbox
         }
     }
+    
     var color: Color? { nil }
 
     var displayTitle: String {

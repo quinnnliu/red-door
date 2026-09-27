@@ -461,6 +461,10 @@ private extension PullListDetailsViewV2 {
             ) {
                 handleInstallListAction()
             }
+            .disabled(
+                viewModel.itemsByRoom.values.contains(where: { $0.isEmpty })
+                || viewModel.pullListState.unassignedItemIds.count > 0
+            )
 
             ShowDetailsButton
         }

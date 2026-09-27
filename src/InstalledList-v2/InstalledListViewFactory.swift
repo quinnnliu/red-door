@@ -31,6 +31,18 @@ struct InstalledListViewFactory {
         return InstalledListRoomDetailsView(viewModel: vm)
     }
 
+    func makeUninstallSheet(list: InstalledListV2) -> UninstallInstalledListSheet {
+        let vm = UninstallInstalledListSheetViewModel(
+            list: list,
+            installedRoomRepo: RoomRepository(
+                parentCollectionName: InstalledListV2.collectionName,
+                listId: list.id
+            ),
+            itemRepo: itemRepo
+        )
+        return UninstallInstalledListSheet(viewModel: vm)
+    }
+
     func makeDetailsView(list: InstalledListV2) -> InstalledListDetailsViewV2 {
         let vm = InstalledListDetailsViewModelV2(
             list: list,

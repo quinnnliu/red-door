@@ -55,6 +55,9 @@ struct InstalledListDetailsViewV2: View {
         .frameHorizontalPadding()
         .frameBottomPadding()
         .toolbar(.hidden)
+        .fullScreenCover(isPresented: $showUninstallListCover) {
+            InstalledListViewFactory().makeUninstallSheet(list: viewModel.installedListState)
+        }
         .task {
             await viewModel.startListening()
         }
@@ -302,10 +305,12 @@ private extension InstalledListDetailsViewV2 {
 private extension InstalledListDetailsViewV2 {
     var FooterContent: some View {
         HStack {
-            RDButton(variant: .red, leadingIcon: SFSymbols.shippingbox ,label: "Uninstall List") {
-                showUninstallListCover = true
+            if !viewModel.installedListState.uninstalled {
+                RDButton(variant: .red, leadingIcon: SFSymbols.shippingbox, label: "Uninstall List") {
+                    showUninstallListCover = true
+                }
             }
-            
+
             ShowDetailsButton
         }
     }

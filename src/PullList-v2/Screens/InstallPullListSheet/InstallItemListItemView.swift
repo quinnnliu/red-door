@@ -9,13 +9,15 @@ import SwiftUI
 
 struct InstallItemListItemView: View {
     let item: ItemV2
+    let room: RoomV2
     let installStates: [String: DocumentLocation]
     let warehouses: [WarehouseV2]
     let action: (Any?) -> Void
 
     var body: some View {
-        HStack(spacing: 8) {
-            ItemListItemView(item: item, style: .display)
+        HStack(spacing: 4) {
+            ItemListItemView(item: item, style: .installation(room: room))
+                .frame(maxWidth: .infinity)
 
             VStack(alignment: .center, spacing: 4) {
                 InstallPullListStoragePicker(

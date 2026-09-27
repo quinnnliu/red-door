@@ -12,6 +12,7 @@ enum ItemListItemStyle {
     case addToDocument
     case essentialsGroup
     case display
+    case installation(room: RoomV2)
 }
 
 enum ItemListItemAction {
@@ -86,11 +87,26 @@ private extension ItemListItemView {
                 Text(item.displayName)
                     .font(.headline)
                     .foregroundStyle(.primary)
-
-                if item.location.status != .inStorage {
-                    Text("• \(item.location.status.displayTitle)")
-                        .font(.footnote)
-                        .foregroundStyle(.red)
+                
+                switch style {
+                case .installation(let room):
+                    SmallCTA(
+                        isButton: false,
+                        type: .outline,
+                        size: .small,
+                        leadingIcon: SFSymbols.houseFill,
+                        text: room.displayName,
+                        semibold: false
+                    )
+                default:
+                    SmallCTA(
+                        isButton: false,
+                        type: item.location.status.isAvailable ? .secondary: .red,
+                        size: .small,
+                        leadingIcon: item.location.status.icon,
+                        text: item.location.status.displayTitle,
+                        semibold: false
+                    )
                 }
             }
 
@@ -159,7 +175,7 @@ private extension ItemListItemView {
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
-                case .addToDocument:
+                case .addToDocument, .installation:
                     Button {
                         action(
                             isSelected ?

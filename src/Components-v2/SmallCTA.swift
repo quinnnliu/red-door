@@ -68,11 +68,62 @@ enum SmallCTAType {
     }
 }
 
+enum SmallCTASize {
+    case `default`
+    case small
+
+    var textFont: Font {
+        switch self {
+        case .default:
+            return .caption
+        case .small:
+            return .caption2
+        }
+    }
+
+    var iconFont: Font {
+        switch self {
+        case .default:
+            return .caption2.bold()
+        case .small:
+            return .system(size: 8).bold()
+        }
+    }
+
+    var horizontalPadding: CGFloat {
+        switch self {
+        case .default:
+            return 12
+        case .small:
+            return 8
+        }
+    }
+
+    var topPadding: CGFloat {
+        switch self {
+        case .default:
+            return 8
+        case .small:
+            return 5
+        }
+    }
+
+    var bottomPadding: CGFloat {
+        switch self {
+        case .default:
+            return 7
+        case .small:
+            return 4
+        }
+    }
+}
+
 struct SmallCTA: View {
     @Environment(\.isEnabled) private var isEnabled
     var isButton: Bool = true
 
     let type: SmallCTAType
+    var size: SmallCTASize = .default
 
     var leadingIcon: String?
     var leadingIconColor: Color?
@@ -85,6 +136,7 @@ struct SmallCTA: View {
     var fullWidth: Bool = false
     var semibold: Bool = true
     var action: () -> Void = {}
+    
 
     var body: some View {
         if isButton {
@@ -102,13 +154,13 @@ struct SmallCTA: View {
             if let leadingIcon {
                 Image(systemName: leadingIcon)
                     .foregroundStyle(leadingIconColor ?? textColor ?? type.foregroundColor)
-                    .font(.caption.bold())
+                    .font(size.iconFont)
                     .padding(.trailing, 4)
             }
 
             if text != "" {
                 Text(text)
-                    .font(.caption)
+                    .font(size.textFont)
                     .if(semibold) { view in
                         view.fontWeight(.semibold)
                     }
@@ -119,9 +171,9 @@ struct SmallCTA: View {
                     }
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.top, 8)
-        .padding(.bottom, 7)
+        .padding(.horizontal, size.horizontalPadding)
+        .padding(.top, size.topPadding)
+        .padding(.bottom, size.bottomPadding)
         .background(buttonColor ?? type.buttonColor)
         .overlay(
             Capsule()
@@ -142,6 +194,7 @@ struct SmallCTA: View {
         SmallCTA(type: .secondary, leadingIcon: "plus", text: "Custom Color", buttonColor: .blue, action: {})
         SmallCTA(type: .secondary, leadingIcon: "plus", text: "Not Semibold", semibold: false, action: {})
         SmallCTA(type: .secondary, leadingIcon: "checkmark", leadingIconColor: .green, text: "Custom Icon Color", action: {})
+        SmallCTA(type: .secondary, size: .small, leadingIcon: "plus", text: "Small", action: {})
     }
     .padding()
 }

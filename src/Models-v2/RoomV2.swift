@@ -54,11 +54,17 @@ extension RoomV2 {
         return roomName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: " ", with: "-")
     }
     
+    // MARK: normalizeRoomName
+    /// trimmed and lowercased form of a room name, used for equality comparison
+    static func normalizeRoomName(_ roomName: String) -> String {
+        roomName.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
     // MARK: roomExists
-    /// checks whether a new room name exists in a list of rooms
+    /// checks whether a new room name exists in a list of rooms, comparing display names
     static func roomExists(newRoomName: String, rooms: [RoomV2]) -> Bool {
-        let normalizedNewRoomName = RoomV2.nameToId(newRoomName)
-        
-        return rooms.contains { $0.id == normalizedNewRoomName }
+        let normalizedNewRoomName = normalizeRoomName(newRoomName)
+
+        return rooms.contains { normalizeRoomName($0.displayName) == normalizedNewRoomName }
     }
 }
