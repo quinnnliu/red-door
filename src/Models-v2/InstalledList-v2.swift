@@ -28,6 +28,7 @@ struct InstalledListV2: RDDocument {
     var clientId: String
     var roomIds: [String]
     var essentialGroupId: String?
+    var uninstalled: Bool
     var image: RDImage?
 
     init(from pullList: PullListV2) {
@@ -40,6 +41,7 @@ struct InstalledListV2: RDDocument {
         self.clientId = pullList.clientId
         self.roomIds = pullList.roomIds
         self.essentialGroupId = pullList.essentialGroupId
+        self.uninstalled = false
         self.image = pullList.image
     }
 
@@ -52,6 +54,7 @@ struct InstalledListV2: RDDocument {
         case clientId = "client_id"
         case roomIds = "room_ids"
         case essentialGroupId = "essential_group_id"
+        case uninstalled
         case image
     }
 }
