@@ -25,7 +25,15 @@ struct InstalledListDetailsViewV2: View {
 
             ScrollView {
                 LazyVStack(spacing: 16, pinnedViews: .sectionHeaders) {
-                    PrimaryImageView(image: viewModel.installedListState.primaryImage)
+                    HStack {
+                        PrimaryImageView(image: viewModel.installedListState.image)
+                        if viewModel.essentialsGroupState != nil {
+                            VStack {
+                                EssentialsGroupSectionHeader
+                                EssentialsGroupSectionContent
+                            }
+                        }
+                    }
 
                     Section {
                         RoomsListContent
@@ -163,6 +171,52 @@ private extension InstalledListDetailsViewV2 {
         }
         .font(.footnote)
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: EssentialsGroupSectionHeader
+    var EssentialsGroupSectionHeader: some View {
+        HStack(spacing: 16) {
+            Text("Essentials:")
+                .foregroundStyle(.red)
+                .font(.headline)
+
+            Spacer()
+        }
+        .padding(.vertical, 12)
+        .background(Color(.systemBackground))
+    }
+
+    // MARK: EssentialsGroupSectionContent
+    @ViewBuilder
+    var EssentialsGroupSectionContent: some View {
+        if let group = viewModel.essentialsGroupState {
+            LazyVStack(spacing: 8) {
+                HStack {
+                    Text(group.emoji)
+                    Text(group.displayName)
+                        .font(.subheadline)
+                    Spacer()
+                }
+                .font(.subheadline)
+                .padding(12)
+                .background(Color(.systemGray6))
+                .cornerRadius(8)
+
+                if let accessories = viewModel.essentialsAccessories {
+                    HStack {
+                        Image(systemName: SFSymbols.wrenchFill)
+                            .foregroundStyle(.secondary)
+                            .font(.caption)
+                        Text(accessories.displayName)
+                            .font(.subheadline)
+                        Spacer()
+                    }
+                    .padding(12)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(8)
+                }
+            }
+        }
     }
 
     // MARK: RoomsListHeader

@@ -10,6 +10,8 @@ import SwiftUI
 struct InstalledListViewFactory {
     private let itemRepo: ItemRepository = ItemRepository()
     private let installedListRepo: InstalledListRepository = InstalledListRepository()
+    private let essentialsRepo: EssentialsRepository = EssentialsRepository()
+    private let accessoriesRepo: AccessoriesRepository = AccessoriesRepository()
 
     func makeItemDetailsView(item: ItemV2, room: RoomV2) -> InstalledListItemDetailsView {
         let vm = InstalledListItemDetailsViewModel(
@@ -34,7 +36,9 @@ struct InstalledListViewFactory {
             list: list,
             installedListRepo: installedListRepo,
             roomRepo: RoomRepository(parentCollectionName: InstalledListV2.collectionName, listId: list.id),
-            itemRepo: itemRepo
+            itemRepo: itemRepo,
+            essentialsRepo: essentialsRepo,
+            accessoriesRepo: accessoriesRepo
         )
         return InstalledListDetailsViewV2(viewModel: vm)
     }

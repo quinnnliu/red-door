@@ -12,6 +12,10 @@ struct InstalledListV2: RDDocument {
     static let orderByField: String = "uninstall_date"
     static let searchField: String = "address_id"
 
+    static func normalizeSearchText(_ text: String) -> String {
+        Address.normalize(text)
+    }
+
     var id: String
     var address: Address
     var addressId: String
@@ -23,7 +27,8 @@ struct InstalledListV2: RDDocument {
     var uninstallDate: String
     var clientId: String
     var roomIds: [String]
-    var primaryImage: RDImage?
+    var essentialGroupId: String?
+    var image: RDImage?
 
     init(from pullList: PullListV2) {
         self.id = pullList.id
@@ -34,7 +39,8 @@ struct InstalledListV2: RDDocument {
         self.uninstallDate = pullList.uninstallDate
         self.clientId = pullList.clientId
         self.roomIds = pullList.roomIds
-        self.primaryImage = pullList.image
+        self.essentialGroupId = pullList.essentialGroupId
+        self.image = pullList.image
     }
 
     enum CodingKeys: String, CodingKey {
@@ -45,6 +51,7 @@ struct InstalledListV2: RDDocument {
         case uninstallDate = "uninstall_date"
         case clientId = "client_id"
         case roomIds = "room_ids"
-        case primaryImage = "primary_image"
+        case essentialGroupId = "essential_group_id"
+        case image
     }
 }

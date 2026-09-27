@@ -16,6 +16,9 @@ final class InstalledListDetailsViewModelV2 {
     var isLoading: Bool = false
     var itemsCache: [String: ItemV2] = [:]
 
+    var essentialsGroupState: EssentialsGroup? = nil
+    var essentialsAccessories: Accessories? = nil
+
     var showAlert: Bool = false
     var alertMessage: String = ""
 
@@ -24,6 +27,8 @@ final class InstalledListDetailsViewModelV2 {
     private let installedListRepo: InstalledListRepository
     private let roomRepo: RoomRepository
     private let itemRepo: ItemRepository
+    private let essentialsRepo: EssentialsRepository
+    private let accessoriesRepo: AccessoriesRepository
 
     // MARK: init
 
@@ -31,12 +36,16 @@ final class InstalledListDetailsViewModelV2 {
         list: InstalledListV2,
         installedListRepo: InstalledListRepository,
         roomRepo: RoomRepository,
-        itemRepo: ItemRepository
+        itemRepo: ItemRepository,
+        essentialsRepo: EssentialsRepository,
+        accessoriesRepo: AccessoriesRepository
     ) {
         self.installedListState = list
         self.installedListRepo = installedListRepo
         self.roomRepo = roomRepo
         self.itemRepo = itemRepo
+        self.essentialsRepo = essentialsRepo
+        self.accessoriesRepo = accessoriesRepo
     }
 
     deinit {
@@ -82,6 +91,7 @@ final class InstalledListDetailsViewModelV2 {
         }
 
         await refreshInstalledListDetails()
+        await fetchEssentialsGroup()
     }
 
     @MainActor
@@ -150,6 +160,30 @@ final class InstalledListDetailsViewModelV2 {
             installedListState = try await installedListRepo.get(id: installedListState.id)
         } catch {
             alertMessage = "Error refreshing installed list, please try again"
+            showAlert = true
+        }
+    }
+
+    // MARK: fetchEssentialsGroup
+
+    @MainActor
+    func fetchEssentialsGroup() async {
+        guard let groupId = installedListState.essentialGroupId else {
+            essentialsGroupState = nil
+            essentialsAccessories = nil
+            return
+        }
+        do {
+            let group = try await essentialsRepo.get(id: groupId)
+            essentialsGroupState = group
+
+            if let accessoriesId = group.accessoriesId {
+                essentialsAccessories = try await accessoriesRepo.get(id: accessoriesId)
+            } else {
+                essentialsAccessories = nil
+            }
+        } catch {
+            alertMessage = "Failed to load essentials group: \(error.localizedDescription)"
             showAlert = true
         }
     }
