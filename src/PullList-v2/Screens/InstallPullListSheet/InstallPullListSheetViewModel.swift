@@ -20,7 +20,7 @@ final class InstallPullListSheetViewModel {
     var rooms: [RoomV2] = []
     var itemsByRoom: [String: [ItemV2]] = [:] // key: roomId, value: [ItemV2]
     var isLoading: Bool = false
-    var itemsCache: [String: ItemV2] = [:] // key: itemId, value: ItemV2
+    private let loader: ItemsListLoader
     var itemLocationState: [String: DocumentLocation] = [:] // key: itemId
     var warehouses: [WarehouseV2] = []
 
@@ -58,9 +58,9 @@ final class InstallPullListSheetViewModel {
         self.accessoriesRepo = AccessoriesRepository()
         self.rooms = rooms
         self.itemsByRoom = itemsByRoom
+        self.loader = ItemsListLoader(itemRepo: self.itemRepo, seed: Array(itemsByRoom.values.joined()))
         for item in itemsByRoom.values.joined() {
             self.itemLocationState[item.id] = DocumentLocation(status: .inInstalledList, locationId: item.location.locationId)
-            self.itemsCache[item.id] = item
         }
     }
 
@@ -90,7 +90,7 @@ final class InstallPullListSheetViewModel {
     func stopListening() {
         roomsListener?.remove()
         roomsListener = nil
-        itemsCache.removeAll()
+        loader.invalidate()
         itemsByRoom.removeAll()
     }
 
@@ -120,19 +120,15 @@ final class InstallPullListSheetViewModel {
     @MainActor
     private func fetchItemsForRoom(_ room: RoomV2) async {
         do {
-            let uncachedIds = room.itemIds.filter { itemsCache[$0] == nil }
-            if !uncachedIds.isEmpty {
-                let fetched = try await itemRepo.get(ids: Array(uncachedIds))
-                for item in fetched {
-                    itemsCache[item.id] = item
-                    if itemLocationState[item.id] == nil {
-                        itemLocationState[item.id] = DocumentLocation(status: .inInstalledList, locationId: item.location.locationId)
-                    }
-                }
-            }
+            let loadedItems = try await loader.items(for: room)
+            let allItemsLoaded = loader.isComplete(room)
 
-            let loadedItems = room.itemIds.compactMap { itemsCache[$0] }.sorted { $0.displayName < $1.displayName }
-            let allItemsLoaded = room.itemIds.allSatisfy { itemsCache[$0] != nil }
+            // Default any item without an install destination yet. Runs over
+            // every loaded item rather than only the newly fetched ones — the
+            // nil check makes that equivalent and idempotent.
+            for item in loadedItems where itemLocationState[item.id] == nil {
+                itemLocationState[item.id] = DocumentLocation(status: .inInstalledList, locationId: item.location.locationId)
+            }
 
             if allItemsLoaded || room.itemIds.isEmpty {
                 itemsByRoom[room.id] = loadedItems
@@ -147,10 +143,7 @@ final class InstallPullListSheetViewModel {
 
     func refreshRoom(_ roomId: String) {
         guard let room = rooms.first(where: { $0.id == roomId }) else { return }
-        let roomItemIds = Set(room.itemIds)
-        for id in roomItemIds {
-            itemsCache.removeValue(forKey: id)
-        }
+        loader.invalidate(room.itemIds)
         Task { @MainActor in
             await fetchItemsForRoom(room)
         }
@@ -159,7 +152,7 @@ final class InstallPullListSheetViewModel {
     // MARK: refreshPullList
 
     func refreshPullList() {
-        itemsCache.removeAll()
+        loader.invalidate()
         itemsByRoom.removeAll()
         Task { @MainActor in
             for room in rooms {

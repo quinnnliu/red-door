@@ -16,7 +16,7 @@ final class PullListDetailsViewModelV2 {
     var unassignedItems: Set<ItemV2> = []
     var selectedUnassignedItems: Set<ItemV2> = []
     var isLoading: Bool = false
-    var itemsCache: [String: ItemV2] = [:] // key: itemId, value: ItemV2
+    private let loader: ItemsListLoader
 
     var essentialsGroupState: EssentialsGroup? = nil
     var essentialsAccessories: Accessories? = nil
@@ -50,6 +50,7 @@ final class PullListDetailsViewModelV2 {
         self.pullListRepo = pullListRepo
         self.essentialsRepo = essentialsRepo
         self.accessoriesRepo = accessoriesRepo
+        self.loader = ItemsListLoader(itemRepo: itemRepo)
     }
 
     deinit {
@@ -83,7 +84,7 @@ final class PullListDetailsViewModelV2 {
     func stopListening() {
         roomsListener?.remove()
         roomsListener = nil
-        itemsCache.removeAll()
+        loader.invalidate()
         itemsByRoom.removeAll()
     }
 
@@ -133,16 +134,8 @@ final class PullListDetailsViewModelV2 {
     @MainActor
     private func fetchItemsForRoom(_ room: RoomV2) async {
         do {
-            let uncachedIds = room.itemIds.filter { itemsCache[$0] == nil }
-            if !uncachedIds.isEmpty {
-                let fetched = try await itemRepo.get(ids: Array(uncachedIds))
-                for item in fetched {
-                    itemsCache[item.id] = item
-                }
-            }
-
-            let loadedItems = room.itemIds.compactMap { itemsCache[$0] }.sorted { $0.displayName < $1.displayName }
-            let allItemsLoaded = room.itemIds.allSatisfy { itemsCache[$0] != nil }
+            let loadedItems = try await loader.items(for: room)
+            let allItemsLoaded = loader.isComplete(room)
 
             if allItemsLoaded || room.itemIds.isEmpty {
                 itemsByRoom[room.id] = loadedItems
@@ -158,10 +151,7 @@ final class PullListDetailsViewModelV2 {
 
     func refreshRoom(_ roomId: String) {
         guard let room = rooms.first(where: { $0.id == roomId }) else { return }
-        let roomItemIds = Set(room.itemIds)
-        for id in roomItemIds {
-            itemsCache.removeValue(forKey: id)
-        }
+        loader.invalidate(room.itemIds)
         Task { @MainActor in
             await fetchItemsForRoom(room)
         }
@@ -170,7 +160,7 @@ final class PullListDetailsViewModelV2 {
     // MARK: refreshPullListAndRooms
 
     func refreshPullListAndRooms() {
-        itemsCache.removeAll()
+        loader.invalidate()
         itemsByRoom.removeAll()
         Task { @MainActor in
             await refreshPullListDetails()

@@ -25,7 +25,7 @@ final class EssentialsGroupDetailViewModel {
     var alertMessage: String = ""
 
     private var groupListener: ListenerRegistration? = nil
-    private var itemsCache: [String: ItemV2] = [:]
+    private let loader = ItemsListLoader()
 
     init(group: EssentialsGroup) {
         self.groupState = group
@@ -56,26 +56,19 @@ final class EssentialsGroupDetailViewModel {
     func stopListening() {
         groupListener?.remove()
         groupListener = nil
-        itemsCache.removeAll()
+        loader.invalidate()
     }
 
     @MainActor
     private func handleGroupSnapshot(_ snapshot: EssentialsGroup) async {
         isLoading = false
         groupState = snapshot
-        let uncachedIds = snapshot.itemIds.filter { itemsCache[$0] == nil }
-        if !uncachedIds.isEmpty {
-            do {
-                let fetched = try await itemRepo.get(ids: Array(uncachedIds))
-                for item in fetched {
-                    itemsCache[item.id] = item
-                }
-            } catch {
-                alertMessage = "Failed to load items: \(error.localizedDescription)"
-                showAlert = true
-            }
+        do {
+            items = try await loader.items(for: snapshot)
+        } catch {
+            alertMessage = "Failed to load items: \(error.localizedDescription)"
+            showAlert = true
         }
-        items = snapshot.itemIds.compactMap { itemsCache[$0] }.sorted { $0.displayName < $1.displayName }
 
         if let accessoriesId = snapshot.accessoriesId {
             if accessoriesState?.id != accessoriesId {
@@ -215,7 +208,7 @@ final class EssentialsGroupDetailViewModel {
                 inBatch: batch
             )
             try await batch.commit()
-            itemsCache.removeValue(forKey: item.id)
+            loader.invalidate([item.id])
         } catch {
             alertMessage = "Failed to remove \(item.displayName): \(error.localizedDescription)"
             showAlert = true

@@ -43,10 +43,6 @@ final class UninstallSessionRepository: GenericRepository<UninstallSession> {
     /// Creates the session only if absent. Returns the lock generation this
     /// caller owns, or `nil` if a session already existed (caller joins as a
     /// viewer).
-    ///
-    /// This has to be a transaction. The document ID is deterministic, so two
-    /// clients opening the flow at the same moment would both find nothing,
-    /// both write generation 1, and both believe they hold the lock.
     func createSession(id: String) async throws -> Int? {
         let ref = collectionRef.document(id)
         let result = try await db.runTransaction { transaction, errorPointer -> Any? in

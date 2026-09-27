@@ -14,7 +14,7 @@ final class InstalledListDetailsViewModelV2 {
     var rooms: [RoomV2] = []
     var itemsByRoom: [String: [ItemV2]] = [:]
     var isLoading: Bool = false
-    var itemsCache: [String: ItemV2] = [:]
+    private let loader: ItemsListLoader
 
     var essentialsGroupState: EssentialsGroup? = nil
     var essentialsAccessories: Accessories? = nil
@@ -23,6 +23,7 @@ final class InstalledListDetailsViewModelV2 {
     var alertMessage: String = ""
 
     private var roomsListener: ListenerRegistration? = nil
+    private var listListener: ListenerRegistration? = nil
 
     private let installedListRepo: InstalledListRepository
     private let roomRepo: RoomRepository
@@ -46,6 +47,7 @@ final class InstalledListDetailsViewModelV2 {
         self.itemRepo = itemRepo
         self.essentialsRepo = essentialsRepo
         self.accessoriesRepo = accessoriesRepo
+        self.loader = ItemsListLoader(itemRepo: itemRepo)
     }
 
     deinit {
@@ -70,12 +72,29 @@ final class InstalledListDetailsViewModelV2 {
                 }
             }
         }
+
+        // The rooms listener alone misses changes to the list document itself —
+        // an uninstall flips `uninstalled` without touching any room, so
+        // without this the footer would keep offering to uninstall an already
+        // uninstalled list.
+        listListener = installedListRepo.addDocumentListener(id: installedListState.id) { [weak self] result in
+            Task { @MainActor in
+                switch result {
+                case .success(let list):
+                    self?.installedListState = list
+                case .failure(let error):
+                    await self?.handleListenerError(error)
+                }
+            }
+        }
     }
 
     func stopListening() {
         roomsListener?.remove()
         roomsListener = nil
-        itemsCache.removeAll()
+        listListener?.remove()
+        listListener = nil
+        loader.invalidate()
         itemsByRoom.removeAll()
     }
 
@@ -106,16 +125,8 @@ final class InstalledListDetailsViewModelV2 {
     @MainActor
     private func fetchItemsForRoom(_ room: RoomV2) async {
         do {
-            let uncachedIds = room.itemIds.filter { itemsCache[$0] == nil }
-            if !uncachedIds.isEmpty {
-                let fetched = try await itemRepo.get(ids: Array(uncachedIds))
-                for item in fetched {
-                    itemsCache[item.id] = item
-                }
-            }
-
-            let loadedItems = room.itemIds.compactMap { itemsCache[$0] }.sorted { $0.displayName < $1.displayName }
-            let allItemsLoaded = room.itemIds.allSatisfy { itemsCache[$0] != nil }
+            let loadedItems = try await loader.items(for: room)
+            let allItemsLoaded = loader.isComplete(room)
 
             if allItemsLoaded || room.itemIds.isEmpty {
                 itemsByRoom[room.id] = loadedItems
@@ -131,10 +142,7 @@ final class InstalledListDetailsViewModelV2 {
 
     func refreshRoom(_ roomId: String) {
         guard let room = rooms.first(where: { $0.id == roomId }) else { return }
-        let roomItemIds = Set(room.itemIds)
-        for id in roomItemIds {
-            itemsCache.removeValue(forKey: id)
-        }
+        loader.invalidate(room.itemIds)
         Task { @MainActor in
             await fetchItemsForRoom(room)
         }
@@ -143,7 +151,7 @@ final class InstalledListDetailsViewModelV2 {
     // MARK: refreshInstalledListAndRooms
 
     func refreshInstalledListAndRooms() {
-        itemsCache.removeAll()
+        loader.invalidate()
         itemsByRoom.removeAll()
         Task { @MainActor in
             await refreshInstalledListDetails()

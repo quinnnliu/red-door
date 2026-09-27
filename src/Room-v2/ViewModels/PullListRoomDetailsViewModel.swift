@@ -22,7 +22,7 @@ final class PullListRoomDetailsViewModel {
     var alertMessage: String = ""
 
     private var roomListener: ListenerRegistration? = nil
-    private var itemsCache: [String: ItemV2] = [:]
+    private let loader: ItemsListLoader
 
     init(
         room: RoomV2,
@@ -33,10 +33,7 @@ final class PullListRoomDetailsViewModel {
         self.pullListRepo = PullListRepository()
         self.roomState = room
         self.items = items
-
-        for item in items {
-            itemsCache[item.id] = item
-        }
+        self.loader = ItemsListLoader(itemRepo: self.itemRepo, seed: items)
     }
     
     // MARK: - Listeners
@@ -64,7 +61,7 @@ final class PullListRoomDetailsViewModel {
     func stopListening() {
         roomListener?.remove()
         roomListener = nil
-        itemsCache.removeAll()
+        loader.invalidate()
     }
 
     @MainActor
@@ -86,15 +83,7 @@ final class PullListRoomDetailsViewModel {
     @MainActor
     private func fetchItemsForRoom(_ room: RoomV2) async {
         do {
-            let uncachedIds = room.itemIds.filter { itemsCache[$0] == nil }
-            if !uncachedIds.isEmpty {
-                let fetched = try await itemRepo.get(ids: Array(uncachedIds))
-                for item in fetched {
-                    itemsCache[item.id] = item
-                }
-            }
-
-            items = room.itemIds.compactMap { itemsCache[$0] }.sorted { $0.displayName < $1.displayName }
+            items = try await loader.items(for: room)
         } catch {
             alertMessage = "Failed to load items: \(error.localizedDescription)"
             showAlert = true
@@ -102,7 +91,7 @@ final class PullListRoomDetailsViewModel {
     }
     
     func refreshRoom() {
-        itemsCache.removeAll()
+        loader.invalidate()
         items.removeAll()
         Task { @MainActor in
             await fetchItemsForRoom(roomState)
@@ -147,7 +136,7 @@ extension PullListRoomDetailsViewModel {
                 inBatch: batch
             )
             try await batch.commit()
-            itemsCache.removeValue(forKey: item.id)
+            loader.invalidate([item.id])
             roomState.itemIds = updatedItems
         } catch {
             roomState.itemIds = originalItems
@@ -176,7 +165,7 @@ extension PullListRoomDetailsViewModel {
                 inBatch: batch
             )
             try await batch.commit()
-            itemsCache.removeValue(forKey: item.id)
+            loader.invalidate([item.id])
             roomState.itemIds = updatedItems
         } catch {
             roomState.itemIds = originalItems

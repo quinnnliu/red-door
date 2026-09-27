@@ -13,6 +13,8 @@ enum UninstallItemAction {
 }
 
 struct UninstallInstalledListSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(NavigationCoordinator.self) private var coordinator
     @State private var viewModel: UninstallInstalledListSheetViewModel
 
     init(viewModel: UninstallInstalledListSheetViewModel) {
@@ -32,6 +34,16 @@ struct UninstallInstalledListSheet: View {
             if viewModel.selectionCount > 0 {
                 SelectionBar
             }
+            
+            RDButton(
+                variant: .red,
+                size: .default,
+                label: "Confirm Uninstall",
+                disabled: !viewModel.allAssigned
+            ) {
+                viewModel.showConfirmSheet = true
+            }
+
         }
         .frameTop()
         .frameHorizontalPadding()
@@ -44,7 +56,13 @@ struct UninstallInstalledListSheet: View {
             viewModel.stopListening()
         }
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
-            Button("Ok", role: .cancel) {}
+            Button("Ok", role: .cancel) {
+                // The alert is presented from this cover, so dismissing has to
+                // wait for acknowledgement or the message is never read.
+                if viewModel.sessionEndedByOtherUser {
+                    dismiss()
+                }
+            }
         }
         .sheet(isPresented: $viewModel.showDestinationSheet) {
             UninstallDestinationSheet(
@@ -52,6 +70,9 @@ struct UninstallInstalledListSheet: View {
                 warehouses: viewModel.warehouses,
                 action: handleAction
             )
+        }
+        .sheet(isPresented: $viewModel.showConfirmSheet) {
+            ConfirmUninstallSheet(summary: viewModel.confirmUninstallSummary, action: handleAction)
         }
     }
 }
@@ -274,6 +295,15 @@ private extension UninstallInstalledListSheet {
                 // No room-details navigation while uninstalling — the room's
                 // add/remove actions would race the session's own writes.
                 return
+            }
+
+        case is ConfirmUninstallSheetAction:
+            Task { @MainActor in
+                guard await viewModel.commitUninstall() else { return }
+                // Close the cover, then pop the (now uninstalled) details view.
+                dismiss()
+                try? await Task.sleep(for: .milliseconds(250))
+                coordinator.resetSelectedPath()
             }
 
         case let action as UninstallDestinationSheetAction:
