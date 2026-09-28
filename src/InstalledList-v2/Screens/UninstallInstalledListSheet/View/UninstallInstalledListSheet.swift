@@ -29,6 +29,10 @@ struct UninstallInstalledListSheet: View {
         VStack(spacing: 16) {
             TopBar
 
+            if viewModel.isReadOnly {
+                ReadOnlyBanner
+            }
+
             ItemListContent
 
             Spacer(minLength: 0)
@@ -37,13 +41,15 @@ struct UninstallInstalledListSheet: View {
                 SelectionBar
             }
             
-            RDButton(
-                variant: .red,
-                size: .default,
-                label: "Confirm Uninstall",
-                disabled: !viewModel.allAssigned
-            ) {
-                viewModel.showConfirmSheet = true
+            if viewModel.isOwner {
+                RDButton(
+                    variant: .red,
+                    size: .default,
+                    label: "Confirm Uninstall",
+                    disabled: !viewModel.allAssigned
+                ) {
+                    viewModel.showConfirmSheet = true
+                }
             }
 
         }
@@ -110,6 +116,27 @@ private extension UninstallInstalledListSheet {
                 .clipShape(.circle)
             }
         )
+    }
+
+    // MARK: ReadOnlyBanner
+
+    /// Also where a displaced user lands mid-session, so this doubles as the
+    /// takeover affordance.
+    var ReadOnlyBanner: some View {
+        HStack(spacing: 8) {
+            Image(systemName: SFSymbols.infoCircleFill)
+                .foregroundStyle(.secondary)
+
+            Text("View only — someone is uninstalling this list")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Spacer(minLength: 0)
+
+            RDButton(variant: .red, size: .sm, label: "Take Over") {
+                Task { await viewModel.takeoverSession() }
+            }
+        }
     }
 
     // MARK: ItemListContent
@@ -242,14 +269,16 @@ private extension UninstallInstalledListSheet {
                             .foregroundStyle(.secondary)
                             .lineLimit(2)
 
-                        RDButton(
-                            variant: .default,
-                            size: .icon,
-                            leadingIcon: SFSymbols.arrowUturnBackward
-                        ) {
-                            handleAction(UninstallItemAction.unassignEssentials)
+                        if viewModel.isOwner {
+                            RDButton(
+                                variant: .default,
+                                size: .icon,
+                                leadingIcon: SFSymbols.arrowUturnBackward
+                            ) {
+                                handleAction(UninstallItemAction.unassignEssentials)
+                            }
                         }
-                    } else {
+                    } else if viewModel.isOwner {
                         Button {
                             handleAction(UninstallItemAction.toggleEssentials)
                         } label: {
@@ -303,6 +332,7 @@ private extension UninstallInstalledListSheet {
         .onTapGesture {
             handleAction(UninstallItemAction.toggleItem(itemId: item.id))
         }
+        .allowsHitTesting(viewModel.isOwner)
     }
 
     // MARK: AssignedItemRow
@@ -313,12 +343,14 @@ private extension UninstallInstalledListSheet {
         HStack(spacing: 8) {
             ItemListItemView(item: item, style: .installation(room: room))
 
-            RDButton(
-                variant: .default,
-                size: .icon,
-                leadingIcon: SFSymbols.arrowUturnBackward
-            ) {
-                handleAction(UninstallItemAction.unassign(itemId: item.id))
+            if viewModel.isOwner {
+                RDButton(
+                    variant: .default,
+                    size: .icon,
+                    leadingIcon: SFSymbols.arrowUturnBackward
+                ) {
+                    handleAction(UninstallItemAction.unassign(itemId: item.id))
+                }
             }
         }
     }

@@ -25,7 +25,7 @@ extension UninstallInstalledListSheetViewModel {
     }
 
     var allAssigned: Bool {
-        guard !isLoading, allRoomsLoaded, let session = sessionState else { return false }
+        guard isOwner, !isLoading, allRoomsLoaded, let session = sessionState else { return false }
         let itemsAssigned = allRoomItems.allSatisfy { session.itemDestinations[$0.item.id] != nil }
         let essentialsAssigned = essentialsGroupState == nil || session.essentialsDestination != nil
         return itemsAssigned && essentialsAssigned
@@ -62,6 +62,7 @@ extension UninstallInstalledListSheetViewModel {
     /// handles the surrounding view state.
     @MainActor
     func commitUninstall() async -> Bool {
+        guard isOwner else { return false }
         isLoading = true
         defer { isLoading = false }
 

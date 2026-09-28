@@ -16,6 +16,7 @@ extension UninstallInstalledListSheetViewModel {
     }
 
     func toggleSelection(_ itemId: String) {
+        guard isOwner else { return }
         if selectedItemIds.contains(itemId) {
             selectedItemIds.remove(itemId)
         } else {
@@ -35,7 +36,7 @@ extension UninstallInstalledListSheetViewModel {
     /// The group moves as a unit, so its members are selected together and
     /// never individually.
     func toggleEssentialsSelection() {
-        guard essentialsGroupState != nil else { return }
+        guard isOwner, essentialsGroupState != nil else { return }
         essentialsSelected.toggle()
         if essentialsSelected {
             selectedItemIds.formUnion(essentialsItemIds)
@@ -59,7 +60,7 @@ extension UninstallInstalledListSheetViewModel {
 
     @MainActor
     func assignSelection(to destination: UninstallDestination) async {
-        guard let session = sessionState else { return }
+        guard isOwner, let session = sessionState else { return }
         let itemIds = Array(selectedItemIds.subtracting(essentialsItemIds))
         guard !itemIds.isEmpty || essentialsSelected else { return }
 
@@ -85,7 +86,7 @@ extension UninstallInstalledListSheetViewModel {
     /// this option and then backing out leaves nothing behind.
     @MainActor
     func copyDestination() async -> UninstallDestination? {
-        guard let session = sessionState else { return nil }
+        guard isOwner, let session = sessionState else { return nil }
 
         if let existing = session.copyPullListId {
             return UninstallDestination(type: .copy, locationId: existing)
@@ -103,7 +104,7 @@ extension UninstallInstalledListSheetViewModel {
 
     @MainActor
     func existingListDestination(_ list: PullListV2) async -> UninstallDestination? {
-        guard let session = sessionState else { return nil }
+        guard isOwner, let session = sessionState else { return nil }
 
         // `PullListV2.essentialGroupId` holds a single group, so a target that
         // already has one can't also receive ours.
@@ -127,7 +128,7 @@ extension UninstallInstalledListSheetViewModel {
 
     @MainActor
     func unassignEssentials() async {
-        guard let session = sessionState else { return }
+        guard isOwner, let session = sessionState else { return }
         do {
             try await sessionRepo.assignEssentials(sessionId: session.id, destination: nil)
         } catch {
@@ -137,7 +138,7 @@ extension UninstallInstalledListSheetViewModel {
 
     @MainActor
     func unassign(itemId: String) async {
-        guard let session = sessionState else { return }
+        guard isOwner, let session = sessionState else { return }
         do {
             try await sessionRepo.unassign(sessionId: session.id, itemIds: [itemId])
         } catch {

@@ -62,6 +62,29 @@ final class UninstallSessionRepository: GenericRepository<UninstallSession> {
         return result as? Int
     }
 
+    /// Claims the lock and returns the generation this caller now holds.
+    /// A transaction rather than `FieldValue.increment` because the caller has
+    /// to know which generation it got in order to recognise being displaced.
+    func takeoverSession(id: String) async throws -> Int {
+        let ref = collectionRef.document(id)
+        let result = try await db.runTransaction { transaction, errorPointer -> Any? in
+            do {
+                let current = try transaction.getDocument(ref).data(as: UninstallSession.self)
+                let next = current.lockGeneration + 1
+                transaction.updateData(
+                    [UninstallSession.CodingKeys.lockGeneration.stringValue: next],
+                    forDocument: ref
+                )
+                return next
+            } catch {
+                errorPointer?.pointee = error as NSError
+                return nil
+            }
+        }
+        guard let generation = result as? Int else { throw RepositoryError.decodeFailure }
+        return generation
+    }
+
     // MARK: - Assignment writes
 
     /// Assigns every given item in a single write. Each item is its own map key,

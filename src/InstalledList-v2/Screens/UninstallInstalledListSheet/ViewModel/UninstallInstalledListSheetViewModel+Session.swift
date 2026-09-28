@@ -11,8 +11,8 @@ import Foundation
 
 extension UninstallInstalledListSheetViewModel {
 
-    /// Correct from the start, but not yet load-bearing: mutations are ungated
-    /// until the collaboration phase wires this into the UI.
+    /// Only the holder of the current lock generation may write. Everyone else
+    /// watches live and can take over.
     var isOwner: Bool {
         guard let mine = myGeneration, let session = sessionState else { return false }
         return mine == session.lockGeneration
@@ -59,10 +59,20 @@ extension UninstallInstalledListSheetViewModel {
     }
 
     @MainActor
+    func takeoverSession() async {
+        do {
+            myGeneration = try await sessionRepo.takeoverSession(id: installedListState.id)
+        } catch {
+            present(error)
+        }
+    }
+
+    @MainActor
     func handleSessionSnapshot(_ result: Result<UninstallSession?, Error>) {
         switch result {
         case .success(let session):
             let previousExistingId = sessionState?.existingPullListId
+            let wasOwner = isOwner
 
             guard let session else {
                 sessionState = nil
@@ -82,6 +92,12 @@ extension UninstallInstalledListSheetViewModel {
 
             didObserveSession = true
             sessionState = session
+
+            if wasOwner, !isOwner {
+                clearSelection()
+                alertMessage = "Another user took over this uninstall. You are now view-only."
+                showAlert = true
+            }
 
             if let existingId = session.existingPullListId, existingId != previousExistingId {
                 Task { await resolveExistingPullList(existingId) }
