@@ -81,8 +81,7 @@ struct AddItemToRoomDetailView: View {
                     fullWidth: true
                 ) {
                     Task {
-                        await viewModel.addItemToRoom()
-                        dismiss()
+                        if await viewModel.addItemToRoom() { dismiss() }
                     }
                 }
                 .frameHorizontalPadding()

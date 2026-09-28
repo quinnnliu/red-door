@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import FirebaseFirestore
 import SwiftUI
 
 @Observable
@@ -34,38 +33,23 @@ final class AddItemToRoomDetailViewModel {
 }
 
 extension AddItemToRoomDetailViewModel {
-    func addItemToRoom() async {
+    @MainActor
+    func addItemToRoom() async -> Bool {
         do {
-            let _ = try await roomRepo.db.runTransaction({ (transaction, errorPointer) -> Any? in
-                do {
-                    let currentRoom = try self.roomRepo.get(id: self.room.id, transaction: transaction)
-                    let newItemIds: [String] = Array(currentRoom.itemIds.union([self.item.id]))
-                    
-                    self.roomRepo.update(
-                        id: self.room.id,
-                        fields: [RoomV2.CodingKeys.itemIds.stringValue: newItemIds],
-                        transaction: transaction
-                    )
-                    guard let newLocationData = try? Firestore.Encoder().encode(
-                        DocumentLocation(status: .inPullList, locationId: self.room.listId)
-                    ) else { return nil }
-                    self.itemRepo.update(
-                        id: self.item.id,
-                        fields: [ItemV2.CodingKeys.location.stringValue: newLocationData],
-                        transaction: transaction
-                    )
-                    return nil
-                } catch {
-                    errorPointer?.pointee = error as NSError
-                    return nil
-                }
-            })
+            try await roomRepo.addItems(
+                [item.id],
+                toRoomId: room.id,
+                listId: room.listId,
+                itemRepo: itemRepo
+            )
             alertMessage = "Added \(item.displayName) to \(room.displayName)"
             showAlert = true
+            return true
         } catch {
             alertMessage = "Failed to add \(item.displayName) to \(room.displayName)"
             showAlert = true
             print("[ERROR]: Failed to add \(item.displayName) to \(room.displayName): \(error.localizedDescription)")
+            return false
         }
     }
 }

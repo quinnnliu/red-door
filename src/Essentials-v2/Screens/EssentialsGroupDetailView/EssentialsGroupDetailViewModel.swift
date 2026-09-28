@@ -31,8 +31,10 @@ final class EssentialsGroupDetailViewModel {
         self.groupState = group
     }
 
+    /// Detaches only: `deinit` can run on any thread, while the rest of
+    /// `stopListening()` mutates state the UI reads on the main thread.
     deinit {
-        stopListening()
+        groupListener?.remove()
     }
 
     // MARK: - Listeners

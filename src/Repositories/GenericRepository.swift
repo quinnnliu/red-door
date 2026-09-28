@@ -8,12 +8,22 @@
 import Firebase
 
 class GenericRepository<T: RDDocument> {
-    var collectionRef: CollectionReference
-    var db: Firestore
-    
+    /// Immutable: repositories are shared across screens and captured in task
+    /// groups and transaction closures, which Firestore runs on its own queue
+    /// and may retry. Firestore's own handles are thread-safe; these must not
+    /// become reassignable after construction.
+    let collectionRef: CollectionReference
+    let db: Firestore
+
     init(db: Firestore = Firestore.firestore()) {
         self.db = db
         self.collectionRef = db.collection(T.collectionPath)
+    }
+
+    /// For subcollections, whose path isn't derivable from `T` alone.
+    init(db: Firestore = Firestore.firestore(), collectionRef: CollectionReference) {
+        self.db = db
+        self.collectionRef = collectionRef
     }
     
     func newBatch() -> WriteBatch {

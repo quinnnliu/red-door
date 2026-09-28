@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import FirebaseFirestore
 
 @Observable
 final class AddItemToDocumentDetailViewModel {
@@ -40,85 +39,36 @@ extension AddItemToDocumentDetailViewModel {
     }
 }
 
-// MARK: - Private Transaction Methods
+// MARK: - Private Assignment Methods
 
 private extension AddItemToDocumentDetailViewModel {
 
     func addItemToPullListRoom(item: ItemV2, room: RoomV2) async {
-        let roomRepo = RoomRepository(room: room)
-        let itemRepo = self.itemRepo
-
         do {
-            let _ = try await roomRepo.db.runTransaction({ (transaction, errorPointer) -> Any? in
-                do {
-                    let currentRoom = try roomRepo.get(id: room.id, transaction: transaction)
-                    let currentNewItem = try itemRepo.get(id: item.id, transaction: transaction)
-                    guard !currentRoom.itemIds.contains(currentNewItem.id) else { throw AddItemError.itemAlreadyInDestination(currentNewItem, destinationDocument: currentRoom) }
-                    guard currentNewItem.location.status == .inStorage else { throw AddItemError.itemUnavailable(currentNewItem) }
-
-                    let newItemIds = Array(currentRoom.itemIds.union([item.id]))
-                    guard let newLocationData = try? Firestore.Encoder().encode(
-                        DocumentLocation(status: .inPullList, locationId: room.listId)
-                    ) else { return nil }
-
-                    roomRepo.update(
-                        id: room.id,
-                        fields: [RoomV2.CodingKeys.itemIds.stringValue: newItemIds],
-                        transaction: transaction
-                    )
-                    itemRepo.update(
-                        id: item.id,
-                        fields: [ItemV2.CodingKeys.location.stringValue: newLocationData],
-                        transaction: transaction
-                    )
-                    return nil
-                } catch {
-                    errorPointer?.pointee = error as NSError
-                    return nil
-                }
-            })
-        } catch let error as AddItemError {
-            handleAddItemError(error)
+            try await RoomRepository(room: room).addItems(
+                [item.id],
+                toRoomId: room.id,
+                listId: room.listId,
+                itemRepo: itemRepo
+            )
+        } catch let error as ItemAssignmentError {
+            handleAssignmentError(error, destinationDocument: room)
         } catch {
-            handleAddItemError(AddItemError.genericError(item: item, destinationDocument: room, error: error))
+            handleAddItemError(.genericError(item: item, destinationDocument: room, error: error))
         }
     }
 
     func addItemToEssentialsGroup(item: ItemV2, group: EssentialsGroup) async {
-        let essentialsRepo = EssentialsRepository()
-        let itemRepo = self.itemRepo
-
         do {
-            let _ = try await essentialsRepo.db.runTransaction({ (transaction, errorPointer) -> Any? in
-                do {
-                    let currentGroup = try essentialsRepo.get(id: group.id, transaction: transaction)
-                    let currentNewItem = try itemRepo.get(id: item.id, transaction: transaction)
-                    guard currentNewItem.location.status == .inStorage else { throw AddItemError.itemUnavailable(currentNewItem) }
-                    
-                    var newItemIds = currentGroup.itemIds
-                    guard !newItemIds.contains(item.id) else { throw AddItemError.itemAlreadyInDestination(item, destinationDocument: group) }
-                    newItemIds.insert(item.id)
-                    
-                    essentialsRepo.update(
-                        id: group.id,
-                        fields: [EssentialsGroup.CodingKeys.itemIds.stringValue: Array(newItemIds)],
-                        transaction: transaction
-                    )
-                    itemRepo.update(
-                        id: item.id,
-                        fields: [ItemV2.CodingKeys.essentialGroupId.stringValue: group.id],
-                        transaction: transaction
-                    )
-                    return nil
-                } catch {
-                    errorPointer?.pointee = error as NSError
-                    return nil
-                }
-            })
-        } catch let error as AddItemError {
-            handleAddItemError(error)
+            try await EssentialsRepository().addItems(
+                [item.id],
+                toGroupId: group.id,
+                itemRepo: itemRepo
+            )
+        } catch let error as ItemAssignmentError {
+            handleAssignmentError(error, destinationDocument: group)
         } catch {
-            handleAddItemError(AddItemError.genericError(item: item, destinationDocument: group, error: error))
+            handleAddItemError(.genericError(item: item, destinationDocument: group, error: error))
         }
     }
 }
@@ -132,6 +82,20 @@ private extension AddItemToDocumentDetailViewModel {
         case genericError(item: ItemV2, destinationDocument: any RDDocument, error: Error)
     }
     
+    /// Maps the repository's rejection onto this screen's single-item wording.
+    func handleAssignmentError(_ error: ItemAssignmentError, destinationDocument: any RDDocument) {
+        switch error {
+        case .noEligibleItems(let unavailable, let duplicates):
+            if let duplicate = duplicates.first {
+                handleAddItemError(.itemAlreadyInDestination(duplicate, destinationDocument: destinationDocument))
+            } else if let unavailableItem = unavailable.first {
+                handleAddItemError(.itemUnavailable(unavailableItem))
+            } else {
+                handleAddItemError(.genericError(item: item, destinationDocument: destinationDocument, error: error))
+            }
+        }
+    }
+
     func handleAddItemError(_ error: AddItemError) {
         switch error {
         case .itemAlreadyInDestination(let item, let destinationDocument):

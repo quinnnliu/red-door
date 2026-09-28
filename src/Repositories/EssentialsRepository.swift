@@ -46,3 +46,47 @@ final class EssentialsRepository: GenericRepository<EssentialsGroup> {
         }
     }
 }
+
+// MARK: - Add items
+
+extension EssentialsRepository {
+
+    /// Adds in-storage items to a group and tags them with the group.
+    ///
+    /// Re-reads the group and the items inside the transaction. Throws
+    /// `ItemAssignmentError.noEligibleItems` when none of them can be added.
+    func addItems(
+        _ itemIds: [String],
+        toGroupId groupId: String,
+        itemRepo: ItemRepository
+    ) async throws {
+        guard !itemIds.isEmpty else { return }
+
+        _ = try await db.runTransaction { transaction, errorPointer -> Any? in
+            do {
+                let group = try self.get(id: groupId, transaction: transaction)
+                let items = try itemRepo.get(ids: itemIds, transaction: transaction)
+                let eligible = try ItemAssignmentError.eligibleItems(from: items, alreadyIn: group.itemIds)
+
+                self.update(
+                    id: groupId,
+                    fields: [EssentialsGroup.CodingKeys.itemIds.stringValue: Array(group.itemIds.union(eligible.map(\.id)))],
+                    transaction: transaction
+                )
+
+                for item in eligible {
+                    itemRepo.update(
+                        id: item.id,
+                        fields: [ItemV2.CodingKeys.essentialGroupId.stringValue: groupId],
+                        transaction: transaction
+                    )
+                }
+
+                return nil
+            } catch {
+                errorPointer?.pointee = error as NSError
+                return nil
+            }
+        }
+    }
+}

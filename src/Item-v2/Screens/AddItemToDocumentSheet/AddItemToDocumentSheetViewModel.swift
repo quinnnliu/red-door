@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import FirebaseFirestore
 
 @Observable
 final class AddItemToDocumentSheetViewModel {
@@ -63,138 +62,41 @@ extension AddItemToDocumentSheetViewModel {
     }
 }
 
-// MARK: - Private Transaction Methods
+// MARK: - Private Assignment Methods
 
 private extension AddItemToDocumentSheetViewModel {
 
     func addItemsToPullListRoom(items: Set<ItemV2>, room: RoomV2) async -> Bool {
-        let roomRepo = RoomRepository(room: room)
-        let itemRepo = self.itemRepo
-        let itemIds = items.map { $0.id }
-
         do {
-            let _ = try await roomRepo.db.runTransaction({ (transaction, errorPointer) -> Any? in
-                do {
-                    let currentRoom = try roomRepo.get(id: room.id, transaction: transaction)
-                    let currentItems = try itemRepo.get(ids: itemIds, transaction: transaction)
-
-                    var unavailableNames: [String] = []
-                    var duplicateNames: [String] = []
-                    var validItems: [ItemV2] = []
-
-                    for item in currentItems {
-                        if item.location.status != .inStorage {
-                            unavailableNames.append(item.displayName)
-                        } else if currentRoom.itemIds.contains(item.id) {
-                            duplicateNames.append(item.displayName)
-                        } else {
-                            validItems.append(item)
-                        }
-                    }
-
-                    guard !validItems.isEmpty else {
-                        throw AddItemsError.noValidItems(
-                            unavailable: unavailableNames,
-                            duplicates: duplicateNames
-                        )
-                    }
-
-                    let newItemIds = currentRoom.itemIds.union(Set(validItems.map { $0.id }))
-
-                    guard let locationData = try? Firestore.Encoder().encode(
-                        DocumentLocation(status: .inPullList, locationId: room.listId)
-                    ) else { return nil }
-
-                    roomRepo.update(
-                        id: room.id,
-                        fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(newItemIds)],
-                        transaction: transaction
-                    )
-
-                    for item in validItems {
-                        itemRepo.update(
-                            id: item.id,
-                            fields: [ItemV2.CodingKeys.location.stringValue: locationData],
-                            transaction: transaction
-                        )
-                    }
-
-                    return nil
-                } catch {
-                    errorPointer?.pointee = error as NSError
-                    return nil
-                }
-            })
+            try await RoomRepository(room: room).addItems(
+                items.map(\.id),
+                toRoomId: room.id,
+                listId: room.listId,
+                itemRepo: itemRepo
+            )
             return true
-        } catch let error as AddItemsError {
+        } catch let error as ItemAssignmentError {
             handleError(error)
             return false
         } catch {
-            handleError(.transactionFailed(error))
+            handleError(AddItemsError.transactionFailed(error))
             return false
         }
     }
 
     func addItemsToEssentialsGroup(items: Set<ItemV2>, group: EssentialsGroup) async -> Bool {
-        let essentialsRepo = EssentialsRepository()
-        let itemRepo = self.itemRepo
-        let itemIds = items.map { $0.id }
-
         do {
-            let _ = try await essentialsRepo.db.runTransaction({ (transaction, errorPointer) -> Any? in
-                do {
-                    let currentGroup = try essentialsRepo.get(id: group.id, transaction: transaction)
-                    let currentItems = try itemRepo.get(ids: itemIds, transaction: transaction)
-
-                    var unavailableNames: [String] = []
-                    var duplicateNames: [String] = []
-                    var validItems: [ItemV2] = []
-
-                    for item in currentItems {
-                        if item.location.status != .inStorage {
-                            unavailableNames.append(item.displayName)
-                        } else if currentGroup.itemIds.contains(item.id) {
-                            duplicateNames.append(item.displayName)
-                        } else {
-                            validItems.append(item)
-                        }
-                    }
-
-                    guard !validItems.isEmpty else {
-                        throw AddItemsError.noValidItems(
-                            unavailable: unavailableNames,
-                            duplicates: duplicateNames
-                        )
-                    }
-
-                    let newItemIds = currentGroup.itemIds.union(Set(validItems.map { $0.id }))
-
-                    essentialsRepo.update(
-                        id: group.id,
-                        fields: [EssentialsGroup.CodingKeys.itemIds.stringValue: Array(newItemIds)],
-                        transaction: transaction
-                    )
-
-                    for item in validItems {
-                        itemRepo.update(
-                            id: item.id,
-                            fields: [ItemV2.CodingKeys.essentialGroupId.stringValue: group.id],
-                            transaction: transaction
-                        )
-                    }
-
-                    return nil
-                } catch {
-                    errorPointer?.pointee = error as NSError
-                    return nil
-                }
-            })
+            try await EssentialsRepository().addItems(
+                items.map(\.id),
+                toGroupId: group.id,
+                itemRepo: itemRepo
+            )
             return true
-        } catch let error as AddItemsError {
+        } catch let error as ItemAssignmentError {
             handleError(error)
             return false
         } catch {
-            handleError(.transactionFailed(error))
+            handleError(AddItemsError.transactionFailed(error))
             return false
         }
     }
@@ -206,6 +108,19 @@ private extension AddItemToDocumentSheetViewModel {
     enum AddItemsError: Error {
         case noValidItems(unavailable: [String], duplicates: [String])
         case transactionFailed(Error)
+    }
+
+    /// Maps the repository's rejection onto this screen's grouped wording.
+    func handleError(_ error: ItemAssignmentError) {
+        switch error {
+        case .noEligibleItems(let unavailable, let duplicates):
+            handleError(
+                AddItemsError.noValidItems(
+                    unavailable: unavailable.map(\.displayName),
+                    duplicates: duplicates.map(\.displayName)
+                )
+            )
+        }
     }
 
     func handleError(_ error: AddItemsError) {

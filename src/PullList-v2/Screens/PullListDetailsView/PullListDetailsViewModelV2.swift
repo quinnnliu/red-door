@@ -52,8 +52,10 @@ final class PullListDetailsViewModelV2 {
         self.loader = ItemsListLoader(itemRepo: itemRepo)
     }
 
+    /// Detaches only: `deinit` can run on any thread, while the rest of
+    /// `stopListening()` mutates state the UI reads on the main thread.
     deinit {
-        stopListening()
+        roomsListener?.remove()
     }
 
     // MARK: start / stop listening
@@ -277,39 +279,17 @@ final class PullListDetailsViewModelV2 {
     }
 
     // MARK: deletePullList
+
+    @MainActor
     func deletePullList() async {
-        let itemRepo = self.itemRepo
-        let roomRepo = self.roomRepo
-        let pullListRepo = self.pullListRepo
-        let roomSnapshot = self.rooms
-        let pullListId = self.pullListState.id
-
         do {
-            let storageLocationData = try Firestore.Encoder().encode(
-                DocumentLocation(status: .inStorage, locationId: Warehouse.warehouse1.id)
+            try await pullListRepo.delete(
+                pullListState.id,
+                rooms: rooms,
+                sendingItemsTo: Warehouse.warehouse1.id,
+                itemRepo: itemRepo,
+                roomRepo: roomRepo
             )
-
-            _ = try await pullListRepo.db.runTransaction { (transaction, errorPointer) -> Any? in
-                // Update all items: clear listId, mark as available
-                let allItemIds = roomSnapshot.flatMap { $0.itemIds }
-                for itemId in allItemIds {
-                    itemRepo.update(
-                        id: itemId,
-                        fields: [ItemV2.CodingKeys.location.stringValue: storageLocationData],
-                        transaction: transaction
-                    )
-                }
-
-                // Delete all rooms
-                for room in roomSnapshot {
-                    roomRepo.delete(id: room.id, transaction: transaction)
-                }
-
-                // Delete the pull list
-                pullListRepo.delete(id: pullListId, transaction: transaction)
-
-                return true
-            }
         } catch {
             alertMessage = "Failed to delete pull list: \(error.localizedDescription)"
             showAlert = true
@@ -377,50 +357,17 @@ extension PullListDetailsViewModelV2 {
     func assignSelectedItemsToRoom(_ room: RoomV2) async {
         guard !selectedUnassignedItems.isEmpty else { return }
 
-        let roomRepo = self.roomRepo
-        let itemRepo = self.itemRepo
-        let pullListRepo = self.pullListRepo
         let itemIds = selectedUnassignedItems.map { $0.id }
-        let pullListId = pullListState.id
 
         do {
-            let _ = try await roomRepo.db.runTransaction({ (transaction, errorPointer) -> Any? in
-                do {
-                    let currentRoom = try roomRepo.get(id: room.id, transaction: transaction)
-                    let newItemIds = currentRoom.itemIds.union(Set(itemIds))
+            try await roomRepo.assignUnassignedItems(
+                itemIds,
+                toRoomId: room.id,
+                listId: pullListState.id,
+                itemRepo: itemRepo,
+                pullListRepo: pullListRepo
+            )
 
-                    guard let locationData = try? Firestore.Encoder().encode(
-                        DocumentLocation(status: .inPullList, locationId: room.listId)
-                    ) else { return nil }
-
-                    roomRepo.update(
-                        id: room.id,
-                        fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(newItemIds)],
-                        transaction: transaction
-                    )
-
-                    for itemId in itemIds {
-                        itemRepo.update(
-                            id: itemId,
-                            fields: [ItemV2.CodingKeys.location.stringValue: locationData],
-                            transaction: transaction
-                        )
-                    }
-
-                    pullListRepo.update(
-                        id: pullListId,
-                        fields: [PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayRemove(itemIds)],
-                        transaction: transaction
-                    )
-
-                    return nil
-                } catch {
-                    errorPointer?.pointee = error as NSError
-                    return nil
-                }
-            })
-
-            // Update local state on success
             unassignedItems.subtract(selectedUnassignedItems)
             pullListState.unassignedItemIds.removeAll { itemIds.contains($0) }
             selectedUnassignedItems.removeAll()

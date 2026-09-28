@@ -29,54 +29,29 @@ final class MoveItemV2RoomSheetViewModel {
         self.item = item
     }
     
+    @MainActor
     func moveItemToNewRoom(newRoom: RoomV2) async {
         do {
-            let _ = try await roomRepo.db.runTransaction({ (transaction, errorPointer) -> Any? in
-                do {
-                    let fetchedItem = try self.itemRepo.get(id: self.item.id, transaction: transaction)
-                    let fetchedNewRoom = try self.roomRepo.get(id: newRoom.id, transaction: transaction)
-                    let fetchedCurrentRoom = try self.roomRepo.get(id: self.room.id, transaction: transaction)
-                    
-                    // TODO: better error handling
-                    guard !fetchedNewRoom.itemIds.contains(fetchedItem.id),
-                          fetchedCurrentRoom.itemIds.contains(fetchedItem.id),
-                          fetchedItem.location.locationId == fetchedCurrentRoom.listId else {
-                        self.alertMessage = "Failed to add \(self.item.displayName) to \(self.room.displayName)"
-                        self.showAlert = true
-                        print("[ERROR]: Failed to add \(self.item.displayName) to \(self.room.displayName): validation error, item is in stale state")
-                        return
-                    }
-                    
-                    var updatedCurrentRoomItemIds = fetchedCurrentRoom.itemIds
-                    updatedCurrentRoomItemIds.remove(fetchedItem.id)
-                    
-                    var updatedNewRoomItemIds = fetchedNewRoom.itemIds
-                    updatedNewRoomItemIds.insert(fetchedItem.id)
-                    
-                    self.roomRepo.update(
-                        id: fetchedCurrentRoom.id,
-                        fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(updatedCurrentRoomItemIds)],
-                        transaction: transaction
-                    )
-                    self.roomRepo.update(
-                        id: fetchedNewRoom.id,
-                        fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(updatedNewRoomItemIds)],
-                        transaction: transaction
-                    )
-                    return true
-                } catch {
-                    errorPointer?.pointee = error as NSError
-                    return false
-                }
-            })
-            
-        } catch {
-            alertMessage = "Failed to add \(item.displayName) to \(room.displayName)"
+            let outcome = try await roomRepo.moveItem(
+                item.id,
+                fromRoomId: room.id,
+                toRoomId: newRoom.id,
+                itemRepo: itemRepo
+            )
+            switch outcome {
+            case .moved:
+                alertMessage = "Added \(item.displayName) to \(newRoom.displayName)"
+            case .stale:
+                alertMessage = "Couldn't move \(item.displayName) — it already moved. Reopen the room and try again."
+            }
             showAlert = true
-            print("[ERROR]: Failed to add \(item.displayName) to \(room.displayName): \(error.localizedDescription)")
+        } catch {
+            alertMessage = "Failed to add \(item.displayName) to \(newRoom.displayName)"
+            showAlert = true
+            print("[ERROR]: Failed to move \(item.displayName) to \(newRoom.displayName): \(error.localizedDescription)")
         }
     }
-    
+
     @MainActor
     func fetchRoomsForMove() async {
         if rooms.isEmpty {

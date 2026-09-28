@@ -80,8 +80,11 @@ final class InstallPullListSheetViewModel {
         self.loader = ItemsListLoader(itemRepo: self.itemRepo, seed: Array(itemsByRoom.values.joined()))
     }
 
+    /// Detaches only: `deinit` can run on any thread, while the rest of
+    /// `stopListening()` mutates state the UI reads on the main thread.
     deinit {
-        stopListening()
+        roomsListener?.remove()
+        sessionListener?.remove()
     }
 
     // MARK: - start / stop listening

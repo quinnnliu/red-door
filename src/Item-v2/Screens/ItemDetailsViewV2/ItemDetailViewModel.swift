@@ -25,8 +25,9 @@ final class ItemDetailViewModel {
     // MARK: Listener
     private var itemListener: ListenerRegistration? = nil
 
+    /// Detaches only — `deinit` can run on any thread.
     deinit {
-        stopListening()
+        itemListener?.remove()
     }
 
     init(item: ItemV2) {

@@ -50,8 +50,11 @@ final class InstalledListDetailsViewModelV2 {
         self.loader = ItemsListLoader(itemRepo: itemRepo)
     }
 
+    /// Detaches only: `deinit` can run on any thread, while the rest of
+    /// `stopListening()` mutates state the UI reads on the main thread.
     deinit {
-        stopListening()
+        roomsListener?.remove()
+        listListener?.remove()
     }
 
     // MARK: start / stop listening

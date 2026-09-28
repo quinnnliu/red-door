@@ -38,8 +38,10 @@ final class PullListRoomDetailsViewModel {
     
     // MARK: - Listeners
 
+    /// Detaches only: `deinit` can run on any thread, while the rest of
+    /// `stopListening()` mutates state the UI reads on the main thread.
     deinit {
-        stopListening()
+        roomListener?.remove()
     }
 
     func startListening() {
@@ -115,31 +117,18 @@ extension PullListRoomDetailsViewModel {
 
     // MARK: - removeItemToWarehouse
 
+    @MainActor
     func removeItemToWarehouse(item: ItemV2, warehouse: WarehouseV2) async {
-        let originalItems = roomState.itemIds
-        var updatedItems = roomState.itemIds
-        updatedItems.remove(item.id)
-
         do {
-            let batch = roomRepo.db.batch()
-            let storageLocationData = try Firestore.Encoder().encode(
-                DocumentLocation(status: .inStorage, locationId: warehouse.id)
+            try await roomRepo.removeItem(
+                item.id,
+                fromRoomId: roomState.id,
+                toWarehouseId: warehouse.id,
+                itemRepo: itemRepo
             )
-            itemRepo.update(
-                id: item.id,
-                fields: [ItemV2.CodingKeys.location.stringValue: storageLocationData],
-                inBatch: batch
-            )
-            roomRepo.update(
-                id: roomState.id,
-                fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(updatedItems)],
-                inBatch: batch
-            )
-            try await batch.commit()
             loader.invalidate([item.id])
-            roomState.itemIds = updatedItems
+            roomState.itemIds.remove(item.id)
         } catch {
-            roomState.itemIds = originalItems
             alertMessage = "Failed to remove item: \(error.localizedDescription)"
             showAlert = true
         }
@@ -147,33 +136,23 @@ extension PullListRoomDetailsViewModel {
 
     // MARK: - moveItemToUnassigned
 
+    @MainActor
     func moveItemToUnassigned(item: ItemV2) async {
-        let originalItems = roomState.itemIds
-        var updatedItems = roomState.itemIds
-        updatedItems.remove(item.id)
-
         do {
-            let batch = roomRepo.db.batch()
-            roomRepo.update(
-                id: roomState.id,
-                fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(updatedItems)],
-                inBatch: batch
+            try await roomRepo.unassignItem(
+                item.id,
+                fromRoomId: roomState.id,
+                listId: roomState.listId,
+                pullListRepo: pullListRepo
             )
-            pullListRepo.update(
-                id: roomState.listId,
-                fields: [PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayUnion([item.id])],
-                inBatch: batch
-            )
-            try await batch.commit()
             loader.invalidate([item.id])
-            roomState.itemIds = updatedItems
+            roomState.itemIds.remove(item.id)
         } catch {
-            roomState.itemIds = originalItems
             alertMessage = "Failed to unassign item: \(error.localizedDescription)"
             showAlert = true
         }
     }
-    
+
     // MARK: - deleteRoom
     
     func deleteRoom() async {

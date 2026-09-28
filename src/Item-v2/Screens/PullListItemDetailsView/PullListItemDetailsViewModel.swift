@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import Firebase
 
 @Observable
 final class PullListItemDetailsViewModel {
@@ -58,37 +57,14 @@ final class PullListItemDetailsViewModel {
 
     @MainActor
     func removeItemToWarehouse(warehouse: WarehouseV2) async -> Bool {
-        let itemRepo = self.itemRepo
-        let roomRepo = self.roomRepo
-        let itemId = itemState.id
-        let roomId = room.id
-
         do {
-            let result = try await itemRepo.db.runTransaction { (transaction, errorPointer) -> Any? in
-                do {
-                    var currentRoom = try roomRepo.get(id: roomId, transaction: transaction)
-                    currentRoom.itemIds.remove(itemId)
-
-                    guard let storageLocationData = try? Firestore.Encoder().encode(
-                        DocumentLocation(status: .inStorage, locationId: warehouse.id)
-                    ) else { return false }
-                    itemRepo.update(
-                        id: itemId,
-                        fields: [ItemV2.CodingKeys.location.stringValue: storageLocationData],
-                        transaction: transaction
-                    )
-                    roomRepo.update(
-                        id: roomId,
-                        fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(currentRoom.itemIds)],
-                        transaction: transaction
-                    )
-                } catch {
-                    errorPointer?.pointee = error as NSError
-                    return false
-                }
-                return true
-            }
-            return result as? Bool ?? false
+            try await roomRepo.removeItem(
+                itemState.id,
+                fromRoomId: room.id,
+                toWarehouseId: warehouse.id,
+                itemRepo: itemRepo
+            )
+            return true
         } catch {
             alertMessage = "Failed to remove item from room: \(error.localizedDescription)"
             showAlert = true
@@ -100,35 +76,14 @@ final class PullListItemDetailsViewModel {
 
     @MainActor
     func moveItemToUnassigned() async -> Bool {
-        let roomRepo = self.roomRepo
-        let listRepo = self.listRepo
-        let itemId = itemState.id
-        let roomId = room.id
-        let listId = room.listId
-
         do {
-            let result = try await roomRepo.db.runTransaction { (transaction, errorPointer) -> Any? in
-                do {
-                    var currentRoom = try roomRepo.get(id: roomId, transaction: transaction)
-                    currentRoom.itemIds.remove(itemId)
-
-                    roomRepo.update(
-                        id: roomId,
-                        fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(currentRoom.itemIds)],
-                        transaction: transaction
-                    )
-                    listRepo.update(
-                        id: listId,
-                        fields: [PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayUnion([itemId])],
-                        transaction: transaction
-                    )
-                } catch {
-                    errorPointer?.pointee = error as NSError
-                    return false
-                }
-                return true
-            }
-            return result as? Bool ?? false
+            try await roomRepo.unassignItem(
+                itemState.id,
+                fromRoomId: room.id,
+                listId: room.listId,
+                pullListRepo: listRepo
+            )
+            return true
         } catch {
             alertMessage = "Failed to unassign item: \(error.localizedDescription)"
             showAlert = true
@@ -148,39 +103,21 @@ final class PullListItemDetailsViewModel {
         }
     }
 
+    @MainActor
     func moveItemToNewRoom(newRoom: RoomV2) async {
-        let itemRepo = self.itemRepo
-        let roomRepo = self.roomRepo
-        let item = self.itemState
-        let currentRoom = self.room
-
         do {
-            let _ = try await roomRepo.db.runTransaction { (transaction, errorPointer) -> Any? in
-                do {
-                    let fetchedItem = try itemRepo.get(id: item.id, transaction: transaction)
-                    let fetchedNewRoom = try roomRepo.get(id: newRoom.id, transaction: transaction)
-                    let fetchedCurrentRoom = try roomRepo.get(id: currentRoom.id, transaction: transaction)
-
-                    guard !fetchedNewRoom.itemIds.contains(fetchedItem.id),
-                          fetchedCurrentRoom.itemIds.contains(fetchedItem.id),
-                          fetchedItem.location.locationId == fetchedCurrentRoom.listId else {
-                        return nil
-                    }
-
-                    var updatedCurrentIds = fetchedCurrentRoom.itemIds
-                    updatedCurrentIds.remove(fetchedItem.id)
-                    var updatedNewIds = fetchedNewRoom.itemIds
-                    updatedNewIds.insert(fetchedItem.id)
-
-                    roomRepo.update(id: fetchedCurrentRoom.id, fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(updatedCurrentIds)], transaction: transaction)
-                    roomRepo.update(id: fetchedNewRoom.id, fields: [RoomV2.CodingKeys.itemIds.stringValue: Array(updatedNewIds)], transaction: transaction)
-                    return true
-                } catch {
-                    errorPointer?.pointee = error as NSError
-                    return nil
-                }
+            let outcome = try await roomRepo.moveItem(
+                itemState.id,
+                fromRoomId: room.id,
+                toRoomId: newRoom.id,
+                itemRepo: itemRepo
+            )
+            switch outcome {
+            case .moved:
+                alertMessage = "Moved \(itemState.displayName) to \(newRoom.displayName)"
+            case .stale:
+                alertMessage = "Couldn't move \(itemState.displayName) — it already moved. Reopen the room and try again."
             }
-            alertMessage = "Moved \(item.displayName) to \(newRoom.displayName)"
             showAlert = true
         } catch {
             alertMessage = "Failed to move item: \(error.localizedDescription)"
