@@ -1,5 +1,5 @@
 //
-//  UninstallSessionRepository.swift
+//  ListSessionRepository.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 9/27/26.
@@ -7,7 +7,9 @@
 
 import Firebase
 
-final class UninstallSessionRepository: GenericRepository<UninstallSession> {
+/// Shared session lifecycle and destination writes. Concrete subclasses add
+/// only the parts specific to their flow, including the commit transaction.
+class ListSessionRepository<T: ListSessionDocument>: GenericRepository<T> {
 
     // MARK: - Listener
 
@@ -19,7 +21,7 @@ final class UninstallSessionRepository: GenericRepository<UninstallSession> {
     /// and surfaces deletion as a `.failure` indistinguishable from a real error.
     func addSessionListener(
         id: String,
-        onChange: @escaping (Result<UninstallSession?, Error>) -> Void
+        onChange: @escaping (Result<T?, Error>) -> Void
     ) -> ListenerRegistration {
         collectionRef.document(id).addSnapshotListener { snapshot, error in
             if let error {
@@ -31,7 +33,7 @@ final class UninstallSessionRepository: GenericRepository<UninstallSession> {
                 return
             }
             do {
-                onChange(.success(try snapshot.data(as: UninstallSession.self)))
+                onChange(.success(try snapshot.data(as: T.self)))
             } catch {
                 onChange(.failure(error))
             }
@@ -43,16 +45,17 @@ final class UninstallSessionRepository: GenericRepository<UninstallSession> {
     /// Creates the session only if absent. Returns the lock generation this
     /// caller owns, or `nil` if a session already existed (caller joins as a
     /// viewer).
+    ///
+    /// This has to be a transaction. The document ID is deterministic, so two
+    /// clients opening the flow at the same moment would both find nothing,
+    /// both write generation 1, and both believe they hold the lock.
     func createSession(id: String) async throws -> Int? {
         let ref = collectionRef.document(id)
         let result = try await db.runTransaction { transaction, errorPointer -> Any? in
             do {
                 let snapshot = try transaction.getDocument(ref)
                 guard !snapshot.exists else { return nil }
-                try transaction.setData(
-                    from: UninstallSession(id: id, lockGeneration: 1),
-                    forDocument: ref
-                )
+                try transaction.setData(from: T.newSession(id: id), forDocument: ref)
                 return 1
             } catch {
                 errorPointer?.pointee = error as NSError
@@ -69,12 +72,9 @@ final class UninstallSessionRepository: GenericRepository<UninstallSession> {
         let ref = collectionRef.document(id)
         let result = try await db.runTransaction { transaction, errorPointer -> Any? in
             do {
-                let current = try transaction.getDocument(ref).data(as: UninstallSession.self)
+                let current = try transaction.getDocument(ref).data(as: T.self)
                 let next = current.lockGeneration + 1
-                transaction.updateData(
-                    [UninstallSession.CodingKeys.lockGeneration.stringValue: next],
-                    forDocument: ref
-                )
+                transaction.updateData([T.lockGenerationField: next], forDocument: ref)
                 return next
             } catch {
                 errorPointer?.pointee = error as NSError
@@ -92,44 +92,22 @@ final class UninstallSessionRepository: GenericRepository<UninstallSession> {
     func assign(
         sessionId: String,
         itemIds: [String],
-        destination: UninstallDestination
+        destination: T.Destination
     ) async throws {
         guard !itemIds.isEmpty else { return }
         let encoded = try Firestore.Encoder().encode(destination)
-        let prefix = UninstallSession.CodingKeys.itemDestinations.stringValue
         var fields: [String: Any] = [:]
         for itemId in itemIds {
-            fields["\(prefix).\(itemId)"] = encoded
+            fields["\(T.itemDestinationsField).\(itemId)"] = encoded
         }
         try await update(id: sessionId, fields: fields)
     }
 
-    func setCopyPullListId(sessionId: String, _ copyId: String) async throws {
-        try await update(
-            id: sessionId,
-            fields: [UninstallSession.CodingKeys.copyPullListId.stringValue: copyId]
-        )
-    }
-
-    func assignEssentials(sessionId: String, destination: UninstallDestination?) async throws {
-        let key = UninstallSession.CodingKeys.essentialsDestination.stringValue
-        let value: Any = try destination.map { try Firestore.Encoder().encode($0) } ?? FieldValue.delete()
-        try await update(id: sessionId, fields: [key: value])
-    }
-
-    func setExistingPullListId(sessionId: String, _ listId: String) async throws {
-        try await update(
-            id: sessionId,
-            fields: [UninstallSession.CodingKeys.existingPullListId.stringValue: listId]
-        )
-    }
-
     func unassign(sessionId: String, itemIds: [String]) async throws {
         guard !itemIds.isEmpty else { return }
-        let prefix = UninstallSession.CodingKeys.itemDestinations.stringValue
         var fields: [String: Any] = [:]
         for itemId in itemIds {
-            fields["\(prefix).\(itemId)"] = FieldValue.delete()
+            fields["\(T.itemDestinationsField).\(itemId)"] = FieldValue.delete()
         }
         try await update(id: sessionId, fields: fields)
     }

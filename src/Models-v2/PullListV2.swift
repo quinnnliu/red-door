@@ -33,7 +33,6 @@ struct PullListV2: RDDocument {
     var roomIds: [String]
     var unassignedItemIds: [String]
     var essentialGroupId: String?
-    var installingSession: InstallingSession?
     var image: RDImage?
 
     init(
@@ -50,7 +49,6 @@ struct PullListV2: RDDocument {
         roomIds: [String] = [],
         unassignedItemIds: [String] = [],
         essentialGroupId: String? = nil,
-        installingSession: InstallingSession? = nil,
         image: RDImage? = nil
     ) {
         self.id = id
@@ -66,7 +64,6 @@ struct PullListV2: RDDocument {
         self.roomIds = roomIds
         self.unassignedItemIds = unassignedItemIds
         self.essentialGroupId = essentialGroupId
-        self.installingSession = installingSession
         self.image = image
     }
     
@@ -98,7 +95,6 @@ struct PullListV2: RDDocument {
         self.roomIds = roomIds
         self.unassignedItemIds = unassignedItemIds
         self.essentialGroupId = essentialGroupId
-        self.installingSession = nil
         self.image = installedList.image
     }
     
@@ -112,7 +108,6 @@ struct PullListV2: RDDocument {
         case roomIds = "room_ids"
         case unassignedItemIds = "unassigned_item_ids"
         case essentialGroupId = "essential_group_id"
-        case installingSession = "installing_session"
         case image
     }
 }
@@ -128,14 +123,4 @@ enum NewEnglandState: String, Filterable, CaseIterable, Codable {
     var title: String { rawValue }
     var icon: String? { nil }
     var color: Color? { nil }
-}
-
-struct InstallingSession: Codable, Hashable {
-    let userId: String
-    let startedAt: Date
-
-    enum CodingKeys: String, CodingKey {
-        case userId = "user_id"
-        case startedAt = "started_at"
-    }
 }

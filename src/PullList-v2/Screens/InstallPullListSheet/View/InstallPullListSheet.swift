@@ -22,25 +22,38 @@ struct InstallPullListSheet: View {
     var body: some View {
         VStack(spacing: 16) {
             TopBar
-            
-            RoomList
-            
-            Spacer()
-            
-            RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.plus, label: "Create Installed List", fullWidth: true) {
-                viewModel.showConfirmSheet = true
+
+            if viewModel.isReadOnly {
+                ReadOnlyBanner
             }
-            .disabled(viewModel.itemsByRoom.values.contains(where: { $0.isEmpty }))
+
+            RoomList
+
+            Spacer()
+
+            if viewModel.isOwner {
+                RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.plus, label: "Create Installed List", fullWidth: true) {
+                    viewModel.showConfirmSheet = true
+                }
+            }
         }
         .frameTop()
         .frameHorizontalPadding()
         .frameBottomPadding()
         .task {
-            viewModel.startListening()
-            await viewModel.getWarehouses()
+            await viewModel.startListening()
+        }
+        .onDisappear {
+            viewModel.stopListening()
         }
         .alert(viewModel.alertText, isPresented: $viewModel.showAlert) {
-            Button("Ok", role: .cancel) {}
+            Button("Ok", role: .cancel) {
+                // The alert is presented from this sheet, so dismissing has to
+                // wait for acknowledgement or the message is never read.
+                if viewModel.sessionEndedByOtherUser {
+                    dismiss()
+                }
+            }
         }
         .sheet(isPresented: $viewModel.showConfirmSheet) {
             ConfirmInstallSheet(summary: viewModel.confirmInstallSummary, action: handleAction(_:))
@@ -54,11 +67,7 @@ extension InstallPullListSheet {
     var TopBar: some View {
         TopAppBar(
             leadingView: {
-                BackButton(action: {
-                    Task {
-                        await viewModel.clearInstallingSession()
-                    }
-                })
+                BackButton()
             },
             header: {
                 (
@@ -76,6 +85,27 @@ extension InstallPullListSheet {
         )
     }
     
+    // MARK: ReadOnlyBanner
+
+    /// Also where a displaced user lands mid-session, so this doubles as the
+    /// takeover affordance.
+    var ReadOnlyBanner: some View {
+        HStack(spacing: 8) {
+            Image(systemName: SFSymbols.infoCircleFill)
+                .foregroundStyle(.secondary)
+
+            Text("View only — someone is installing this list")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Spacer(minLength: 0)
+
+            RDButton(variant: .red, size: .sm, label: "Take Over") {
+                Task { await viewModel.takeoverSession() }
+            }
+        }
+    }
+
     // MARK: RoomItemList
 
     private var RoomList: some View {
@@ -89,10 +119,11 @@ extension InstallPullListSheet {
                                 InstallItemListItemView(
                                     item: item,
                                     room: room,
-                                    installStates: viewModel.itemLocationState,
+                                    installStates: viewModel.resolvedItemDestinations,
                                     warehouses: viewModel.warehouses,
                                     action: handleAction
                                 )
+                                .allowsHitTesting(viewModel.isOwner)
                             }
                         }
                     }
@@ -127,21 +158,19 @@ extension InstallPullListSheet {
         case let roomAction as InstallPullListRoomAction:
             switch roomAction {
             case .installItem(let itemId):
-                viewModel.itemLocationState.updateValue(DocumentLocation(status: .inInstalledList, locationId: viewModel.pullListState.id), forKey: itemId)
+                Task { await viewModel.installItem(itemId: itemId) }
             case .storeItem(let itemId, let warehouseId):
-                viewModel.itemLocationState.updateValue(DocumentLocation(status: .inStorage, locationId: warehouseId), forKey: itemId)
+                Task { await viewModel.storeItem(itemId: itemId, warehouseId: warehouseId) }
             }
         case let confirmAction as ConfirmInstallSheetAction:
             switch confirmAction {
             case .confirm:
                 Task { @MainActor in
                     if let installedList = await viewModel.createInstalledList(), !viewModel.showAlert {
-                        try? await Task.sleep(for: .milliseconds(250))
+                        try? await Task.sleep(for: .milliseconds(500))
                         coordinator.resetSelectedPath()
-                        try? await Task.sleep(for: .milliseconds(250))
+                        try? await Task.sleep(for: .milliseconds(500))
                         coordinator.setSelectedTab(to: .installedListV2)
-                        try? await Task.sleep(for: .milliseconds(250))
-                        coordinator.appendToSelectedPath(NavigationDestination.installedListDetailView(installedList))
                     }
                 }
             }

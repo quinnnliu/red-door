@@ -67,16 +67,6 @@ struct PullListDetailsViewV2: View {
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("Ok", role: .cancel) {}
         }
-        .alert("Install in Progress", isPresented: $viewModel.showInstallBlockedAlert) {
-            Button("Clear Lock", role: .destructive) {
-                viewModel.clearInstallingSession()
-            }
-            Button("Cancel", role: .cancel) {
-                Task { await viewModel.refreshPullListDetails() }
-            }
-        } message: {
-            Text(viewModel.getInstallBlockedMessage())
-        }
         .sheet(isPresented: $showSelectWarehouseSheet) {
             SelectDocumentSheet(
                 title: "Select Storage Location",
@@ -167,12 +157,6 @@ private extension PullListDetailsViewV2 {
 
                 Button("Refresh", systemImage: SFSymbols.arrowCounterclockwise) {
                     viewModel.refreshPullListAndRooms()
-                }
-
-                if viewModel.pullListState.installingSession != nil {
-                    Button("Clear Install Lock", systemImage: SFSymbols.xmark, role: .destructive) {
-                        viewModel.clearInstallingSession()
-                    }
                 }
 
                 Button("Delete", systemImage: SFSymbols.trash, role: .destructive) {
@@ -461,17 +445,14 @@ private extension PullListDetailsViewV2 {
     var FooterContent: some View {
         HStack {
             RDButton(
-                variant: viewModel.canOpenInstallSheet ? .red : .secondary,
-                leadingIcon: viewModel.canOpenInstallSheet ?  SFSymbols.truckBoxBadgeClockFill : SFSymbols.lockFill,
-                label: viewModel.canOpenInstallSheet ? "Begin Install" : "Being Installed...",
+                variant: .red,
+                leadingIcon: SFSymbols.truckBoxBadgeClockFill,
+                label: "Begin Install",
                 fullWidth: true
             ) {
-                handleInstallListAction()
+                showInstallListSheet = true
             }
-            .disabled(
-                viewModel.itemsByRoom.values.contains(where: { $0.isEmpty })
-                || viewModel.pullListState.unassignedItemIds.count > 0
-            )
+            .disabled(viewModel.pullListState.unassignedItemIds.count > 0)
 
             ShowDetailsButton
         }
@@ -526,16 +507,4 @@ private extension PullListDetailsViewV2 {
         }
     }
 
-    func handleInstallListAction() {
-        if viewModel.canOpenInstallSheet {
-            Task {
-                let didCreate = await viewModel.createInstallingSession()
-                if didCreate {
-                    showInstallListSheet = true
-                }
-            }
-        } else {
-            viewModel.showInstallBlockedAlert = true
-        }
-    }
 }

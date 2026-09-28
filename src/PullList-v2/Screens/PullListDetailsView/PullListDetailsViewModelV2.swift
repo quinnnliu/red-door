@@ -32,7 +32,6 @@ final class PullListDetailsViewModelV2 {
 
     var showAlert: Bool = false
     var alertMessage: String = ""
-    var showInstallBlockedAlert: Bool = false
 
     // MARK: init
 
@@ -318,66 +317,6 @@ final class PullListDetailsViewModelV2 {
     }
 
     // MARK: computedProperties
-
-    var canOpenInstallSheet: Bool {
-        pullListState.installingSession == nil
-    }
-
-    func getInstallBlockedMessage() -> String {
-        guard let session = pullListState.installingSession else { return "" }
-        return "This list is currently being installed by \(session.userId)"
-    }
-
-    // MARK: clearInstallingSession
-
-    func clearInstallingSession() {
-        let pullListId = pullListState.id
-        Task {
-            do {
-                try await pullListRepo.update(
-                    id: pullListId,
-                    fields: [PullListV2.CodingKeys.installingSession.stringValue: NSNull()]
-                )
-                pullListState.installingSession = nil
-                alertMessage = "Install lock cleared"
-                showAlert = true
-            } catch {
-                alertMessage = "Failed to clear install lock: \(error.localizedDescription)"
-                showAlert = true
-            }
-        }
-    }
-
-    // MARK: createInstallingSession
-
-    func createInstallingSession() async -> Bool {
-        let pullListId = pullListState.id
-
-        do {
-            let freshList = try await pullListRepo.get(id: pullListId)
-            guard freshList.installingSession == nil else {
-                alertMessage = "This list is currently being installed by \(freshList.installingSession?.userId ?? "another user")"
-                showInstallBlockedAlert = true
-                return false
-            }
-
-            let session = InstallingSession(userId: "another user", startedAt: Date())
-            let sessionData: [String: AnyHashable] = [
-                InstallingSession.CodingKeys.userId.stringValue: session.userId,
-                InstallingSession.CodingKeys.startedAt.stringValue: session.startedAt
-            ]
-            try await pullListRepo.update(
-                id: pullListId,
-                fields: [PullListV2.CodingKeys.installingSession.stringValue: sessionData]
-            )
-            pullListState.installingSession = session
-            return true
-        } catch {
-            alertMessage = "Failed to create install session: \(error.localizedDescription)"
-            showAlert = true
-            return false
-        }
-    }
 }
 
 extension PullListDetailsViewModelV2 {

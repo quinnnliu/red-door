@@ -14,7 +14,7 @@ import Foundation
 /// The document ID is always the `InstalledListV2.id`, which makes "is an
 /// uninstall in progress?" a single `get(id:)` and gives the create path a
 /// deterministic target.
-struct UninstallSession: RDDocument {
+struct UninstallSession: ListSessionDocument {
     static let collectionName: String = "uninstall_sessions"
     static let orderByField: String = UninstallSession.CodingKeys.id.stringValue
     static let searchField: String = UninstallSession.CodingKeys.id.stringValue
@@ -55,6 +55,12 @@ struct UninstallSession: RDDocument {
         self.itemDestinations = itemDestinations
         self.essentialsDestination = essentialsDestination
     }
+
+    static func newSession(id: String) -> UninstallSession {
+        UninstallSession(id: id, lockGeneration: 1)
+    }
+    static var lockGenerationField: String { CodingKeys.lockGeneration.stringValue }
+    static var itemDestinationsField: String { CodingKeys.itemDestinations.stringValue }
 
     enum CodingKeys: String, CodingKey {
         case id
