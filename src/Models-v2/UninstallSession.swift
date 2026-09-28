@@ -90,10 +90,14 @@ extension UninstallSession {
         itemDestinations.filter { $0.value.type == type }.map(\.key)
     }
     var targetsCopy: Bool {
-        itemDestinations.values.contains { $0.type == .copy }
+        targets(.copy)
     }
     var targetsExistingList: Bool {
-        itemDestinations.values.contains { $0.type == .existingList }
+        targets(.existingList)
+    }
+    private func targets(_ type: UninstallDestinationType) -> Bool {
+        itemDestinations.values.contains { $0.type == type }
+            || essentialsDestination?.type == type
     }
 }
 

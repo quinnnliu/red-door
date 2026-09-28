@@ -57,6 +57,31 @@ extension UninstallInstalledListSheetViewModel {
         }
     }
 
+    // MARK: loadEssentialsGroup
+
+    @MainActor
+    func loadEssentialsGroup() async {
+        guard let groupId = installedListState.essentialGroupId else {
+            essentialsGroupState = nil
+            essentialsAccessories = nil
+            essentialsItems = []
+            return
+        }
+
+        do {
+            let group = try await essentialsRepo.get(id: groupId)
+            essentialsGroupState = group
+            essentialsItems = try await loader.items(for: group)
+            if let accessoriesId = group.accessoriesId {
+                essentialsAccessories = try await accessoriesRepo.get(id: accessoriesId)
+            } else {
+                essentialsAccessories = nil
+            }
+        } catch {
+            present(error)
+        }
+    }
+
     // MARK: refreshItems
 
     func refreshItems() {

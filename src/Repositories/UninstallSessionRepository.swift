@@ -88,6 +88,12 @@ final class UninstallSessionRepository: GenericRepository<UninstallSession> {
         )
     }
 
+    func assignEssentials(sessionId: String, destination: UninstallDestination?) async throws {
+        let key = UninstallSession.CodingKeys.essentialsDestination.stringValue
+        let value: Any = try destination.map { try Firestore.Encoder().encode($0) } ?? FieldValue.delete()
+        try await update(id: sessionId, fields: [key: value])
+    }
+
     func setExistingPullListId(sessionId: String, _ listId: String) async throws {
         try await update(
             id: sessionId,

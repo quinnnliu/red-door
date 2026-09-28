@@ -25,6 +25,23 @@ extension UninstallInstalledListSheetViewModel {
 
     func clearSelection() {
         selectedItemIds.removeAll()
+        essentialsSelected = false
+    }
+
+    var essentialsItemIds: Set<String> {
+        essentialsGroupState?.itemIds ?? []
+    }
+
+    /// The group moves as a unit, so its members are selected together and
+    /// never individually.
+    func toggleEssentialsSelection() {
+        guard essentialsGroupState != nil else { return }
+        essentialsSelected.toggle()
+        if essentialsSelected {
+            selectedItemIds.formUnion(essentialsItemIds)
+        } else {
+            selectedItemIds.subtract(essentialsItemIds)
+        }
     }
 
     var selectionCount: Int { selectedItemIds.count }
@@ -43,15 +60,20 @@ extension UninstallInstalledListSheetViewModel {
     @MainActor
     func assignSelection(to destination: UninstallDestination) async {
         guard let session = sessionState else { return }
-        let itemIds = Array(selectedItemIds)
-        guard !itemIds.isEmpty else { return }
+        let itemIds = Array(selectedItemIds.subtracting(essentialsItemIds))
+        guard !itemIds.isEmpty || essentialsSelected else { return }
 
         do {
-            try await sessionRepo.assign(
-                sessionId: session.id,
-                itemIds: itemIds,
-                destination: destination
-            )
+            if !itemIds.isEmpty {
+                try await sessionRepo.assign(
+                    sessionId: session.id,
+                    itemIds: itemIds,
+                    destination: destination
+                )
+            }
+            if essentialsSelected {
+                try await sessionRepo.assignEssentials(sessionId: session.id, destination: destination)
+            }
             clearSelection()
         } catch {
             present(error)
@@ -82,6 +104,17 @@ extension UninstallInstalledListSheetViewModel {
     @MainActor
     func existingListDestination(_ list: PullListV2) async -> UninstallDestination? {
         guard let session = sessionState else { return nil }
+
+        // `PullListV2.essentialGroupId` holds a single group, so a target that
+        // already has one can't also receive ours.
+        let essentialsHeadedHere = essentialsSelected
+            || session.essentialsDestination?.type == .existingList
+        if essentialsHeadedHere, list.essentialGroupId != nil {
+            alertMessage = "\(list.displayName) already has an essentials group. Pick a different list, or send essentials elsewhere."
+            showAlert = true
+            return nil
+        }
+
         do {
             try await sessionRepo.setExistingPullListId(sessionId: session.id, list.id)
             existingPullList = list
@@ -89,6 +122,16 @@ extension UninstallInstalledListSheetViewModel {
         } catch {
             present(error)
             return nil
+        }
+    }
+
+    @MainActor
+    func unassignEssentials() async {
+        guard let session = sessionState else { return }
+        do {
+            try await sessionRepo.assignEssentials(sessionId: session.id, destination: nil)
+        } catch {
+            present(error)
         }
     }
 
@@ -106,16 +149,21 @@ extension UninstallInstalledListSheetViewModel {
 // MARK: - Grouping
 
 extension UninstallInstalledListSheetViewModel {
+    /// Excludes essentials members throughout: they render in their own
+    /// section and are assigned as a unit, so they must never appear as an
+    /// individually assignable room row.
     var allRoomItems: [(item: ItemV2, room: RoomV2)] {
         rooms.flatMap { room in
-            (itemsByRoom[room.id] ?? []).map { (item: $0, room: room) }
+            (itemsByRoom[room.id] ?? [])
+                .filter { !essentialsItemIds.contains($0.id) }
+                .map { (item: $0, room: room) }
         }
     }
 
     var unassignedItemsByRoom: [(room: RoomV2, items: [ItemV2])] {
         rooms.map { room in
             let items = (itemsByRoom[room.id] ?? [])
-                .filter { destination(for: $0.id) == nil }
+                .filter { !essentialsItemIds.contains($0.id) && destination(for: $0.id) == nil }
                 .sorted { $0.displayName < $1.displayName }
             return (room: room, items: items)
         }
@@ -150,6 +198,10 @@ extension UninstallInstalledListSheetViewModel {
 
     func destination(for itemId: String) -> UninstallDestination? {
         sessionState?.itemDestinations[itemId]
+    }
+
+    var essentialsDestinationLabel: String? {
+        sessionState?.essentialsDestination.map { label(for: $0) }
     }
 
     func destinationLabel(for itemId: String) -> String? {

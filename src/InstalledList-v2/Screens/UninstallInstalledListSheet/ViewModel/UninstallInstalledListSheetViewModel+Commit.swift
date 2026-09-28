@@ -26,15 +26,29 @@ extension UninstallInstalledListSheetViewModel {
 
     var allAssigned: Bool {
         guard !isLoading, allRoomsLoaded, let session = sessionState else { return false }
-        return allRoomItems.allSatisfy { session.itemDestinations[$0.item.id] != nil }
+        let itemsAssigned = allRoomItems.allSatisfy { session.itemDestinations[$0.item.id] != nil }
+        let essentialsAssigned = essentialsGroupState == nil || session.essentialsDestination != nil
+        return itemsAssigned && essentialsAssigned
     }
 
+    /// Essentials members are excluded from `assignedItemsByDestination` so they
+    /// don't duplicate their own section, so their count is folded in here.
     var confirmUninstallSummary: ConfirmUninstallSummary {
-        ConfirmUninstallSummary(
+        var groups = assignedItemsByDestination.map { (label: $0.label, count: $0.items.count) }
+
+        if let label = essentialsDestinationLabel {
+            if let index = groups.firstIndex(where: { $0.label == label }) {
+                groups[index].count += essentialsItems.count
+            } else {
+                groups.append((label: label, count: essentialsItems.count))
+            }
+        }
+
+        return ConfirmUninstallSummary(
             address: installedListState.address.getStreetAddress()
                 ?? installedListState.address.formattedAddress,
-            groups: assignedItemsByDestination.map { (label: $0.label, count: $0.items.count) },
-            totalCount: assignedItemCount
+            groups: groups,
+            totalCount: groups.reduce(0) { $0 + $1.count }
         )
     }
 }
@@ -55,9 +69,12 @@ extension UninstallInstalledListSheetViewModel {
             try await sessionRepo.commit(
                 installedList: installedListState,
                 rooms: rooms,
+                essentialsGroup: essentialsGroupState,
                 itemRepo: itemRepo,
                 installedListRepo: installedListRepo,
-                pullListRepo: pullListRepo
+                pullListRepo: pullListRepo,
+                essentialsRepo: essentialsRepo,
+                accessoriesRepo: accessoriesRepo
             )
             didCommit = true
             installedListState.uninstalled = true

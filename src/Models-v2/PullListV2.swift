@@ -82,6 +82,7 @@ struct PullListV2: RDDocument {
         from installedList: InstalledListV2,
         id: String,
         roomIds: [String],
+        unassignedItemIds: [String] = [],
         essentialGroupId: String? = nil
     ) {
         self.id = id
@@ -95,7 +96,7 @@ struct PullListV2: RDDocument {
 
         self.clientId = installedList.clientId
         self.roomIds = roomIds
-        self.unassignedItemIds = [] // copied items land in their original rooms
+        self.unassignedItemIds = unassignedItemIds
         self.essentialGroupId = essentialGroupId
         self.installingSession = nil
         self.image = installedList.image

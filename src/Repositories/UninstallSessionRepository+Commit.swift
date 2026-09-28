@@ -17,9 +17,12 @@ extension UninstallSessionRepository {
     func commit(
         installedList: InstalledListV2,
         rooms: [RoomV2],
+        essentialsGroup: EssentialsGroup?,
         itemRepo: ItemRepository,
         installedListRepo: InstalledListRepository,
-        pullListRepo: PullListRepository
+        pullListRepo: PullListRepository,
+        essentialsRepo: EssentialsRepository,
+        accessoriesRepo: AccessoriesRepository
     ) async throws {
         let installedListId = installedList.id
 
@@ -27,7 +30,7 @@ extension UninstallSessionRepository {
             do {
                 let session = try self.get(id: installedListId, transaction: transaction)
 
-                // 1. Move every item to its assigned destination.
+                // 1. Move every individually assigned item.
                 for (itemId, destination) in session.itemDestinations {
                     itemRepo.update(
                         id: itemId,
@@ -36,7 +39,20 @@ extension UninstallSessionRepository {
                     )
                 }
 
-                // 2. Create the copy pull list, if anything is headed there.
+                // 2. Move the essentials group as one unit: the group document,
+                //    every item in it, and its accessories.
+                if let group = essentialsGroup, let destination = session.essentialsDestination {
+                    let fields = destination.documentLocation.firebaseUpdateFields
+                    for itemId in group.itemIds {
+                        itemRepo.update(id: itemId, fields: fields, transaction: transaction)
+                    }
+                    essentialsRepo.update(id: group.id, fields: fields, transaction: transaction)
+                    if let accessoriesId = group.accessoriesId {
+                        accessoriesRepo.update(id: accessoriesId, fields: fields, transaction: transaction)
+                    }
+                }
+
+                // 3. Create the copy pull list, if anything is headed there.
                 //    Deferred to commit so an abandoned session leaves no
                 //    orphaned list behind.
                 if let copyId = session.copyPullListId, session.targetsCopy {
@@ -45,25 +61,35 @@ extension UninstallSessionRepository {
                         session: session,
                         installedList: installedList,
                         rooms: rooms,
+                        essentialsGroup: essentialsGroup,
                         pullListRepo: pullListRepo,
                         transaction: transaction
                     )
                 }
 
-                // 3. Hand copied-to-existing items over as unassigned; whoever
-                //    works that pull list assigns rooms later.
-                if let existingId = session.existingPullListId, session.targetsExistingList {
-                    pullListRepo.update(
-                        id: existingId,
-                        fields: [
-                            PullListV2.CodingKeys.unassignedItemIds.stringValue:
-                                FieldValue.arrayUnion(session.itemIds(for: .existingList))
-                        ],
-                        transaction: transaction
-                    )
+                // 4. Hand anything routed to an existing list over to it. Items
+                //    arrive unassigned; whoever works that list places them.
+                if let existingId = session.existingPullListId {
+                    var itemIds = session.itemIds(for: .existingList)
+                    var fields: [String: Any] = [:]
+
+                    // Group members go into the unassigned pool too — linking
+                    // the group alone leaves them unreachable, since a pull
+                    // list renders essentials as a name, not as its items.
+                    if session.essentialsDestination?.type == .existingList, let group = essentialsGroup {
+                        itemIds += group.itemIds
+                        fields[PullListV2.CodingKeys.essentialGroupId.stringValue] = group.id
+                    }
+                    if !itemIds.isEmpty {
+                        fields[PullListV2.CodingKeys.unassignedItemIds.stringValue] =
+                            FieldValue.arrayUnion(itemIds)
+                    }
+                    if !fields.isEmpty {
+                        pullListRepo.update(id: existingId, fields: fields, transaction: transaction)
+                    }
                 }
 
-                // 4. Mark the list uninstalled. Rooms and their itemIds are
+                // 5. Mark the list uninstalled. Rooms and their itemIds are
                 //    deliberately left intact as the historical record of what
                 //    was installed where.
                 installedListRepo.update(
@@ -72,7 +98,7 @@ extension UninstallSessionRepository {
                     transaction: transaction
                 )
 
-                // 5. Consume the claim token.
+                // 6. Consume the claim token.
                 self.delete(id: installedListId, transaction: transaction)
 
                 return nil
@@ -90,13 +116,20 @@ extension UninstallSessionRepository {
         session: UninstallSession,
         installedList: InstalledListV2,
         rooms: [RoomV2],
+        essentialsGroup: EssentialsGroup?,
         pullListRepo: PullListRepository,
         transaction: Transaction
     ) throws {
+        let essentialsHeadedHere = session.essentialsDestination?.type == .copy
+
+        // Assigned items land in their original rooms, but group members have
+        // no per-item destination, so they arrive unassigned for re-placing.
         let copyList = PullListV2(
             from: installedList,
             id: copyId,
-            roomIds: rooms.map(\.id)
+            roomIds: rooms.map(\.id),
+            unassignedItemIds: essentialsHeadedHere ? Array(essentialsGroup?.itemIds ?? []) : [],
+            essentialGroupId: essentialsHeadedHere ? essentialsGroup?.id : nil
         )
         try pullListRepo.set(document: copyList, id: copyId, transaction: transaction)
 

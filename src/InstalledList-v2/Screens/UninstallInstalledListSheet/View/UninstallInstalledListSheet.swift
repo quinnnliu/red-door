@@ -10,6 +10,8 @@ import SwiftUI
 enum UninstallItemAction {
     case toggleItem(itemId: String)
     case unassign(itemId: String)
+    case toggleEssentials
+    case unassignEssentials
 }
 
 struct UninstallInstalledListSheet: View {
@@ -126,6 +128,14 @@ private extension UninstallInstalledListSheet {
     var ItemList: some View {
         ScrollView {
             LazyVStack(spacing: 8, pinnedViews: .sectionHeaders) {
+                if viewModel.essentialsGroupState != nil {
+                    Section {
+                        EssentialsGroupRow
+                    } header: {
+                        SectionHeader("Essentials")
+                    }
+                }
+
                 Section {
                     UnassignedRoomGroups
                 } header: {
@@ -210,6 +220,72 @@ private extension UninstallInstalledListSheet {
         .background(Color(.systemBackground))
     }
 
+    // MARK: EssentialsGroupRow
+
+    /// One destination control for the whole group, with its members listed
+    /// read-only so it's clear what moves together.
+    @ViewBuilder
+    var EssentialsGroupRow: some View {
+        if let group = viewModel.essentialsGroupState {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    Text(group.emoji)
+
+                    Text(group.displayName)
+                        .font(.headline)
+
+                    Spacer(minLength: 0)
+
+                    if let label = viewModel.essentialsDestinationLabel {
+                        Text(label)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+
+                        RDButton(
+                            variant: .default,
+                            size: .icon,
+                            leadingIcon: SFSymbols.arrowUturnBackward
+                        ) {
+                            handleAction(UninstallItemAction.unassignEssentials)
+                        }
+                    } else {
+                        Button {
+                            handleAction(UninstallItemAction.toggleEssentials)
+                        } label: {
+                            Image(systemName: viewModel.essentialsSelected
+                                  ? SFSymbols.checkmarkCircleFill : SFSymbols.circle)
+                                .foregroundStyle(viewModel.essentialsSelected ? .red : .gray)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+
+                Text("Moves as a unit")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                ForEach(viewModel.essentialsItems, id: \.id) { item in
+                    ItemListItemView(item: item, style: .display)
+                }
+
+                if let accessories = viewModel.essentialsAccessories {
+                    HStack(spacing: 8) {
+                        Image(systemName: SFSymbols.wrenchFill)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                        Text(accessories.displayName)
+                            .font(.subheadline)
+
+                        Spacer(minLength: 0)
+                    }
+                }
+            }
+            .padding(4)
+        }
+    }
+
     // MARK: SelectableItemRow
 
     /// `ItemListItemView` renders its own selection circle when handed an
@@ -278,6 +354,10 @@ private extension UninstallInstalledListSheet {
                 viewModel.toggleSelection(itemId)
             case .unassign(let itemId):
                 Task { await viewModel.unassign(itemId: itemId) }
+            case .toggleEssentials:
+                viewModel.toggleEssentialsSelection()
+            case .unassignEssentials:
+                Task { await viewModel.unassignEssentials() }
             }
 
         case let action as RoomListItemViewAction:

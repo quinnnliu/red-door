@@ -136,6 +136,7 @@ extension InstallPullListSheet {
             case .confirm:
                 Task { @MainActor in
                     if let installedList = await viewModel.createInstalledList(), !viewModel.showAlert {
+                        try? await Task.sleep(for: .milliseconds(250))
                         coordinator.resetSelectedPath()
                         try? await Task.sleep(for: .milliseconds(250))
                         coordinator.setSelectedTab(to: .installedListV2)

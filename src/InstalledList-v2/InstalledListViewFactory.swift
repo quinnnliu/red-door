@@ -47,6 +47,8 @@ struct InstalledListViewFactory {
             itemRepo: itemRepo,
             sessionRepo: uninstallSessionRepo,
             pullListRepo: pullListRepo,
+            essentialsRepo: essentialsRepo,
+            accessoriesRepo: accessoriesRepo,
             warehouseRepo: warehouseRepo
         )
         return UninstallInstalledListSheet(viewModel: vm)

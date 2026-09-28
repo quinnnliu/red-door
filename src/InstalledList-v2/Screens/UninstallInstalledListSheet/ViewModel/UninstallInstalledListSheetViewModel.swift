@@ -22,6 +22,13 @@ final class UninstallInstalledListSheetViewModel {
     var itemsByRoom: [String: [ItemV2]] = [:] // key: roomId
     var warehouses: [WarehouseV2] = []
 
+    var essentialsGroupState: EssentialsGroup? = nil
+    var essentialsAccessories: Accessories? = nil
+
+    /// Loaded so the flow can show what moves as a unit, even though the group
+    /// is assigned with a single action.
+    var essentialsItems: [ItemV2] = []
+
     /// Server truth for the uninstall plan, replaced wholesale by the listener.
     var sessionState: UninstallSession? = nil
 
@@ -34,6 +41,7 @@ final class UninstallInstalledListSheetViewModel {
     /// Ephemeral per-user state. Deliberately NOT stored on the session:
     /// selection is not shared between users, only assignments are.
     var selectedItemIds: Set<String> = []
+    var essentialsSelected: Bool = false
 
     var isLoading: Bool = false
     var showAlert: Bool = false
@@ -69,6 +77,8 @@ final class UninstallInstalledListSheetViewModel {
     let itemRepo: ItemRepository
     let sessionRepo: UninstallSessionRepository
     let pullListRepo: PullListRepository
+    let essentialsRepo: EssentialsRepository
+    let accessoriesRepo: AccessoriesRepository
     let warehouseRepo: WarehouseRepository
     let configService: ConfigurationService
 
@@ -85,6 +95,8 @@ final class UninstallInstalledListSheetViewModel {
         itemRepo: ItemRepository,
         sessionRepo: UninstallSessionRepository,
         pullListRepo: PullListRepository,
+        essentialsRepo: EssentialsRepository,
+        accessoriesRepo: AccessoriesRepository,
         warehouseRepo: WarehouseRepository,
         configService: ConfigurationService = .shared
     ) {
@@ -94,6 +106,8 @@ final class UninstallInstalledListSheetViewModel {
         self.itemRepo = itemRepo
         self.sessionRepo = sessionRepo
         self.pullListRepo = pullListRepo
+        self.essentialsRepo = essentialsRepo
+        self.accessoriesRepo = accessoriesRepo
         self.warehouseRepo = warehouseRepo
         self.configService = configService
         self.loader = ItemsListLoader(itemRepo: itemRepo)
@@ -130,6 +144,7 @@ final class UninstallInstalledListSheetViewModel {
 
         await joinOrCreateSession()
         await loadWarehouses()
+        await loadEssentialsGroup()
     }
 
     func stopListening() {
@@ -140,6 +155,7 @@ final class UninstallInstalledListSheetViewModel {
         loader.invalidate()
         itemsByRoom.removeAll()
         selectedItemIds.removeAll()
+        essentialsSelected = false
     }
 
     // MARK: - present
