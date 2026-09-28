@@ -30,7 +30,7 @@ struct InstallPullListStoragePicker: View {
             selectedIndex: current == .inInstalledList ? 0 : current == .inStorage ? 1 : nil
         )
         .sheet(isPresented: $showWarehouseSheet) {
-            SelectDocumentSheet<WarehouseV2>(title: "Select Warehouse", documents: warehouses) { a in
+            SelectDocumentSheet(title: "Select Warehouse", documents: warehouses) { a in
                 if case .selected(let wh) = a as? SelectDocumentSheetAction<WarehouseV2> {
                     action(InstallPullListRoomAction.storeItem(itemId: item.id, warehouseId: wh.id))
                 }

@@ -59,6 +59,7 @@ struct InstalledListRoomDetailsView: View {
             SelectDocumentSheet(
                 title: "Select Storage Location",
                 documents: viewModel.availableWarehouses,
+                refreshAction: { Task { await viewModel.fetchAvailableWarehouses() } },
                 action: { action in
                     if let warehouseAction = action as? SelectDocumentSheetAction<WarehouseV2>,
                        case .selected(let warehouse) = warehouseAction,
@@ -68,8 +69,7 @@ struct InstalledListRoomDetailsView: View {
                             itemToRemove = nil
                         }
                     }
-                },
-                refreshAction: { Task { await viewModel.fetchAvailableWarehouses() } }
+                }
             )
             .task { await viewModel.fetchAvailableWarehouses() }
         }

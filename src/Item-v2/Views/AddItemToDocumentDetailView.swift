@@ -26,7 +26,6 @@ struct AddItemToDocumentDetailView: View {
                 DragIndicator()
 
                 TopBar
-                    .frameHorizontalPadding()
 
                 ScrollView {
                     VStack(spacing: 12) {
@@ -63,31 +62,23 @@ struct AddItemToDocumentDetailView: View {
                     .frameHorizontalPadding()
                 }
 
-                Spacer()
+                Spacer(minLength: .zero)
 
-                VStack(spacing: 8) {
-                    if case .room = viewModel.destination {
-                        RDButton(variant: .outline, label: "Move to Another Room", fullWidth: true) {
-                            showMoveRoomSheet = true
-                        }
-                    }
-
-                    RDButton(
-                        variant: .red,
-                        leadingIcon: SFSymbols.plus,
-                        label: "Add to \(viewModel.destination.document.displayName)",
-                        fullWidth: true
-                    ) {
-                        Task {
-                            await viewModel.addItem()
-                            dismiss()
-                        }
+                RDButton(
+                    variant: .red,
+                    leadingIcon: SFSymbols.plus,
+                    label: "Add to \(viewModel.destination.document.displayName)",
+                    fullWidth: true
+                ) {
+                    Task {
+                        await viewModel.addItem()
+                        dismiss()
                     }
                 }
-                .frameHorizontalPadding()
             }
             .frameTop()
             .frameBottomPadding()
+            .frameHorizontalPadding()
             .toolbar(.hidden)
             .alert(viewModel.alertText, isPresented: $viewModel.showAlert) {
                 Button("OK") { }

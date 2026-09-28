@@ -84,6 +84,8 @@ struct EditEssentialsGroupSheet: View {
             switch sheetAction {
             case .selected(let type):
                 applyGroupType(type)
+            default:
+                break
             }
         default:
             break

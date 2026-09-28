@@ -50,3 +50,35 @@ extension PullListRepository {
         try await batch.commit()
     }
 }
+
+// MARK: - Unassigned items
+
+extension PullListRepository {
+
+    /// Moves items out of a list's unassigned pool and into storage.
+    /// Mirrors `RoomRepository.removeItem`, minus the room membership write:
+    /// unassigned items belong to no room.
+    func storeUnassignedItems(
+        _ itemIds: [String],
+        fromListId listId: String,
+        toWarehouseId warehouseId: String,
+        itemRepo: ItemRepository
+    ) async throws {
+        guard !itemIds.isEmpty else { return }
+
+        let batch = newBatch()
+
+        let location = DocumentLocation(status: .inStorage, locationId: warehouseId).firebaseUpdateFields
+        for itemId in itemIds {
+            itemRepo.update(id: itemId, fields: location, inBatch: batch)
+        }
+
+        update(
+            id: listId,
+            fields: [PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayRemove(itemIds)],
+            inBatch: batch
+        )
+
+        try await batch.commit()
+    }
+}

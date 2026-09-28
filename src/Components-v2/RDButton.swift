@@ -147,71 +147,81 @@ struct RDButton: View {
     var disabled: Bool = false
     var allowsHitTesting: Bool = true
     var font: Font? = nil
-    let action: () -> Void
+    var isButton: Bool = true
+    var action: () -> Void = {}
     
     @State private var isPressed = false
     
     var body: some View {
-        Button(action: action) {
-            HStack(spacing: size == .icon ? 0 : 8) {
-                if let leadingIcon {
-                    Image(systemName: leadingIcon)
-                        .font(.system(size: size.iconSize))
-                        .fontWeight(.bold)
-                }
-                
-                if let label, size != .icon {
-                    Text(label)
-                        .font(font ?? size.fontSize)
-                        .fontWeight(.medium)
-                }
-                
-                if let trailingIcon {
-                    Image(systemName: trailingIcon)
-                        .font(.system(size: size.iconSize))
-                }
+        if isButton {
+            Button(action: action) {
+                labelContent
             }
-            .foregroundStyle(disabled ? Color.gray : variant.foregroundColor)
-            .padding(.horizontal, size.horizontalPadding)
-            .padding(.vertical, size.verticalPadding)
-            .frame(
-                width: size == .icon ? size.fixedIconButtonSize : nil,
-                height: size == .icon ? size.fixedIconButtonSize : nil,
-                alignment: .center
-            )
-            .frame(maxWidth: fullWidth ? .infinity : nil)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(disabled ? Color.gray.opacity(0.2) : variant.backgroundColor)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(variant.borderColor ?? Color.clear, lineWidth: variant.borderWidth)
-            )
-            .scaleEffect(isPressed ? 0.98 : 1.0)
-            .opacity(disabled ? 0.5 : 1.0)
-        }
-        .allowsHitTesting(allowsHitTesting)
-        .disabled(disabled)
-        .buttonStyle(PlainButtonStyle())
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { _ in
-                    if !disabled {
-                        withAnimation(Constants.Animation.snappy) {
-                            isPressed = true
+            .allowsHitTesting(allowsHitTesting)
+            .disabled(disabled)
+            .buttonStyle(PlainButtonStyle())
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { _ in
+                        if !disabled {
+                            withAnimation(Constants.Animation.snappy) {
+                                isPressed = true
+                            }
                         }
                     }
-                }
-                .onEnded { _ in
-                    withAnimation(Constants.Animation.snappy) {
-                        isPressed = false
+                    .onEnded { _ in
+                        withAnimation(Constants.Animation.snappy) {
+                            isPressed = false
+                        }
                     }
-                }
-        )
-        .padding(2)
-        .contentShape(Rectangle())
+            )
+            .padding(2)
+            .contentShape(Rectangle())
+        } else {
+            labelContent
+        }
     }
+    
+    var labelContent: some View {
+        HStack(spacing: size == .icon ? 0 : 8) {
+            if let leadingIcon {
+                Image(systemName: leadingIcon)
+                    .font(.system(size: size.iconSize))
+                    .fontWeight(.bold)
+            }
+            
+            if let label, size != .icon {
+                Text(label)
+                    .font(font ?? size.fontSize)
+                    .fontWeight(.medium)
+            }
+            
+            if let trailingIcon {
+                Image(systemName: trailingIcon)
+                    .font(.system(size: size.iconSize))
+            }
+        }
+        .foregroundStyle(disabled ? Color.gray : variant.foregroundColor)
+        .padding(.horizontal, size.horizontalPadding)
+        .padding(.vertical, size.verticalPadding)
+        .frame(
+            width: size == .icon ? size.fixedIconButtonSize : nil,
+            height: size == .icon ? size.fixedIconButtonSize : nil,
+            alignment: .center
+        )
+        .frame(maxWidth: fullWidth ? .infinity : nil)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(disabled ? Color.gray.opacity(0.2) : variant.backgroundColor)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(variant.borderColor ?? Color.clear, lineWidth: variant.borderWidth)
+        )
+        .scaleEffect(isPressed ? 0.98 : 1.0)
+        .opacity(disabled ? 0.5 : 1.0)
+    }
+
 }
 
 // Link variant with underline

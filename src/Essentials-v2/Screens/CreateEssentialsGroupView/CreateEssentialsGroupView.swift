@@ -63,8 +63,8 @@ struct CreateEssentialsGroupView: View {
             SelectDocumentSheet(
                 title: "Select Group Type",
                 documents: viewModel.groupTypes,
-                action: handleAction(_:),
-                refreshAction: { Task { await viewModel.refreshGroupTypes() } }
+                refreshAction: { Task { await viewModel.refreshGroupTypes() } },
+                action: handleAction(_:)
             )
         }
         .sheet(isPresented: $viewModel.showAddAccessoriesSheet) {
@@ -84,6 +84,8 @@ struct CreateEssentialsGroupView: View {
             switch sheetAction {
             case .selected(let type):
                 viewModel.selectedGroupType = type
+            default:
+                break
             }
         default:
             break

@@ -19,6 +19,8 @@ struct PullListDetailsViewV2: View {
     @State private var showUnassignedItems: Bool = false
     @State private var showSelectWarehouseSheet: Bool = false
     @State private var showSelectRoomForUnassignedSheet: Bool = false
+    @State private var showStoreUnassignedItemSheet: Bool = false
+    @State private var itemToStore: ItemV2? = nil
 
     init(viewModel: PullListDetailsViewModelV2) {
         self.viewModel = viewModel
@@ -71,8 +73,8 @@ struct PullListDetailsViewV2: View {
             SelectDocumentSheet(
                 title: "Select Storage Location",
                 documents: viewModel.availableWarehouses,
-                action: handleAction(_:),
-                refreshAction: { Task { await viewModel.fetchAvailableWarehouses() } }
+                refreshAction: { Task { await viewModel.fetchAvailableWarehouses() } },
+                action: handleAction(_:)
             )
             .task { await viewModel.fetchAvailableWarehouses() }
         }
@@ -312,18 +314,27 @@ private extension PullListDetailsViewV2 {
             ScrollView {
                 LazyVStack(spacing: 8) {
                     ForEach(Array(viewModel.unassignedItems), id: \.id) { item in
-                        ItemListItemView(
-                            item: item,
-                            style: .addToDocument,
-                            isSelected: viewModel.isUnassignedSelected(item),
-                            action: handleAction(_:)
-                        )
-                        .onTapGesture {
-                            handleAction(
-                                viewModel.isUnassignedSelected(item) ?
-                                ItemListItemAction.multiSelectDeselection(item)
-                                : ItemListItemAction.multiSelectSelection(item)
+                        HStack(spacing: 8) {
+                            ItemListItemView(
+                                item: item,
+                                style: .addToDocument,
+                                isSelected: viewModel.isUnassignedSelected(item),
+                                action: handleAction(_:)
                             )
+                            .onTapGesture {
+                                handleAction(
+                                    viewModel.isUnassignedSelected(item) ?
+                                    ItemListItemAction.multiSelectDeselection(item)
+                                    : ItemListItemAction.multiSelectSelection(item)
+                                )
+                            }
+
+                            if item.essentialGroupId == nil {
+                                RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.shippingbox) {
+                                    itemToStore = item
+                                    showStoreUnassignedItemSheet = true
+                                }
+                            }
                         }
                     }
                 }
@@ -348,6 +359,15 @@ private extension PullListDetailsViewV2 {
                 documents: viewModel.rooms,
                 action: handleAction(_:)
             )
+        }
+        .sheet(isPresented: $showStoreUnassignedItemSheet, onDismiss: { itemToStore = nil }) {
+            SelectDocumentSheet(
+                title: "Select Storage Location",
+                documents: viewModel.availableWarehouses,
+                refreshAction: { Task { await viewModel.fetchAvailableWarehouses() } },
+                action: handleAction(_:)
+            )
+            .task { await viewModel.fetchAvailableWarehouses() }
         }
     }
 
@@ -480,7 +500,16 @@ private extension PullListDetailsViewV2 {
         if let warehouseAction = actionArgument as? SelectDocumentSheetAction<WarehouseV2> {
             switch warehouseAction {
             case .selected(let warehouse):
-                Task { await viewModel.removeEssentialsGroup(to: warehouse) }
+                if let item = itemToStore {
+                    Task {
+                        await viewModel.storeUnassignedItem(item, in: warehouse)
+                        itemToStore = nil
+                    }
+                } else {
+                    Task { await viewModel.removeEssentialsGroup(to: warehouse) }
+                }
+            default:
+                break
             }
         }
 
@@ -503,6 +532,8 @@ private extension PullListDetailsViewV2 {
             switch roomAction {
             case .selected(let room):
                 Task { await viewModel.assignSelectedItemsToRoom(room) }
+            default:
+                break
             }
         }
     }

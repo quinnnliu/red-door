@@ -65,8 +65,8 @@ struct InstalledListItemDetailsView: View {
                 SelectDocumentSheet(
                     title: "Select Storage Location",
                     documents: viewModel.availableWarehouses,
-                    action: handleAction(_:),
-                    refreshAction: { Task { await viewModel.fetchAvailableWarehouses() } }
+                    refreshAction: { Task { await viewModel.fetchAvailableWarehouses() } },
+                    action: handleAction(_:)
                 )
                 .task { await viewModel.fetchAvailableWarehouses() }
             }
@@ -88,6 +88,8 @@ struct InstalledListItemDetailsView: View {
             switch sheetAction {
             case .selected(let newRoom):
                 Task { await viewModel.moveItemToNewRoom(newRoom: newRoom) }
+            default:
+                break
             }
         case let warehouseAction as SelectDocumentSheetAction<WarehouseV2>:
             switch warehouseAction {
@@ -96,6 +98,8 @@ struct InstalledListItemDetailsView: View {
                     let success = await viewModel.removeItemToWarehouse(warehouse: warehouse)
                     if success { dismiss() }
                 }
+            default:
+                break
             }
         default:
             break

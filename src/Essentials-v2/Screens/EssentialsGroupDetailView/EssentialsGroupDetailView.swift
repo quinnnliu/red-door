@@ -65,12 +65,12 @@ struct EssentialsGroupDetailView: View {
             SelectDocumentSheet(
                 title: "Select Accessories",
                 documents: viewModel.availableAccessories,
+                refreshAction: { Task { await viewModel.fetchAvailableAccessories() } },
                 action: { action in
                     if case let .selected(accessories) = action as? SelectDocumentSheetAction<Accessories> {
                         Task { await viewModel.setAccessories(accessories) }
                     }
-                },
-                refreshAction: { Task { await viewModel.fetchAvailableAccessories() } }
+                }
             )
             .task { await viewModel.fetchAvailableAccessories() }
         }

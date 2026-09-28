@@ -376,4 +376,32 @@ extension PullListDetailsViewModelV2 {
             showAlert = true
         }
     }
+
+    // MARK: storeUnassignedItem
+
+    /// Essentials items leave the list with their group, never on their own.
+    @MainActor
+    func storeUnassignedItem(_ item: ItemV2, in warehouse: WarehouseV2) async {
+        guard item.essentialGroupId == nil else {
+            alertMessage = "\(item.displayName) belongs to an essentials group and must be removed with the group"
+            showAlert = true
+            return
+        }
+
+        do {
+            try await pullListRepo.storeUnassignedItems(
+                [item.id],
+                fromListId: pullListState.id,
+                toWarehouseId: warehouse.id,
+                itemRepo: itemRepo
+            )
+
+            pullListState.unassignedItemIds.removeAll { $0 == item.id }
+            unassignedItems = unassignedItems.filter { $0.id != item.id }
+            selectedUnassignedItems = selectedUnassignedItems.filter { $0.id != item.id }
+        } catch {
+            alertMessage = "Failed to store \(item.displayName): \(error.localizedDescription)"
+            showAlert = true
+        }
+    }
 }

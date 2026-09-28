@@ -60,21 +60,20 @@ struct PullListRoomDetailsView: View {
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("OK", role: .cancel) { }
         }
-        .sheet(isPresented: $showSelectWarehouseSheet) {
+        .sheet(isPresented: $showSelectWarehouseSheet, onDismiss: { itemToRemove = nil }) {
             SelectDocumentSheet(
                 title: "Select Storage Location",
                 documents: viewModel.availableWarehouses,
-                action: { action in
-                    if let warehouseAction = action as? SelectDocumentSheetAction<WarehouseV2>,
-                       case .selected(let warehouse) = warehouseAction,
-                       let item = itemToRemove {
-                        Task {
-                            await viewModel.removeItemToWarehouse(item: item, warehouse: warehouse)
-                            itemToRemove = nil
-                        }
-                    }
-                },
-                refreshAction: { Task { await viewModel.fetchAvailableWarehouses() } }
+                refreshAction: { Task { await viewModel.fetchAvailableWarehouses() } },
+                action: handleAction(_:),
+                footer: {
+                    RDButton(
+                        variant: .red,
+                        label: "Add to Unassigned Items",
+                        fullWidth: true,
+                        isButton: false
+                    )
+                }
             )
             .task { await viewModel.fetchAvailableWarehouses() }
         }
@@ -247,6 +246,31 @@ private extension PullListRoomDetailsView {
             Task {
                 await viewModel.renameRoom(roomId: viewModel.roomState.id, newRoomName: newRoomName)
             }
+        }
+    }
+}
+
+
+// MARK - handleAction(_:)
+private extension PullListRoomDetailsView {
+    func handleAction(_ action: Any?) {
+        switch action {
+        case let warehouseAction as SelectDocumentSheetAction<WarehouseV2>:
+            guard let item = itemToRemove else { return }
+            switch warehouseAction {
+            case .selected(let warehouse):
+                Task {
+                    await viewModel.removeItemToWarehouse(item: item, warehouse: warehouse)
+                    itemToRemove = nil
+                }
+            case .footerAction:
+                Task {
+                    await viewModel.moveItemToUnassigned(item: item)
+                    itemToRemove = nil
+                }
+            }
+        default:
+            return
         }
     }
 }

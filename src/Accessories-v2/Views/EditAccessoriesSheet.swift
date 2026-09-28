@@ -89,6 +89,8 @@ struct EditAccessoriesSheet: View {
             case .selected(let type):
                 applyType(type)
                 viewModel.showSelectTypeSheet = false
+            default:
+                break
             }
         case let imageAction as ImageEditorAction:
             switch imageAction {
@@ -237,8 +239,8 @@ private extension EditAccessoriesSheet {
             SelectDocumentSheet(
                 title: "Select Accessories Type",
                 documents: viewModel.accessoriesTypes,
-                action: handleAction(_:),
-                refreshAction: { Task { await viewModel.refreshTypes() } }
+                refreshAction: { Task { await viewModel.refreshTypes() } },
+                action: handleAction(_:)
             )
         }
     }
