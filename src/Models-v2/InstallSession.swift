@@ -24,9 +24,6 @@ struct InstallSession: ListSessionDocument {
 
     var lockGeneration: Int
 
-    /// Keyed by item ID. `DocumentLocation` already expresses both outcomes
-    /// (`.inStorage` with a warehouse, `.inInstalledList` with the list), so
-    /// this flow needs no destination type of its own.
     var itemDestinations: [String: DocumentLocation]
 
     init(

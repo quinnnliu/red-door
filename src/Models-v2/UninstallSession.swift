@@ -27,17 +27,12 @@ struct UninstallSession: ListSessionDocument {
     /// Written from the start; enforced in the UI later.
     var lockGeneration: Int
 
-    /// Pre-generated ID for the copy pull list. The `PullListV2` document is not
-    /// created until commit, so an abandoned session leaves no orphaned list.
     var copyPullListId: String?
 
-    /// The single existing pull list targeted by this session, if any.
     var existingPullListId: String?
 
-    /// Keyed by item ID.
     var itemDestinations: [String: UninstallDestination]
 
-    /// The essentials group moves as one unit: this single destination covers the group document.
     var essentialsDestination: UninstallDestination?
 
     init(

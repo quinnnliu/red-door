@@ -175,7 +175,7 @@ extension InstallPullListSheet {
                 }
             }
         default:
-            fatalError("[ERROR] Unhandled action argument: \(action)")
+            break
         }
     }
 }

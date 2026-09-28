@@ -19,7 +19,7 @@ struct EssentialsGroupType: ConfigurationOption {
     let emoji: String
 
     init(baseName: String, emoji: String = "⭐️") {
-        self.id = baseName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: " ", with: "-")
+        self.id = FirestoreDocumentID.slug(from: baseName) ?? UUID().uuidString
         self.baseName = baseName
         self.emoji = emoji
     }

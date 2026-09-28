@@ -20,7 +20,7 @@ struct WarehouseV2: ConfigurationOption {
     var address: Address
 
     init(baseName: String, address: Address) {
-        self.id = baseName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: " ", with: "-")
+        self.id = FirestoreDocumentID.slug(from: baseName) ?? UUID().uuidString
         self.baseName = baseName
         self.address = address
     }

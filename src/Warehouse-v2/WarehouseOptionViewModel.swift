@@ -54,7 +54,13 @@ final class WarehouseOptionViewModel {
     // MARK: - Adding
 
     func addWarehouse() {
-        let warehouse = WarehouseV2(baseName: warehouseName, address: newWarehouse.address)
+        let name = warehouseName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else {
+            showWarehouseNameAlert = false
+            return
+        }
+
+        let warehouse = WarehouseV2(baseName: name, address: newWarehouse.address)
         do {
             try warehouseRepo.set(document: warehouse)
             configService.invalidate(WarehouseV2.self)

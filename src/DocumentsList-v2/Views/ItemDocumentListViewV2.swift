@@ -421,10 +421,14 @@ private extension ItemDocumentListViewV2 {
     // MARK: - handleScannedItemId
 
     func handleScannedItemId(_ id: String) {
+        scannedItemId = nil
+
+        // The scanner hands back whatever it decoded, which may be any QR code.
+        guard FirestoreDocumentID.isValid(id) else { return }
+
         Task {
-            let item = try await itemRepo.get(id: id)
+            guard let item = try? await itemRepo.get(id: id) else { return }
             path.append(NavigationDestination.itemDetailView(item))
         }
-        scannedItemId = nil
     }
 }

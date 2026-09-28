@@ -17,7 +17,7 @@ struct AccessoriesType: ConfigurationOption {
     let baseName: String
 
     init(baseName: String) {
-        self.id = baseName.lowercased().trimmingCharacters(in: .whitespacesAndNewlines).replacingOccurrences(of: " ", with: "-")
+        self.id = FirestoreDocumentID.slug(from: baseName) ?? UUID().uuidString
         self.baseName = baseName
     }
 
