@@ -175,6 +175,7 @@ final class PullListDetailsViewModelV2 {
         do {
             pullListState = try await pullListRepo.get(id: pullListState.id)
             await fetchEssentialsGroup()
+            await fetchUnassignedItems()
         } catch {
             alertMessage = "Error refreshing pull list, please try again"
             showAlert = true
