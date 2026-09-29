@@ -9,11 +9,11 @@ import Firebase
 
 extension UninstallSessionRepository {
 
-    /// Applies an entire uninstall plan in one transaction, then consumes the
-    /// session document.
+    /// Applies an entire uninstall plan in one transaction, then retires the
+    /// session document into a permanent record of what it did.
     ///
-    /// Throws if the session no longer exists, which is how a second caller
-    /// racing the same commit is rejected.
+    /// Throws if the session was already committed, which is how a second
+    /// caller racing the same commit is rejected.
     func commit(
         installedList: InstalledListV2,
         rooms: [RoomV2],
@@ -26,9 +26,13 @@ extension UninstallSessionRepository {
     ) async throws {
         let installedListId = installedList.id
 
+        let uninstalledDate = ISO8601DateFormatter().string(from: Date())
+
         _ = try await db.runTransaction { transaction, errorPointer -> Any? in
             do {
                 let session = try self.get(id: installedListId, transaction: transaction)
+
+                guard !session.uninstalled else { throw RepositoryError.sessionComplete }
 
                 // 1. Move every individually assigned item.
                 for (itemId, destination) in session.itemDestinations {
@@ -98,8 +102,17 @@ extension UninstallSessionRepository {
                     transaction: transaction
                 )
 
-                // 6. Consume the claim token.
-                self.delete(id: installedListId, transaction: transaction)
+                // 6. Retire the session in place: it stops being a plan and
+                //    becomes the permanent record of where everything went.
+                var sessionFields: [String: Any] = [
+                    UninstallSession.CodingKeys.uninstalled.stringValue: true,
+                    UninstallSession.CodingKeys.uninstalledDate.stringValue: uninstalledDate
+                ]
+                if let group = essentialsGroup {
+                    sessionFields[UninstallSession.CodingKeys.essentialsGroupId.stringValue] = group.id
+                    sessionFields[UninstallSession.CodingKeys.essentialsItemIds.stringValue] = Array(group.itemIds)
+                }
+                self.update(id: installedListId, fields: sessionFields, transaction: transaction)
 
                 return nil
             } catch {

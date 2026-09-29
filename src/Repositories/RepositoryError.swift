@@ -7,6 +7,7 @@
 
 enum RepositoryError: String, Error {
     case decodeFailure
+    case sessionComplete
 }
 
 /// Thrown by an assignment transaction that found nothing it could apply.
@@ -16,16 +17,7 @@ enum RepositoryError: String, Error {
 /// ended up.
 enum ItemAssignmentError: Error {
     case noEligibleItems(unavailable: [ItemV2], duplicates: [ItemV2])
-}
-
-extension ItemAssignmentError {
-
-    /// Splits freshly-read items into the ones that can be assigned and the
-    /// ones that can't, throwing when none survive.
-    ///
-    /// Being a duplicate takes priority over being unavailable: an item already
-    /// in the destination necessarily reads as assigned somewhere, so calling
-    /// it "unavailable" would be true but useless.
+    
     static func eligibleItems(
         from items: [ItemV2],
         alreadyIn existingIds: Set<String>

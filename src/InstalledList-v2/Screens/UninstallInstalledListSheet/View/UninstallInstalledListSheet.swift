@@ -29,7 +29,7 @@ struct UninstallInstalledListSheet: View {
         VStack(spacing: 16) {
             TopBar
 
-            if viewModel.isReadOnly {
+            if viewModel.isReadOnly, !viewModel.isSessionComplete {
                 ReadOnlyBanner
             }
 

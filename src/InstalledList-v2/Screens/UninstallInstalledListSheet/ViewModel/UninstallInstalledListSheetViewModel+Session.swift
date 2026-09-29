@@ -14,11 +14,16 @@ extension UninstallInstalledListSheetViewModel {
     /// Only the holder of the current lock generation may write. Everyone else
     /// watches live and can take over.
     var isOwner: Bool {
-        guard let mine = myGeneration, let session = sessionState else { return false }
+        guard let mine = myGeneration,
+              let session = sessionState,
+              !session.uninstalled
+        else { return false }
         return mine == session.lockGeneration
     }
 
     var isReadOnly: Bool { !isOwner }
+
+    var isSessionComplete: Bool { sessionState?.uninstalled == true }
 }
 
 // MARK: - Session lifecycle
@@ -92,6 +97,16 @@ extension UninstallInstalledListSheetViewModel {
 
             didObserveSession = true
             sessionState = session
+
+            if session.uninstalled {
+                clearSelection()
+                if !didCommit {
+                    sessionEndedByOtherUser = true
+                    alertMessage = "This uninstall was completed by another user."
+                    showAlert = true
+                }
+                return
+            }
 
             if wasOwner, !isOwner {
                 clearSelection()

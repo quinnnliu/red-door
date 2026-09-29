@@ -26,6 +26,10 @@ struct InstallSession: ListSessionDocument {
 
     var itemDestinations: [String: DocumentLocation]
 
+    /// The install commit still deletes its session, so there is no terminal
+    /// state to report.
+    var isComplete: Bool { false }
+
     init(
         id: String,
         lockGeneration: Int = 1,

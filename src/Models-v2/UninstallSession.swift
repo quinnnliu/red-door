@@ -35,13 +35,25 @@ struct UninstallSession: ListSessionDocument {
 
     var essentialsDestination: UninstallDestination?
 
+    @DecodableDefault.False var uninstalled: Bool
+    
+    var uninstalledDate: String?
+    
+    var essentialsGroupId: String?
+    
+    @DecodableDefault.EmptyList var essentialsItemIds: [String]
+
     init(
         id: String,
         lockGeneration: Int = 1,
         copyPullListId: String? = nil,
         existingPullListId: String? = nil,
         itemDestinations: [String: UninstallDestination] = [:],
-        essentialsDestination: UninstallDestination? = nil
+        essentialsDestination: UninstallDestination? = nil,
+        uninstalled: Bool = false,
+        uninstalledDate: String? = nil,
+        essentialsGroupId: String? = nil,
+        essentialsItemIds: [String] = []
     ) {
         self.id = id
         self.lockGeneration = lockGeneration
@@ -49,7 +61,13 @@ struct UninstallSession: ListSessionDocument {
         self.existingPullListId = existingPullListId
         self.itemDestinations = itemDestinations
         self.essentialsDestination = essentialsDestination
+        self.uninstalled = uninstalled
+        self.uninstalledDate = uninstalledDate
+        self.essentialsGroupId = essentialsGroupId
+        self.essentialsItemIds = essentialsItemIds
     }
+
+    var isComplete: Bool { uninstalled }
 
     static func newSession(id: String) -> UninstallSession {
         UninstallSession(id: id, lockGeneration: 1)
@@ -64,6 +82,10 @@ struct UninstallSession: ListSessionDocument {
         case existingPullListId = "existing_pull_list_id"
         case itemDestinations = "item_destinations"
         case essentialsDestination = "essentials_destination"
+        case uninstalled
+        case uninstalledDate = "uninstalled_date"
+        case essentialsGroupId = "essentials_group_id"
+        case essentialsItemIds = "essentials_item_ids"
     }
 }
 

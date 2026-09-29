@@ -18,6 +18,10 @@ protocol ListSessionDocument: RDDocument {
     var lockGeneration: Int { get }
     var itemDestinations: [String: Destination] { get }
 
+    /// True once the session has been committed. Each flow names the underlying
+    /// field for itself, so this is the only way shared lifecycle code can ask.
+    var isComplete: Bool { get }
+
     static func newSession(id: String) -> Self
     static var lockGenerationField: String { get }
     static var itemDestinationsField: String { get }

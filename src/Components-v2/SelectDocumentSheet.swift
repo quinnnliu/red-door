@@ -69,11 +69,8 @@ struct SelectDocumentSheet<T: RDDocument, Footer: View>: View {
                     }
                 }
             }
-            // ScrollView absorbs the leftover height so the footer stays pinned to the bottom
             .frame(maxHeight: .infinity)
 
-            // Guarded so the default (footer-less) sheets don't pick up an
-            // empty button and the stack spacing that comes with it
             if !(footer is EmptyView) {
                 Button {
                     action(SelectDocumentSheetAction<T>.footerAction)

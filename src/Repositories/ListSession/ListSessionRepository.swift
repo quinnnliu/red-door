@@ -13,8 +13,8 @@ class ListSessionRepository<T: ListSessionDocument>: GenericRepository<T> {
 
     // MARK: - Listener
 
-    /// `.success(nil)` means the document does not exist — the session was
-    /// committed or abandoned.
+    /// `.success(nil)` means the document does not exist — the session has not
+    /// been created yet, or was deleted out of band.
     ///
     /// `GenericRepository.addDocumentListener` cannot express this: it calls
     /// `snapshot.data(as:)` unconditionally, which throws on a missing document
@@ -45,16 +45,19 @@ class ListSessionRepository<T: ListSessionDocument>: GenericRepository<T> {
     /// Creates the session only if absent. Returns the lock generation this
     /// caller owns, or `nil` if a session already existed (caller joins as a
     /// viewer).
-    ///
-    /// This has to be a transaction. The document ID is deterministic, so two
-    /// clients opening the flow at the same moment would both find nothing,
-    /// both write generation 1, and both believe they hold the lock.
     func createSession(id: String) async throws -> Int? {
         let ref = collectionRef.document(id)
         let result = try await db.runTransaction { transaction, errorPointer -> Any? in
             do {
                 let snapshot = try transaction.getDocument(ref)
-                guard !snapshot.exists else { return nil }
+                if snapshot.exists {
+                    // A committed session is a record. Joining it as a viewer
+                    // would present a finished plan as one in progress.
+                    guard !(try snapshot.data(as: T.self)).isComplete else {
+                        throw RepositoryError.sessionComplete
+                    }
+                    return nil
+                }
                 try transaction.setData(from: T.newSession(id: id), forDocument: ref)
                 return 1
             } catch {
@@ -86,9 +89,6 @@ class ListSessionRepository<T: ListSessionDocument>: GenericRepository<T> {
     }
 
     // MARK: - Assignment writes
-
-    /// Assigns every given item in a single write. Each item is its own map key,
-    /// so this cannot conflict with another client assigning different items.
     func assign(
         sessionId: String,
         itemIds: [String],
