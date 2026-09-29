@@ -14,6 +14,7 @@ struct InstalledListDetailsViewV2: View {
     
     @State private var showDetails: Bool = false
     @State private var showUninstallListCover: Bool = false
+    @State private var showUninstallRecordSheet: Bool = false
 
     init(viewModel: InstalledListDetailsViewModelV2) {
         self.viewModel = viewModel
@@ -57,6 +58,9 @@ struct InstalledListDetailsViewV2: View {
         .toolbar(.hidden)
         .fullScreenCover(isPresented: $showUninstallListCover) {
             InstalledListViewFactory().makeUninstallSheet(list: viewModel.installedListState)
+        }
+        .sheet(isPresented: $showUninstallRecordSheet) {
+            InstalledListViewFactory().makeUninstallRecordSheet(list: viewModel.installedListState)
         }
         .task {
             await viewModel.startListening()
@@ -314,6 +318,10 @@ private extension InstalledListDetailsViewV2 {
             if !viewModel.installedListState.uninstalled {
                 RDButton(variant: .red, leadingIcon: SFSymbols.shippingbox, label: "Uninstall List") {
                     showUninstallListCover = true
+                }
+            } else {
+                RDButton(variant: .outline, leadingIcon: SFSymbols.shippingbox, label: "Uninstall Summary") {
+                    showUninstallRecordSheet = true
                 }
             }
 

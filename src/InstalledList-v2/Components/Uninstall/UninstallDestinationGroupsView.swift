@@ -9,8 +9,6 @@ import SwiftUI
 
 typealias UninstallDestinationGroup = (label: String, items: [(item: ItemV2, room: RoomV2)])
 
-/// Items grouped by where they are headed rather than by room of origin — once
-/// something has a destination, that is the only question left about it.
 struct UninstallDestinationGroupsView<RowTrailing: View>: View {
     let groups: [UninstallDestinationGroup]
     @ViewBuilder let rowTrailing: (ItemV2) -> RowTrailing

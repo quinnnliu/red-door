@@ -7,9 +7,6 @@
 
 import SwiftUI
 
-/// An item shown with the room it was installed in. The trailing slot is left to
-/// the calling screen, which is the only one that knows whether the row is still
-/// editable.
 struct UninstallAssignedItemRow<Trailing: View>: View {
     let item: ItemV2
     let room: RoomV2

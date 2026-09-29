@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-/// The essentials group as a single row. One destination covers every member, so
-/// the members are listed read-only to make clear what moves together.
 struct UninstallEssentialsSummaryView<Trailing: View>: View {
     let group: EssentialsGroup
     let items: [ItemV2]

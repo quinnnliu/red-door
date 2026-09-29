@@ -1,0 +1,205 @@
+//
+//  UninstallRecordSheetViewModel.swift
+//  RedDoor
+//
+//  Created by Quinn Liu on 9/28/26.
+//
+
+import Foundation
+
+/// Read-only view of a committed uninstall. The session document is retired in
+/// place rather than deleted, so the plan doubles as the record of where every
+/// item was sent — which is not the same question as where an item is now.
+@Observable
+final class UninstallRecordSheetViewModel {
+
+    // MARK: - Documents
+
+    let installedList: InstalledListV2
+    var record: UninstallSession? = nil
+    var rooms: [RoomV2] = []
+    var itemsByRoom: [String: [ItemV2]] = [:] // key: roomId
+    var warehouses: [WarehouseV2] = []
+
+    var essentialsGroupState: EssentialsGroup? = nil
+    var essentialsAccessories: Accessories? = nil
+    var essentialsItems: [ItemV2] = []
+
+    var copyPullList: PullListV2? = nil
+    var existingPullList: PullListV2? = nil
+
+    // MARK: - Local UI state
+
+    var isLoading: Bool = false
+
+    /// Uninstalled before records were kept, so there is nothing to show.
+    var recordMissing: Bool = false
+    var showAlert: Bool = false
+    var alertMessage: String = ""
+
+    // MARK: - Collaborators
+
+    private let loader: ItemsListLoader
+    private let installedRoomRepo: RoomRepository
+    private let itemRepo: ItemRepository
+    private let sessionRepo: UninstallSessionRepository
+    private let pullListRepo: PullListRepository
+    private let essentialsRepo: EssentialsRepository
+    private let accessoriesRepo: AccessoriesRepository
+    private let warehouseRepo: WarehouseRepository
+    private let configService: ConfigurationService
+
+    // MARK: - init
+
+    init(
+        list: InstalledListV2,
+        installedRoomRepo: RoomRepository,
+        itemRepo: ItemRepository,
+        sessionRepo: UninstallSessionRepository,
+        pullListRepo: PullListRepository,
+        essentialsRepo: EssentialsRepository,
+        accessoriesRepo: AccessoriesRepository,
+        warehouseRepo: WarehouseRepository,
+        configService: ConfigurationService = .shared
+    ) {
+        self.installedList = list
+        self.installedRoomRepo = installedRoomRepo
+        self.itemRepo = itemRepo
+        self.sessionRepo = sessionRepo
+        self.pullListRepo = pullListRepo
+        self.essentialsRepo = essentialsRepo
+        self.accessoriesRepo = accessoriesRepo
+        self.warehouseRepo = warehouseRepo
+        self.configService = configService
+        self.loader = ItemsListLoader(itemRepo: itemRepo)
+    }
+}
+
+// MARK: - Loading
+
+extension UninstallRecordSheetViewModel {
+
+    /// One pass, no listeners: a committed record never changes.
+    @MainActor
+    func load() async {
+        guard record == nil, !recordMissing else { return }
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            let record = try await sessionRepo.get(id: installedList.id)
+            guard record.uninstalled else {
+                recordMissing = true
+                return
+            }
+            self.record = record
+        } catch {
+            recordMissing = true
+            return
+        }
+
+        do {
+            rooms = try await installedRoomRepo.getAll()
+                .sorted { $0.displayName < $1.displayName }
+            for room in rooms {
+                itemsByRoom[room.id] = try await loader.items(for: room)
+            }
+            warehouses = try await configService.getAll(using: warehouseRepo)
+            try await loadEssentials()
+            await resolveTargetLists()
+        } catch {
+            alertMessage = error.localizedDescription
+            showAlert = true
+        }
+    }
+
+    @MainActor
+    private func loadEssentials() async throws {
+        guard let record, let groupId = record.essentialsGroupId else { return }
+
+        essentialsGroupState = try await essentialsRepo.get(id: groupId)
+
+        // Members come from the record's own snapshot rather than the group's
+        // current membership, which changes the moment it is restaged elsewhere.
+        essentialsItems = try await itemRepo.get(ids: record.essentialsItemIds)
+            .sorted { $0.displayName < $1.displayName }
+
+        if let accessoriesId = essentialsGroupState?.accessoriesId {
+            essentialsAccessories = try await accessoriesRepo.get(id: accessoriesId)
+        }
+    }
+
+    /// Names only, and best-effort: a target list that has since been installed
+    /// or deleted falls back to a generic label rather than failing the screen.
+    @MainActor
+    private func resolveTargetLists() async {
+        guard let record else { return }
+
+        if let copyId = record.copyPullListId, record.targetsCopy {
+            copyPullList = try? await pullListRepo.get(id: copyId)
+        }
+        if let existingId = record.existingPullListId {
+            existingPullList = try? await pullListRepo.get(id: existingId)
+        }
+    }
+}
+
+// MARK: - Derived state
+
+extension UninstallRecordSheetViewModel {
+
+    var essentialsItemIds: Set<String> {
+        Set(record?.essentialsItemIds ?? [])
+    }
+
+    var uninstalledDateLabel: String? {
+        guard let raw = record?.uninstalledDate,
+              let date = ISO8601DateFormatter().date(from: raw)
+        else { return nil }
+        return date.formatted(date: .abbreviated, time: .shortened)
+    }
+
+    /// Essentials members are excluded: they render in their own section, the
+    /// same way the live flow assigns them as a unit.
+    var assignedItemsByDestination: [UninstallDestinationGroup] {
+        guard let record else { return [] }
+
+        var order: [String] = []
+        var groups: [String: [(item: ItemV2, room: RoomV2)]] = [:]
+
+        for room in rooms {
+            for item in itemsByRoom[room.id] ?? [] where !essentialsItemIds.contains(item.id) {
+                guard let destination = record.itemDestinations[item.id] else { continue }
+                let label = label(for: destination)
+                if groups[label] == nil {
+                    order.append(label)
+                    groups[label] = []
+                }
+                groups[label]?.append((item: item, room: room))
+            }
+        }
+
+        return order.map { label in
+            (label: label, items: groups[label]!.sorted { $0.item.displayName < $1.item.displayName })
+        }
+    }
+
+    var assignedItemCount: Int {
+        assignedItemsByDestination.reduce(0) { $0 + $1.items.count }
+    }
+
+    var essentialsDestinationLabel: String? {
+        record?.essentialsDestination.map { label(for: $0) }
+    }
+
+    func label(for destination: UninstallDestination) -> String {
+        switch destination.type {
+        case .warehouse:
+            warehouses.first(where: { $0.id == destination.locationId })?.displayName ?? "Warehouse"
+        case .copy:
+            copyPullList?.displayName ?? "Copy of \(installedList.displayName)"
+        case .existingList:
+            existingPullList?.displayName ?? "Pull list"
+        }
+    }
+}
