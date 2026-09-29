@@ -124,7 +124,7 @@ extension ItemDetailsViewV2 {
                     .padding(.vertical, 8)
                     .padding(.horizontal, 12)
                     .background(.red)
-                    .cornerRadius(12)
+                    .cornerRadius(Constants.CornerRadius.large)
                 }
             }
 

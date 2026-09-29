@@ -69,14 +69,14 @@ struct ItemLabelGeneratedPDFView: View {
                         .foregroundColor(.secondary)
                         .padding(8)
                         .background(Color(.systemGray5))
-                        .cornerRadius(8)
+                        .cornerRadius(Constants.CornerRadius.medium)
                 } else {
                     Text(model.description)
                         .font(.system(size: 12))
                         .foregroundColor(.primary)
                         .padding(8)
                         .background(Color(.systemGray5))
-                        .cornerRadius(8)
+                        .cornerRadius(Constants.CornerRadius.medium)
                 }
             }
         }

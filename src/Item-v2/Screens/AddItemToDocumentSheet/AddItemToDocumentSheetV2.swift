@@ -162,7 +162,7 @@ private extension AddItemToDocumentSheetV2 {
             .padding(8)
             .buttonStyle(.plain)
             .background(.red)
-            .cornerRadius(8)
+            .cornerRadius(Constants.CornerRadius.medium)
         }
     }
     

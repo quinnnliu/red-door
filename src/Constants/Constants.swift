@@ -24,6 +24,12 @@ enum Constants {
     enum Animation {
         static let snappy: SwiftUI.Animation = .spring(duration: 0.2, bounce: 0.1)
     }
+    
+    enum CornerRadius {
+        static let small: CGFloat = 4
+        static let medium: CGFloat = 8
+        static let large: CGFloat = 12
+    }
 }
 
 enum SFSymbols {

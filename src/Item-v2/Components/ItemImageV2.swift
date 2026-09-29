@@ -31,7 +31,7 @@ struct ItemImageView: View {
         }
         .frame(width: Constants.Screen.screenWidthPadding / 2, height: Constants.Screen.screenWidthPadding / 2)
         .contentShape(Rectangle())
-        .cornerRadius(12)
+        .cornerRadius(Constants.CornerRadius.large)
     }
 }
 
@@ -67,7 +67,7 @@ struct ItemImageEditor: View {
         }
         .frame(width: Constants.Screen.screenWidthPadding / 2, height: Constants.Screen.screenWidthPadding / 2)
         .contentShape(Rectangle())
-        .cornerRadius(12)
+        .cornerRadius(Constants.CornerRadius.large)
     }
 }
 

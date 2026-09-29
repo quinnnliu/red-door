@@ -53,7 +53,7 @@ struct AddressSearchView: View {
                         .tag(item)
                 }
             }
-            .cornerRadius(8)
+            .cornerRadius(Constants.CornerRadius.medium)
             .layoutPriority(searchResults.isEmpty ? 1 : 0)
 
             ScrollView {

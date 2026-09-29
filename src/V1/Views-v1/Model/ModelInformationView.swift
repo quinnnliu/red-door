@@ -27,7 +27,7 @@ struct ModelInformationView: View {
                         .foregroundColor(model.description.isEmpty ? .secondary : .primary)
                         .padding(8)
                         .background(Color(.systemGray4))
-                        .cornerRadius(8)
+                        .cornerRadius(Constants.CornerRadius.medium)
                 }
 
                 // MARK: Colors
@@ -45,7 +45,7 @@ struct ModelInformationView: View {
                                 .foregroundColor(Model.colorMap[model.primaryColor] ?? .black)
                                 .padding(8)
                                 .background(Color(.systemGray4))
-                                .cornerRadius(6)
+                                .cornerRadius(Constants.CornerRadius.small)
                         }
                     }
 
@@ -60,13 +60,13 @@ struct ModelInformationView: View {
                                 .foregroundColor(Model.colorMap[model.secondaryColor] ?? .black)
                                 .padding(8)
                                 .background(Color(.systemGray4))
-                                .cornerRadius(6)
+                                .cornerRadius(Constants.CornerRadius.small)
                         }
                     }
                 }
                 .padding(8)
                 .background(Color(.systemGray4))
-                .cornerRadius(8)
+                .cornerRadius(Constants.CornerRadius.medium)
             }
 
 
@@ -84,7 +84,7 @@ struct ModelInformationView: View {
                             .foregroundColor(.primary)
                             .padding(8)
                             .background(Color(.systemGray4))
-                            .cornerRadius(6)
+                            .cornerRadius(Constants.CornerRadius.small)
                     }
 
                     Spacer()
@@ -96,12 +96,12 @@ struct ModelInformationView: View {
                             .foregroundColor(.primary)
                             .padding(8)
                             .background(Color(.systemGray4))
-                            .cornerRadius(6)
+                            .cornerRadius(Constants.CornerRadius.small)
                     }
                 }
                 .padding(8)
                 .background(Color(.systemGray4))
-                .cornerRadius(8)
+                .cornerRadius(Constants.CornerRadius.medium)
             }
 
             // MARK: Details
@@ -122,7 +122,7 @@ struct ModelInformationView: View {
                                 Image(systemName: Model.typeMap[model.type] ?? "camera.metering.unknown")
                                     .padding(8)
                                     .background(Color(.systemGray4))
-                                    .cornerRadius(6)
+                                    .cornerRadius(Constants.CornerRadius.small)
                             }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -141,11 +141,11 @@ struct ModelInformationView: View {
                 }
                 .padding(8)
                 .background(Color(.systemGray4))
-                .cornerRadius(8)
+                .cornerRadius(Constants.CornerRadius.medium)
             }
         }
         .padding(8)
         .background(Color(.systemGray5))
-        .cornerRadius(8)
+        .cornerRadius(Constants.CornerRadius.medium)
     }
 }

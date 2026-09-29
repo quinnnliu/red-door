@@ -151,13 +151,13 @@ private extension CreateEssentialsGroupView {
                         .multilineTextAlignment(.center)
                         .padding(8)
                         .background(Color(.systemGray5))
-                        .cornerRadius(8)
+                        .cornerRadius(Constants.CornerRadius.medium)
                         .font(.caption)
 
                     TextField("New type name", text: $viewModel.newGroupTypeName)
                         .padding(8)
                         .background(Color(.systemGray5))
-                        .cornerRadius(8)
+                        .cornerRadius(Constants.CornerRadius.medium)
                         .font(.caption)
 
                     RDButton(variant: .default, size: .sm, label: "Create", fullWidth: false) {
@@ -181,7 +181,7 @@ private extension CreateEssentialsGroupView {
                 }
                 .padding(12)
                 .background(Color(.systemGray5))
-                .cornerRadius(8)
+                .cornerRadius(Constants.CornerRadius.medium)
             } else {
                 RDButton(variant: .outline, size: .default, label: "Select Type", fullWidth: true) {
                     viewModel.showGroupTypePicker = true
@@ -226,7 +226,7 @@ private extension CreateEssentialsGroupView {
                 }
                 .padding(10)
                 .background(Color(.systemGray5))
-                .cornerRadius(8)
+                .cornerRadius(Constants.CornerRadius.medium)
             } else {
                 RDButton(variant: .outline, size: .default, leadingIcon: "plus", label: "Add Accessories", fullWidth: true) {
                     viewModel.showAddAccessoriesSheet = true

@@ -143,7 +143,7 @@ struct ItemDetailView: View {
                 .foregroundColor(.primary)
                 .padding(6)
                 .background(Color(.systemGray5))
-                .cornerRadius(8)
+                .cornerRadius(Constants.CornerRadius.medium)
             }
 
             HStack(alignment: .center, spacing: 0) {
@@ -163,7 +163,7 @@ struct ItemDetailView: View {
                             .font(.caption)
                             .padding(8)
                             .background(Color(.systemGray5))
-                            .cornerRadius(6)
+                            .cornerRadius(Constants.CornerRadius.small)
                     }
                 }
             }
@@ -192,7 +192,7 @@ struct ItemDetailView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(8)
                         .background(Color(.systemGray5))
-                        .cornerRadius(6)
+                        .cornerRadius(Constants.CornerRadius.small)
                 }
             }
         }
@@ -220,7 +220,7 @@ struct ItemDetailView: View {
                     }
                     .padding(8)
                     .background(.red)
-                    .cornerRadius(6)
+                    .cornerRadius(Constants.CornerRadius.small)
                 }
 
                 Spacer()
@@ -261,7 +261,7 @@ struct ItemDetailView: View {
                         .resizable()
                         .scaledToFill()
                         .frame(Constants.Screen.screenWidthPadding / 2)
-                        .cornerRadius(8)
+                        .cornerRadius(Constants.CornerRadius.medium)
                 } placeholder: {
                     RoundedRectangle(cornerRadius: 12)
                         .foregroundColor(Color(.systemGray5))

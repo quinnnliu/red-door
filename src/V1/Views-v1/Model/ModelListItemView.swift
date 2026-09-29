@@ -88,7 +88,7 @@ struct ModelListItemView: View {
         }
         .padding(8)
         .background(Color(.systemGray5))
-        .cornerRadius(8)
+        .cornerRadius(Constants.CornerRadius.medium)
     }
 
 
@@ -106,7 +106,7 @@ struct ModelListItemView: View {
                         .resizable()
                         .scaledToFill()
                         .frame(imageWidth)
-                        .cornerRadius(6)
+                        .cornerRadius(Constants.CornerRadius.small)
                 case .failure:
                     Image(systemName: SFSymbols.photoBadgePlus)
                         .frame(imageWidth)

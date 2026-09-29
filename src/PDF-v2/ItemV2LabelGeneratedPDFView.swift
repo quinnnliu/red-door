@@ -67,7 +67,7 @@ struct ItemV2LabelGeneratedPDFView: View {
                     .foregroundColor(.primary)
                     .padding(8)
                     .background(Color(.systemGray5))
-                    .cornerRadius(8)
+                    .cornerRadius(Constants.CornerRadius.medium)
             }
         }
         .fixedSize(horizontal: false, vertical: true)

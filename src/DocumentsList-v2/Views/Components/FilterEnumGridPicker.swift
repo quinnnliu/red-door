@@ -29,7 +29,7 @@ struct FilterEnumGridPicker<T: Filterable>: View {
         }
         .padding(8)
         .background(Color(.systemGray5))
-        .cornerRadius(8)
+        .cornerRadius(Constants.CornerRadius.medium)
         .onTapGesture { isActive = false }
     }
 

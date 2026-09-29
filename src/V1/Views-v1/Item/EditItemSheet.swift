@@ -45,7 +45,7 @@ struct EditItemSheet: View {
                         .toggleStyle(SwitchToggleStyle(tint: .red))
                         .padding(8)
                         .background(Color(.systemGray5))
-                        .cornerRadius(8)
+                        .cornerRadius(Constants.CornerRadius.medium)
 
                     if editingItem.attention {
                         VStack(alignment: .leading, spacing: 4) {
@@ -61,7 +61,7 @@ struct EditItemSheet: View {
                                 }
                                 .padding(8)
                                 .background(Color(.systemGray5))
-                                .cornerRadius(8)
+                                .cornerRadius(Constants.CornerRadius.medium)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }

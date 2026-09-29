@@ -56,7 +56,7 @@ struct TransparentButton: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(backgroundColor.opacity(0.2))
-        .cornerRadius(8)
+        .cornerRadius(Constants.CornerRadius.medium)
         .frame(maxWidth: .infinity)
     }
 

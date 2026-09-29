@@ -59,7 +59,7 @@ struct EditPullListDetailsSheet: View {
                 TextField("", text: $editingList.client)
                     .padding(6)
                     .background(Color(.systemGray5))
-                    .cornerRadius(8)
+                    .cornerRadius(Constants.CornerRadius.medium)
             }
 
             RoomsList()

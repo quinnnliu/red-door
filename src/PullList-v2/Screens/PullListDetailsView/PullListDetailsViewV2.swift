@@ -256,7 +256,7 @@ private extension PullListDetailsViewV2 {
                 .font(.subheadline)
                 .padding(12)
                 .background(Color(.systemGray6))
-                .cornerRadius(8)
+                .cornerRadius(Constants.CornerRadius.medium)
                 
                 if let accessories = viewModel.essentialsAccessories {
                     HStack {
@@ -269,7 +269,7 @@ private extension PullListDetailsViewV2 {
                     }
                     .padding(12)
                     .background(Color(.systemGray6))
-                    .cornerRadius(8)
+                    .cornerRadius(Constants.CornerRadius.medium)
                 }
             }
         }
@@ -476,7 +476,7 @@ private extension PullListDetailsViewV2 {
 
             ShowDetailsButton
         }
-        .cornerRadius(12)
+        .cornerRadius(Constants.CornerRadius.large)
     }
 }
 

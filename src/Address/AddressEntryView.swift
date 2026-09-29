@@ -64,7 +64,7 @@ struct AddressEntryView: View {
                     }
                     .pickerStyle(.menu)
                     .background(Color(.systemGray5))
-                    .cornerRadius(8)
+                    .cornerRadius(Constants.CornerRadius.medium)
                 }
 
                 FormField(label: "Country", text: $country)
@@ -89,7 +89,7 @@ struct AddressEntryView: View {
             TextField("", text: text)
                 .padding(6)
                 .background(Color(.systemGray5))
-                .cornerRadius(8)
+                .cornerRadius(Constants.CornerRadius.medium)
         }
     }
 

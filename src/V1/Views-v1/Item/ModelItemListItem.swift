@@ -50,6 +50,6 @@ struct ModelItemListItem: View {
         .frame(maxWidth: .infinity)
         .padding(8)
         .background(Color(.systemGray5))
-        .cornerRadius(8)
+        .cornerRadius(Constants.CornerRadius.medium)
     }
 }

@@ -50,7 +50,7 @@ struct ItemImage: View {
             }
         } label: {
             StandardView()
-                .cornerRadius(12)
+                .cornerRadius(Constants.CornerRadius.large)
         }
         .tint(.clear)
         .alert(

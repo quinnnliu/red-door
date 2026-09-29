@@ -152,7 +152,7 @@ private extension CreateAccessoriesView {
                         .font(.caption)
                         .padding(10)
                         .background(Color(.systemGray5))
-                        .cornerRadius(8)
+                        .cornerRadius(Constants.CornerRadius.medium)
 
                     RDButton(variant: .default, size: .default, label: "Create", fullWidth: false) {
                         viewModel.createAndSelectNewType()
@@ -162,7 +162,7 @@ private extension CreateAccessoriesView {
             }
             .padding(8)
             .background(Color(.systemGray6))
-            .cornerRadius(8)
+            .cornerRadius(Constants.CornerRadius.medium)
             
             VStack {
                 Text("Select Existing Type")
@@ -175,7 +175,7 @@ private extension CreateAccessoriesView {
             }
             .padding(8)
             .background(Color(.systemGray6))
-            .cornerRadius(8)
+            .cornerRadius(Constants.CornerRadius.medium)
             
         }
         .frameHorizontalPadding()
@@ -213,7 +213,7 @@ private extension CreateAccessoriesView {
                 .lineLimit(3...6)
                 .padding(10)
                 .background(Color(.systemGray5))
-                .cornerRadius(8)
+                .cornerRadius(Constants.CornerRadius.medium)
         }
     }
 }

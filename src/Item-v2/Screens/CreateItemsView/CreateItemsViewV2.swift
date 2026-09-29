@@ -109,7 +109,7 @@ struct CreateItemsViewV2: View {
         TextField("Items Name", text: $viewModel.itemState.baseName)
             .padding(6)
             .background(viewModel.isImageSelected ? Color.clear : Color(.systemGray5))
-            .cornerRadius(8)
+            .cornerRadius(Constants.CornerRadius.medium)
             .multilineTextAlignment(.center)
             .disabled(viewModel.templateState != nil)
     }

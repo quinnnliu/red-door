@@ -100,7 +100,7 @@ struct CreateModelView: View {
         TextField("Model Name", text: $viewModel.selectedModel.name)
             .padding(6)
             .background(isImageSelected ? Color.clear : Color(.systemGray5))
-            .cornerRadius(8)
+            .cornerRadius(Constants.CornerRadius.medium)
             .multilineTextAlignment(.center)
     }
 }

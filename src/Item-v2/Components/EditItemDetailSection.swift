@@ -41,7 +41,7 @@ struct EditItemDetailSection: View {
                     .disabled(description.count > 100)
                     .padding(8)
                     .background(Color(.systemGray5))
-                    .cornerRadius(8)
+                    .cornerRadius(Constants.CornerRadius.medium)
             }
 
             ColorMaterialRow
@@ -72,7 +72,7 @@ struct EditItemDetailSection: View {
                         )
                         .padding(8)
                         .background(Color(.systemGray5))
-                        .cornerRadius(8)
+                        .cornerRadius(Constants.CornerRadius.medium)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -95,7 +95,7 @@ struct EditItemDetailSection: View {
                         )
                         .padding(8)
                         .background(Color(.systemGray5))
-                        .cornerRadius(8)
+                        .cornerRadius(Constants.CornerRadius.medium)
                         
                     }
                 }
@@ -148,7 +148,7 @@ struct EditItemDetailSection: View {
             }
             .padding(8)
             .background(Color(.systemGray5))
-            .cornerRadius(8)
+            .cornerRadius(Constants.CornerRadius.medium)
         }
 
     }
@@ -207,7 +207,7 @@ struct EditItemDetailSection: View {
             }
             .padding(8)
             .background(Color(.systemGray5))
-            .cornerRadius(8)
+            .cornerRadius(Constants.CornerRadius.medium)
         }
 
     }
@@ -241,7 +241,7 @@ struct EditItemDetailSection: View {
                     .foregroundColor(.blue)
                     .padding(8)
                     .background(Color(.systemGray4))
-                    .cornerRadius(6)
+                    .cornerRadius(Constants.CornerRadius.small)
             }
         }
     }
@@ -266,7 +266,7 @@ struct EditItemDetailSection: View {
                     .foregroundColor(selectedColor.color == .white || selectedColor.color == .clear ? .black : .white)
                     .padding(8)
                     .background(selectedColor.color)
-                    .cornerRadius(6)
+                    .cornerRadius(Constants.CornerRadius.small)
             }
         }
     }

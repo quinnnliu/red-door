@@ -28,7 +28,7 @@ struct ItemModelImage: View {
             }
         }
         .frame(size)
-        .cornerRadius(8)
+        .cornerRadius(Constants.CornerRadius.medium)
     }
     
     // MARK: Item Cached Async Image

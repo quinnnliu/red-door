@@ -42,7 +42,7 @@ struct EditModelInformationSection: View {
                     .disabled(viewModel.selectedModel.description.count > 100)
                     .padding(8)
                     .background(Color(.systemGray5))
-                    .cornerRadius(8)
+                    .cornerRadius(Constants.CornerRadius.medium)
             }
 
             VStack(alignment: .leading, spacing: 4) {
@@ -53,7 +53,7 @@ struct EditModelInformationSection: View {
                 ColorPickerRow()
                     .padding(8)
                     .background(Color(.systemGray5))
-                    .cornerRadius(8)
+                    .cornerRadius(Constants.CornerRadius.medium)
             }
 
             VStack(alignment: .leading, spacing: 4) {
@@ -64,7 +64,7 @@ struct EditModelInformationSection: View {
                 MaterialPickerRow()
                     .padding(8)
                     .background(Color(.systemGray5))
-                    .cornerRadius(8)
+                    .cornerRadius(Constants.CornerRadius.medium)
             }
 
             VStack(alignment: .leading, spacing: 4) {
@@ -86,7 +86,7 @@ struct EditModelInformationSection: View {
                                         Image(systemName: iconName)
                                             .padding(4)
                                             .background(Color(.systemGray5))
-                                            .cornerRadius(6)
+                                            .cornerRadius(Constants.CornerRadius.small)
                                     }
                                 }
                             }
@@ -113,7 +113,7 @@ struct EditModelInformationSection: View {
                 }
                 .padding(8)
                 .background(Color(.systemGray5))
-                .cornerRadius(8)
+                .cornerRadius(Constants.CornerRadius.medium)
             }
         }
     }
@@ -236,7 +236,7 @@ struct MaterialPickerToggle: View {
                     .foregroundColor(.blue)
                     .padding(8)
                     .background(isActive ? Color.clear : Color(.systemGray4) )
-                    .cornerRadius(6)
+                    .cornerRadius(Constants.CornerRadius.small)
             }
         }
     }
@@ -264,7 +264,7 @@ struct ColorPickerToggle: View {
                     .foregroundStyle(Model.colorMap[selectedColor] ?? .black)
                     .padding(8)
                     .background(isActive ? Color.clear : Color(.systemGray4))
-                    .cornerRadius(6)
+                    .cornerRadius(Constants.CornerRadius.small)
             }
         }
     }

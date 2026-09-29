@@ -108,7 +108,7 @@ struct ModelSecondaryImages: View {
                             .resizable()
                             .aspectRatio(1, contentMode: .fill)
                             .contentShape(Rectangle())
-                            .cornerRadius(12)
+                            .cornerRadius(Constants.CornerRadius.large)
                     } placeholder: {
                         PlaceholderRectangle()
                     }
@@ -117,7 +117,7 @@ struct ModelSecondaryImages: View {
                         .resizable()
                         .aspectRatio(1, contentMode: .fill)
                         .contentShape(Rectangle())
-                        .cornerRadius(12)
+                        .cornerRadius(Constants.CornerRadius.large)
                 } else {
                     PlaceholderRectangle()
                 }

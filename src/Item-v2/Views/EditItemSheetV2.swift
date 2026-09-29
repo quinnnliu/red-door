@@ -121,7 +121,7 @@ struct EditItemSheetV2: View {
         TextField("Item Name", text: $editingItem.baseName)
             .padding(6)
             .background(Color(.systemGray5))
-            .cornerRadius(8)
+            .cornerRadius(Constants.CornerRadius.medium)
             .multilineTextAlignment(.center)
     }
     

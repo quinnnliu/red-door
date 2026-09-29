@@ -117,7 +117,7 @@ struct EditModelInformationSheet: View {
         TextField("Model Name", text: $editingViewModel.selectedModel.name)
             .padding(6)
             .background(isImageSelected ? Color.clear : Color(.systemGray5))
-            .cornerRadius(8)
+            .cornerRadius(Constants.CornerRadius.medium)
             .multilineTextAlignment(.center)
     }
     

@@ -160,14 +160,14 @@ struct StagingRoomItemView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(8)
                         .background(Color(.systemGray5))
-                        .cornerRadius(6)
+                        .cornerRadius(Constants.CornerRadius.small)
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(8)
         .background(Color(.systemGray5))
-        .cornerRadius(8)
+        .cornerRadius(Constants.CornerRadius.medium)
     }
 
     // MARK: Model Information
@@ -192,7 +192,7 @@ struct StagingRoomItemView: View {
                     }
                     .padding(8)
                     .background(.red)
-                    .cornerRadius(6)
+                    .cornerRadius(Constants.CornerRadius.small)
                 }
 
                 Spacer()
@@ -231,7 +231,7 @@ struct StagingRoomItemView: View {
                     .resizable()
                     .scaledToFill()
                     .frame(Constants.Screen.screenWidthPadding / 2)
-                    .cornerRadius(8)
+                    .cornerRadius(Constants.CornerRadius.medium)
                 } placeholder: {
                     RoundedRectangle(cornerRadius: 12)
                         .foregroundColor(Color(.systemGray5))
@@ -275,7 +275,7 @@ struct StagingRoomItemView: View {
                     .resizable()
                     .scaledToFill()
                     .frame(Constants.Screen.screenWidthPadding / 2)
-                    .cornerRadius(8)
+                    .cornerRadius(Constants.CornerRadius.medium)
                 } placeholder: {
                     RoundedRectangle(cornerRadius: 12)
                         .foregroundColor(Color(.systemGray5))

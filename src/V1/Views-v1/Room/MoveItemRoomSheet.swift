@@ -48,7 +48,7 @@ struct MoveItemRoomSheet: View {
                                 .padding()
                                 .frame(maxWidth: .infinity)
                                 .background(Color(.systemGray5))
-                                .cornerRadius(8)
+                                .cornerRadius(Constants.CornerRadius.medium)
                                 .foregroundColor(.primary)
                                 .bold()
                         }

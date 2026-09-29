@@ -94,7 +94,7 @@ struct UnstageItemSheet: View {
             .frame(maxWidth: .infinity)
             .padding()
             .background(Color.gray.opacity(0.1))
-            .cornerRadius(8)
+            .cornerRadius(Constants.CornerRadius.medium)
         }
         .buttonStyle(PlainButtonStyle())
     }

@@ -20,7 +20,7 @@ struct ItemDetailSection: View {
                     .foregroundColor(item.description.isEmpty ? .secondary : .primary)
                     .padding(8)
                     .background(Color(.systemGray4))
-                    .cornerRadius(8)
+                    .cornerRadius(Constants.CornerRadius.medium)
             }
             
             // MARK: Type, Color, Material
@@ -37,7 +37,7 @@ struct ItemDetailSection: View {
                         }
                         .padding(6)
                         .background(Color(.systemGray4))
-                        .cornerRadius(6)
+                        .cornerRadius(Constants.CornerRadius.small)
                     }
                     
                     if let color = item.color.color {
@@ -51,7 +51,7 @@ struct ItemDetailSection: View {
                             }
                             .padding(6)
                             .background(Color(.systemGray4))
-                            .cornerRadius(6)
+                            .cornerRadius(Constants.CornerRadius.small)
                         }
                     }
                     
@@ -62,7 +62,7 @@ struct ItemDetailSection: View {
                         Text(item.material.title)
                             .padding(6)
                             .background(Color(.systemGray4))
-                            .cornerRadius(6)
+                            .cornerRadius(Constants.CornerRadius.small)
                     }
                     
                     HStack {
@@ -87,7 +87,7 @@ struct ItemDetailSection: View {
                 }
                 .padding(8)
                 .background(Color(.systemGray4))
-                .cornerRadius(8)
+                .cornerRadius(Constants.CornerRadius.medium)
             }
             
             // MARK: Purchase Info (only shown if any field is set)
@@ -103,7 +103,7 @@ struct ItemDetailSection: View {
                                 Text(String(format: "%.2f", value))
                                     .padding(6)
                                     .background(Color(.systemGray4))
-                                    .cornerRadius(6)
+                                    .cornerRadius(Constants.CornerRadius.small)
                             }
                         }
                         if let brand = item.brand {
@@ -113,7 +113,7 @@ struct ItemDetailSection: View {
                                 Text(brand)
                                     .padding(6)
                                     .background(Color(.systemGray4))
-                                    .cornerRadius(6)
+                                    .cornerRadius(Constants.CornerRadius.small)
                             }
                         }
                         if let location = item.purchaseLocation {
@@ -123,7 +123,7 @@ struct ItemDetailSection: View {
                                 Text(location)
                                     .padding(6)
                                     .background(Color(.systemGray4))
-                                    .cornerRadius(6)
+                                    .cornerRadius(Constants.CornerRadius.small)
                             }
                         }
                         if let date = item.datePurchased {
@@ -133,13 +133,13 @@ struct ItemDetailSection: View {
                                 Text(date)
                                     .padding(6)
                                     .background(Color(.systemGray4))
-                                    .cornerRadius(6)
+                                    .cornerRadius(Constants.CornerRadius.small)
                             }
                         }
                     }
                     .padding(8)
                     .background(Color(.systemGray4))
-                    .cornerRadius(8)
+                    .cornerRadius(Constants.CornerRadius.medium)
                 }
             }
             
@@ -152,13 +152,13 @@ struct ItemDetailSection: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(8)
                         .background(Color.red.opacity(0.1))
-                        .cornerRadius(8)
+                        .cornerRadius(Constants.CornerRadius.medium)
                 }
             }
         }
         .padding(8)
         .background(Color(.systemGray5))
-        .cornerRadius(8)
+        .cornerRadius(Constants.CornerRadius.medium)
     }
     
     private func SectionLabel(_ title: String) -> some View {

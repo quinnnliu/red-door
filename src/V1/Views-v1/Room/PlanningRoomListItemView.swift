@@ -36,7 +36,7 @@ struct PreviewRoomListItemView: View {
         }
         .padding()
         .background(Color(.systemGray5))
-        .cornerRadius(6)
+        .cornerRadius(Constants.CornerRadius.small)
         .task {
             await viewModel.loadItemsAndModels()
         }

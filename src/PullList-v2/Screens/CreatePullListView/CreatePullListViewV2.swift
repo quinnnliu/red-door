@@ -56,7 +56,7 @@ struct CreatePullListViewV2: View {
                     TextField("", text: $viewModel.pullListState.clientId)
                         .padding(6)
                         .background(Color(.systemGray5))
-                        .cornerRadius(8)
+                        .cornerRadius(Constants.CornerRadius.medium)
                 }
                 
                 HStack(spacing: 0) {

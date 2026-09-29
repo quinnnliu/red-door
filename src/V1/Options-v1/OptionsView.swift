@@ -39,7 +39,7 @@ struct OptionsView: View {
                 .padding(12)
                 .frame(maxWidth: .infinity)
                 .background(Color(.systemGray5))
-                .cornerRadius(8)
+                .cornerRadius(Constants.CornerRadius.medium)
                 .bold()
                 .foregroundColor(.red)
                 

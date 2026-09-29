@@ -172,14 +172,14 @@ struct InstalledListItemDetailsView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(8)
                         .background(Color(.systemGray5))
-                        .cornerRadius(6)
+                        .cornerRadius(Constants.CornerRadius.small)
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(8)
         .background(Color(.systemGray5))
-        .cornerRadius(8)
+        .cornerRadius(Constants.CornerRadius.medium)
     }
 
     // MARK: - Footer

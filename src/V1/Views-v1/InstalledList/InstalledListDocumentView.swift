@@ -185,7 +185,7 @@ struct InstalledListDocumentView: View {
             }
             .padding(8)
             .background(Color(.systemGray5))
-            .cornerRadius(6)
+            .cornerRadius(Constants.CornerRadius.small)
             .frame(maxWidth: .infinity)
             
             ScrollView {

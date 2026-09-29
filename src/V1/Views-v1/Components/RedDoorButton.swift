@@ -74,7 +74,7 @@ struct RedDoorButton: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(type.buttonColor)
-        .cornerRadius(8)
+        .cornerRadius(Constants.CornerRadius.medium)
         .frame(maxWidth: .infinity)
     }
 }

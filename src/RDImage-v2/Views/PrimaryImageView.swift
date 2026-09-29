@@ -59,7 +59,7 @@ struct PrimaryImageView: View {
             PrimaryImageOverlay(image)
         }
         .contentShape(Rectangle())
-        .cornerRadius(12)
+        .cornerRadius(Constants.CornerRadius.large)
     }
 }
 
@@ -163,7 +163,7 @@ private struct PrimaryImageContent: View {
         }
         .frame(size)
         .clipped()
-        .cornerRadius(12)
+        .cornerRadius(Constants.CornerRadius.large)
     }
 }
 
@@ -229,7 +229,7 @@ private struct PrimaryImageOverlay: View {
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .cornerRadius(8)
+                    .cornerRadius(Constants.CornerRadius.medium)
                     .shadow(radius: 10)
                 
             } else if let imageURL = image?.imageURL {
@@ -239,7 +239,7 @@ private struct PrimaryImageOverlay: View {
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .cornerRadius(8)
+                    .cornerRadius(Constants.CornerRadius.medium)
                     .shadow(radius: 10)
             }
             

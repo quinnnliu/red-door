@@ -188,7 +188,7 @@ struct PullListDocumentView: View {
         }
         .padding(12)
         .background(.red)
-        .cornerRadius(6)
+        .cornerRadius(Constants.CornerRadius.small)
     }
     
     // MARK: Planning Lists Section
@@ -209,7 +209,7 @@ struct PullListDocumentView: View {
             }
             .padding(12)
             .background(Color(.systemGray5))
-            .cornerRadius(6)
+            .cornerRadius(Constants.CornerRadius.small)
             .frame(maxWidth: .infinity)
 
             ScrollView {

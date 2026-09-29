@@ -207,7 +207,7 @@ private extension InstalledListDetailsViewV2 {
                 .font(.subheadline)
                 .padding(12)
                 .background(Color(.systemGray6))
-                .cornerRadius(8)
+                .cornerRadius(Constants.CornerRadius.medium)
 
                 if let accessories = viewModel.essentialsAccessories {
                     HStack {
@@ -220,7 +220,7 @@ private extension InstalledListDetailsViewV2 {
                     }
                     .padding(12)
                     .background(Color(.systemGray6))
-                    .cornerRadius(8)
+                    .cornerRadius(Constants.CornerRadius.medium)
                 }
             }
         }

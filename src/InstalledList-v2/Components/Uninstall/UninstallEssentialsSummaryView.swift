@@ -56,6 +56,7 @@ struct UninstallEssentialsSummaryView<Trailing: View>: View {
             }
         }
         .padding(4)
+        .toolbar(.hidden)
     }
 }
 

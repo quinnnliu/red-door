@@ -75,7 +75,7 @@ struct ItemListItemView: View {
         }
         .padding(8)
         .background(Color(.systemGray5))
-        .cornerRadius(12)
+        .cornerRadius(Constants.CornerRadius.large)
     }
 }
 

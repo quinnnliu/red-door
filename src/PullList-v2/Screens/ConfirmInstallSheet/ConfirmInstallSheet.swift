@@ -50,7 +50,7 @@ struct ConfirmInstallSheet: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
             .background(Color(.systemGray6))
-            .cornerRadius(8)
+            .cornerRadius(Constants.CornerRadius.medium)
 
             Spacer()
 

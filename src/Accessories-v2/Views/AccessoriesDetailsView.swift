@@ -103,7 +103,7 @@ private extension AccessoriesDetailsView {
                 .frame(maxWidth: .infinity, minHeight: 80, alignment: .topLeading)
                 .padding(10)
                 .background(Color(.systemGray5))
-                .cornerRadius(8)
+                .cornerRadius(Constants.CornerRadius.medium)
         }
     }
 }

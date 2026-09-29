@@ -26,7 +26,7 @@ struct ModelRDImageOverlay: View {
                         .resizable()
                         .scaledToFit()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .cornerRadius(8)
+                        .cornerRadius(Constants.CornerRadius.medium)
                         .shadow(radius: 10)
                 } else if let imageURL = selectedRDImage.imageURL {
                     CachedAsyncImage(url: imageURL) { image in
@@ -34,7 +34,7 @@ struct ModelRDImageOverlay: View {
                             .resizable()
                             .scaledToFit()
                             .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .cornerRadius(8)
+                            .cornerRadius(Constants.CornerRadius.medium)
                             .shadow(radius: 10)
                     } placeholder: {
                         Rectangle()

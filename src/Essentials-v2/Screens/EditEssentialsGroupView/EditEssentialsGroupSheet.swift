@@ -190,12 +190,12 @@ private extension EditEssentialsGroupSheet {
                         .multilineTextAlignment(.center)
                         .padding(10)
                         .background(Color(.systemGray5))
-                        .cornerRadius(8)
+                        .cornerRadius(Constants.CornerRadius.medium)
 
                     TextField("New type name", text: $viewModel.newGroupTypeName)
                         .padding(10)
                         .background(Color(.systemGray5))
-                        .cornerRadius(8)
+                        .cornerRadius(Constants.CornerRadius.medium)
 
                     RDButton(variant: .default, size: .sm, label: "Create", fullWidth: false) {
                         withAnimation(Constants.Animation.snappy) {
@@ -219,7 +219,7 @@ private extension EditEssentialsGroupSheet {
             }
             .padding(12)
             .background(Color(.systemGray5))
-            .cornerRadius(8)
+            .cornerRadius(Constants.CornerRadius.medium)
         }
     }
 }

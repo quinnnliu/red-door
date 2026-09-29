@@ -49,7 +49,7 @@ struct AddItemToDocumentDetailView: View {
                                 }
                                 .padding(8)
                                 .background(.red)
-                                .cornerRadius(6)
+                                .cornerRadius(Constants.CornerRadius.small)
                             }
 
                             if showInformation {
