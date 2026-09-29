@@ -159,15 +159,15 @@ private extension UninstallInstalledListSheet {
                     Section {
                         EssentialsGroupRow
                     } header: {
-                        SectionHeader("Essentials")
+                        UninstallSectionHeader(title: "Essentials")
                     }
                 }
 
                 Section {
                     UnassignedRoomGroups
                 } header: {
-                    SectionHeader(
-                        "Unassigned",
+                    UninstallSectionHeader(
+                        title: "Unassigned",
                         count: viewModel.unassignedItemsByRoom.reduce(0) { $0 + $1.items.count }
                     )
                 }
@@ -175,7 +175,7 @@ private extension UninstallInstalledListSheet {
                 Section {
                     AssignedDestinationGroups
                 } header: {
-                    SectionHeader("Assigned", count: viewModel.assignedItemCount)
+                    UninstallSectionHeader(title: "Assigned", count: viewModel.assignedItemCount)
                 }
             }
         }
@@ -202,83 +202,41 @@ private extension UninstallInstalledListSheet {
 
     // MARK: AssignedDestinationGroups
 
-    /// Once assigned, room of origin is no longer the organizing question —
-    /// items are flattened and grouped by where they're headed instead.
     var AssignedDestinationGroups: some View {
-        LazyVStack(alignment: .leading, spacing: 16) {
-            ForEach(viewModel.assignedItemsByDestination, id: \.label) { group in
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text(group.label)
-                            .font(.subheadline)
-                            .bold()
-
-                        Spacer()
-
-                        Text("(\(group.items.count))")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    ForEach(group.items, id: \.item.id) { entry in
-                        AssignedItemRow(entry.item, room: entry.room)
-                    }   
+        UninstallDestinationGroupsView(groups: viewModel.assignedItemsByDestination) { item in
+            if viewModel.isOwner {
+                RDButton(
+                    variant: .default,
+                    size: .icon,
+                    leadingIcon: SFSymbols.arrowUturnBackward
+                ) {
+                    handleAction(UninstallItemAction.unassign(itemId: item.id))
                 }
             }
         }
     }
 
-    // MARK: SectionHeader
-
-    func SectionHeader(_ title: String, count: Int? = nil) -> some View {
-        HStack {
-            Text(title)
-                .font(.headline)
-                .foregroundStyle(.red)
-
-            Spacer()
-
-            if let count = count {
-                Text("(\(count))")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-        }
-        .background(Color(.systemBackground))
-    }
-
     // MARK: EssentialsGroupRow
 
-    /// One destination control for the whole group, with its members listed
-    /// read-only so it's clear what moves together.
     @ViewBuilder
     var EssentialsGroupRow: some View {
         if let group = viewModel.essentialsGroupState {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 8) {
-                    Text(group.emoji)
-
-                    Text(group.displayName)
-                        .font(.headline)
-
-                    Spacer(minLength: 0)
-
-                    if let label = viewModel.essentialsDestinationLabel {
-                        Text(label)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(2)
-
-                        if viewModel.isOwner {
-                            RDButton(
-                                variant: .default,
-                                size: .icon,
-                                leadingIcon: SFSymbols.arrowUturnBackward
-                            ) {
-                                handleAction(UninstallItemAction.unassignEssentials)
-                            }
+            UninstallEssentialsSummaryView(
+                group: group,
+                items: viewModel.essentialsItems,
+                accessories: viewModel.essentialsAccessories,
+                destinationLabel: viewModel.essentialsDestinationLabel
+            ) {
+                if viewModel.isOwner {
+                    if viewModel.essentialsDestinationLabel != nil {
+                        RDButton(
+                            variant: .default,
+                            size: .icon,
+                            leadingIcon: SFSymbols.arrowUturnBackward
+                        ) {
+                            handleAction(UninstallItemAction.unassignEssentials)
                         }
-                    } else if viewModel.isOwner {
+                    } else {
                         Button {
                             handleAction(UninstallItemAction.toggleEssentials)
                         } label: {
@@ -289,29 +247,7 @@ private extension UninstallInstalledListSheet {
                         .buttonStyle(.plain)
                     }
                 }
-
-                Text("Moves as a unit")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                ForEach(viewModel.essentialsItems, id: \.id) { item in
-                    ItemListItemView(item: item, style: .display)
-                }
-
-                if let accessories = viewModel.essentialsAccessories {
-                    HStack(spacing: 8) {
-                        Image(systemName: SFSymbols.wrenchFill)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-
-                        Text(accessories.displayName)
-                            .font(.subheadline)
-
-                        Spacer(minLength: 0)
-                    }
-                }
             }
-            .padding(4)
         }
     }
 
@@ -333,26 +269,6 @@ private extension UninstallInstalledListSheet {
             handleAction(UninstallItemAction.toggleItem(itemId: item.id))
         }
         .allowsHitTesting(viewModel.isOwner)
-    }
-
-    // MARK: AssignedItemRow
-
-    /// No action passed, so no selection circle — an assigned item is changed
-    /// by reverting it, not by re-selecting it.
-    func AssignedItemRow(_ item: ItemV2, room: RoomV2) -> some View {
-        HStack(spacing: 8) {
-            ItemListItemView(item: item, style: .installation(room: room))
-
-            if viewModel.isOwner {
-                RDButton(
-                    variant: .default,
-                    size: .icon,
-                    leadingIcon: SFSymbols.arrowUturnBackward
-                ) {
-                    handleAction(UninstallItemAction.unassign(itemId: item.id))
-                }
-            }
-        }
     }
 
     // MARK: SelectionBar
