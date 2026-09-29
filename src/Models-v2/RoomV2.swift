@@ -9,7 +9,7 @@ import Foundation
 
 struct RoomV2: ItemsListableDocument {
     static let collectionName: String = "rooms"
-    static let orderByField: String = "name"
+    static let orderByField: String = RoomV2.CodingKeys.baseName.stringValue
     static let searchField: String = "base_name"
 
     var id: String

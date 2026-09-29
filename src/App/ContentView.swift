@@ -32,7 +32,7 @@ struct ContentView: View {
             }
             
             Tab("Installed",
-                systemImage: "list.bullet.clipboard.fill",
+                systemImage: SFSymbols.houseFill,
                 value: NavigationCoordinator.Tab.installedListV2
             ) {
                 InstalledListDocumentListViewV2(path: $coordinator.installedListV2Path)

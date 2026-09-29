@@ -7,9 +7,6 @@
 
 import Foundation
 
-/// Read-only view of a committed uninstall. The session document is retired in
-/// place rather than deleted, so the plan doubles as the record of where every
-/// item was sent — which is not the same question as where an item is now.
 @Observable
 final class UninstallRecordSheetViewModel {
 
@@ -100,7 +97,6 @@ extension UninstallRecordSheetViewModel {
 
         do {
             rooms = try await installedRoomRepo.getAll()
-                .sorted { $0.displayName < $1.displayName }
             for room in rooms {
                 itemsByRoom[room.id] = try await loader.items(for: room)
             }
@@ -159,47 +155,21 @@ extension UninstallRecordSheetViewModel {
         return date.formatted(date: .abbreviated, time: .shortened)
     }
 
-    /// Essentials members are excluded: they render in their own section, the
-    /// same way the live flow assigns them as a unit.
-    var assignedItemsByDestination: [UninstallDestinationGroup] {
-        guard let record else { return [] }
+}
 
-        var order: [String] = []
-        var groups: [String: [(item: ItemV2, room: RoomV2)]] = [:]
+// MARK: - UninstallDestinationSectioning
 
-        for room in rooms {
-            for item in itemsByRoom[room.id] ?? [] where !essentialsItemIds.contains(item.id) {
-                guard let destination = record.itemDestinations[item.id] else { continue }
-                let label = label(for: destination)
-                if groups[label] == nil {
-                    order.append(label)
-                    groups[label] = []
-                }
-                groups[label]?.append((item: item, room: room))
-            }
-        }
+extension UninstallRecordSheetViewModel: UninstallDestinationSectioning {
 
-        return order.map { label in
-            (label: label, items: groups[label]!.sorted { $0.item.displayName < $1.item.displayName })
-        }
-    }
+    var uninstallSession: UninstallSession? { record }
 
-    var assignedItemCount: Int {
-        assignedItemsByDestination.reduce(0) { $0 + $1.items.count }
-    }
+    var copyOriginDisplayName: String { installedList.displayName }
 
-    var essentialsDestinationLabel: String? {
-        record?.essentialsDestination.map { label(for: $0) }
-    }
+    var copyListAddress: Address? { record?.copyListAddress ?? copyPullList?.address }
 
-    func label(for destination: UninstallDestination) -> String {
-        switch destination.type {
-        case .warehouse:
-            warehouses.first(where: { $0.id == destination.locationId })?.displayName ?? "Warehouse"
-        case .copy:
-            copyPullList?.displayName ?? "Copy of \(installedList.displayName)"
-        case .existingList:
-            existingPullList?.displayName ?? "Pull list"
-        }
-    }
+    /// A record only lists destinations something actually went to — nothing
+    /// here is a drop target.
+    var showCopySection: Bool { record?.targetsCopy == true }
+
+    var showExistingSection: Bool { record?.targetsExistingList == true }
 }

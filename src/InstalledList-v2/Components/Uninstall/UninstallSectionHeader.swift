@@ -9,13 +9,22 @@ import SwiftUI
 
 struct UninstallSectionHeader: View {
     let title: String
+    var subtitle: String? = nil
     var count: Int? = nil
 
     var body: some View {
-        HStack {
-            Text(title)
-                .font(.headline)
-                .foregroundStyle(.red)
+        HStack(alignment: .firstTextBaseline) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.headline)
+                    .foregroundStyle(.red)
+
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
 
             Spacer()
 
@@ -25,6 +34,7 @@ struct UninstallSectionHeader: View {
                     .foregroundStyle(.secondary)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color(.systemBackground))
     }
 }

@@ -29,6 +29,8 @@ struct UninstallSession: ListSessionDocument {
 
     var copyPullListId: String?
 
+    var copyListAddress: Address?
+
     var existingPullListId: String?
 
     var itemDestinations: [String: UninstallDestination]
@@ -47,6 +49,7 @@ struct UninstallSession: ListSessionDocument {
         id: String,
         lockGeneration: Int = 1,
         copyPullListId: String? = nil,
+        copyListAddress: Address? = nil,
         existingPullListId: String? = nil,
         itemDestinations: [String: UninstallDestination] = [:],
         essentialsDestination: UninstallDestination? = nil,
@@ -58,6 +61,7 @@ struct UninstallSession: ListSessionDocument {
         self.id = id
         self.lockGeneration = lockGeneration
         self.copyPullListId = copyPullListId
+        self.copyListAddress = copyListAddress
         self.existingPullListId = existingPullListId
         self.itemDestinations = itemDestinations
         self.essentialsDestination = essentialsDestination
@@ -79,6 +83,7 @@ struct UninstallSession: ListSessionDocument {
         case id
         case lockGeneration = "lock_generation"
         case copyPullListId = "copy_pull_list_id"
+        case copyListAddress = "copy_list_address"
         case existingPullListId = "existing_pull_list_id"
         case itemDestinations = "item_destinations"
         case essentialsDestination = "essentials_destination"
@@ -93,7 +98,6 @@ struct UninstallSession: ListSessionDocument {
 
 struct UninstallDestination: Codable, Hashable {
     var type: UninstallDestinationType
-    /// warehouseId | copyPullListId | existingPullListId
     var locationId: String
 
     enum CodingKeys: String, CodingKey {

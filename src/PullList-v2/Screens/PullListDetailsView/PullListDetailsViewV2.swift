@@ -190,6 +190,12 @@ private extension PullListDetailsViewV2 {
                     .foregroundColor(.primary)
             )
 
+            if let copiedFrom = list.copiedFromDisplayName {
+                Text("Copy of \(copiedFrom)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             (
                 Text("Install Date: ")
                     .foregroundColor(.red)

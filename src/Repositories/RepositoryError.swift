@@ -8,6 +8,7 @@
 enum RepositoryError: String, Error {
     case decodeFailure
     case sessionComplete
+    case missingCopyAddress
 }
 
 /// Thrown by an assignment transaction that found nothing it could apply.

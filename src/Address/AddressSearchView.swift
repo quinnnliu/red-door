@@ -87,7 +87,14 @@ struct AddressSearchView: View {
 
                 Spacer()
 
-                RDButton(variant: .red, label: "Use This Address", fullWidth: true) {
+                // A placemark that can't be converted would otherwise dismiss
+                // having silently written nothing.
+                RDButton(
+                    variant: .red,
+                    label: "Use This Address",
+                    fullWidth: true,
+                    disabled: convertToAddress(item) == nil
+                ) {
                     if let address = convertToAddress(item) {
                         selectedAddress = address
                         addressId = address.id

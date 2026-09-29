@@ -76,7 +76,8 @@ struct UninstallInstalledListSheet: View {
             UninstallDestinationSheet(
                 selectedItems: viewModel.selectedItems,
                 warehouses: viewModel.warehouses,
-                copyLabel: "Copy of \(viewModel.installedListState.displayName)",
+                copyLabel: viewModel.copySectionTitle,
+                selectedCopyAddress: viewModel.copyListAddress,
                 roomNames: viewModel.rooms.map(\.displayName),
                 action: handleAction
             )
@@ -172,10 +173,14 @@ private extension UninstallInstalledListSheet {
                     )
                 }
 
-                Section {
-                    AssignedDestinationGroups
-                } header: {
-                    UninstallSectionHeader(title: "Assigned", count: viewModel.assignedItemCount)
+                StorageSection
+
+                if viewModel.showCopySection {
+                    CopySection
+                }
+
+                if viewModel.showExistingSection {
+                    ExistingListSection
                 }
             }
         }
@@ -200,10 +205,60 @@ private extension UninstallInstalledListSheet {
         }
     }
 
-    // MARK: AssignedDestinationGroups
+    // MARK: Destination sections
 
-    var AssignedDestinationGroups: some View {
-        UninstallDestinationGroupsView(groups: viewModel.assignedItemsByDestination) { item in
+    /// Storage is always offered; the other two only exist once the user has
+    /// set them up, so an empty screen shows one destination rather than three.
+    var StorageSection: some View {
+        Section {
+            LazyVStack(alignment: .leading, spacing: 12) {
+                ForEach(viewModel.storageGroups, id: \.warehouseId) { group in
+                    VStack(alignment: .leading, spacing: 8) {
+                        // Only worth naming the warehouse when items have been
+                        // split across more than one.
+                        if viewModel.storageGroups.count > 1 {
+                            Text(group.warehouse)
+                                .font(.subheadline)
+                                .bold()
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+
+                        AssignedItems(group.items)
+                    }
+                }
+            }
+        } header: {
+            UninstallSectionHeader(title: "Storage", count: viewModel.storageItemCount)
+        }
+    }
+
+    var CopySection: some View {
+        Section {
+            AssignedItems(viewModel.copyItems)
+        } header: {
+            UninstallSectionHeader(
+                title: viewModel.copySectionTitle,
+                subtitle: viewModel.copySectionSubtitle,
+                count: viewModel.copyItems.count
+            )
+        }
+    }
+
+    var ExistingListSection: some View {
+        Section {
+            AssignedItems(viewModel.existingListItems)
+        } header: {
+            UninstallSectionHeader(
+                title: viewModel.existingSectionTitle,
+                count: viewModel.existingListItems.count
+            )
+        }
+    }
+
+    // MARK: AssignedItems
+
+    func AssignedItems(_ entries: [(item: ItemV2, room: RoomV2)]) -> some View {
+        UninstallAssignedItemsList(entries: entries) { item in
             if viewModel.isOwner {
                 RDButton(
                     variant: .default,
@@ -225,7 +280,8 @@ private extension UninstallInstalledListSheet {
                 group: group,
                 items: viewModel.essentialsItems,
                 accessories: viewModel.essentialsAccessories,
-                destinationLabel: viewModel.essentialsDestinationLabel
+                destinationLabel: viewModel.essentialsDestinationLabel?.title,
+                destinationSubtitle: viewModel.essentialsDestinationLabel?.subtitle
             ) {
                 if viewModel.isOwner {
                     if viewModel.essentialsDestinationLabel != nil {
@@ -337,11 +393,16 @@ private extension UninstallInstalledListSheet {
                     viewModel.showDestinationSheet = false
                 }
 
+            case .selectCopyAddress(let address):
+                Task { @MainActor in
+                    await viewModel.setCopyAddress(address)
+                }
+
             case .chooseCopy:
                 Task { @MainActor in
-                    // The copy's ID is minted on first use, so this can fail
-                    // and leave the sheet open rather than assigning nothing.
-                    guard let destination = await viewModel.copyDestination() else { return }
+                    // Unreachable unless the address write hasn't landed yet —
+                    // the send button is gated on it.
+                    guard let destination = viewModel.copyDestination() else { return }
                     await viewModel.assignSelection(to: destination)
                     viewModel.showDestinationSheet = false
                 }

@@ -101,12 +101,66 @@ private extension UninstallRecordSheet {
                     }
                 }
 
-                Section {
-                    UninstallDestinationGroupsView(groups: viewModel.assignedItemsByDestination)
-                } header: {
-                    UninstallSectionHeader(title: "Moved", count: viewModel.assignedItemCount)
+                if !viewModel.storageGroups.isEmpty {
+                    StorageSection
+                }
+
+                if viewModel.showCopySection {
+                    CopySection
+                }
+
+                if viewModel.showExistingSection {
+                    ExistingListSection
                 }
             }
+        }
+    }
+
+    // MARK: Destination sections
+
+    /// Mirrors the live flow's sections, minus anything empty: a record only
+    /// names destinations something actually went to.
+    var StorageSection: some View {
+        Section {
+            LazyVStack(alignment: .leading, spacing: 12) {
+                ForEach(viewModel.storageGroups, id: \.warehouseId) { group in
+                    VStack(alignment: .leading, spacing: 8) {
+                        if viewModel.storageGroups.count > 1 {
+                            Text(group.warehouse)
+                                .font(.subheadline)
+                                .bold()
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+
+                        UninstallAssignedItemsList(entries: group.items)
+                    }
+                }
+            }
+        } header: {
+            UninstallSectionHeader(title: "Storage", count: viewModel.storageItemCount)
+        }
+    }
+
+    var CopySection: some View {
+        Section {
+            UninstallAssignedItemsList(entries: viewModel.copyItems)
+        } header: {
+            UninstallSectionHeader(
+                title: viewModel.copySectionTitle,
+                subtitle: viewModel.copySectionSubtitle,
+                count: viewModel.copyItems.count
+            )
+        }
+    }
+
+    var ExistingListSection: some View {
+        Section {
+            UninstallAssignedItemsList(entries: viewModel.existingListItems)
+        } header: {
+            UninstallSectionHeader(
+                title: viewModel.existingSectionTitle,
+                count: viewModel.existingListItems.count
+            )
         }
     }
 
@@ -119,7 +173,8 @@ private extension UninstallRecordSheet {
                 group: group,
                 items: viewModel.essentialsItems,
                 accessories: viewModel.essentialsAccessories,
-                destinationLabel: viewModel.essentialsDestinationLabel
+                destinationLabel: viewModel.essentialsDestinationLabel?.title,
+                destinationSubtitle: viewModel.essentialsDestinationLabel?.subtitle
             )
         }
     }

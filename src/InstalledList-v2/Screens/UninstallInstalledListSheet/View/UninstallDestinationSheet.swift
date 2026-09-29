@@ -9,6 +9,7 @@ import SwiftUI
 
 enum UninstallDestinationSheetAction {
     case chooseWarehouse(warehouseId: String)
+    case selectCopyAddress(Address)
     case chooseCopy
     case chooseExistingList(PullListV2)
 }
@@ -17,8 +18,34 @@ struct UninstallDestinationSheet: View {
     let selectedItems: [ItemV2]
     let warehouses: [WarehouseV2]
     let copyLabel: String
+    /// Server truth from the session, so a user who takes the session over
+    /// inherits the address instead of being asked to pick again.
+    let selectedCopyAddress: Address?
     let roomNames: [String]
     let action: (Any?) -> Void
+
+    /// Drives `AddressSheet` only. The committed choice is whatever came back
+    /// from the session as `selectedCopyAddress`.
+    @State private var draftAddress: Address
+    @State private var draftAddressId: String = ""
+    @State private var showAddressSheet: Bool = false
+
+    init(
+        selectedItems: [ItemV2],
+        warehouses: [WarehouseV2],
+        copyLabel: String,
+        selectedCopyAddress: Address?,
+        roomNames: [String],
+        action: @escaping (Any?) -> Void
+    ) {
+        self.selectedItems = selectedItems
+        self.warehouses = warehouses
+        self.copyLabel = copyLabel
+        self.selectedCopyAddress = selectedCopyAddress
+        self.roomNames = roomNames
+        self.action = action
+        _draftAddress = State(initialValue: selectedCopyAddress ?? Address())
+    }
 
     private enum Segment: Int, CaseIterable, Identifiable {
         case warehouse
@@ -69,6 +96,15 @@ struct UninstallDestinationSheet: View {
             guard segment == .existing, !didLoadPullLists else { return }
             didLoadPullLists = true
             await pullLists.refresh()
+        }
+        .sheet(isPresented: $showAddressSheet) {
+            AddressSheet(selectedAddress: $draftAddress, addressId: $draftAddressId)
+        }
+        // `AddressSheet` dismisses itself and reports nothing back, so the
+        // write is driven off the binding it wrote. Does not fire for the seed.
+        .onChange(of: draftAddress) {
+            guard draftAddress.isInitialized() else { return }
+            action(UninstallDestinationSheetAction.selectCopyAddress(draftAddress))
         }
     }
 }
@@ -154,29 +190,31 @@ private extension UninstallDestinationSheet {
 
     // MARK: NewListOption
 
+    /// The copy needs somewhere to go before anything can be routed to it, so
+    /// the address gate comes first and the send button stays disabled until
+    /// the choice has been written to the session.
     var NewListOption: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Button {
-                action(UninstallDestinationSheetAction.chooseCopy)
-            } label: {
-                HStack(spacing: 12) {
-                    Image(systemName: SFSymbols.plus)
-                        .foregroundStyle(.red)
+        VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(copyLabel)
+                    .font(.headline)
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(copyLabel)
-                            .font(.headline)
-                            .foregroundStyle(.primary)
-
-                        Text("Inherits client and dates")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-
-                    Spacer(minLength: 0)
-                }
+                Text("Inherits client and dates")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
-            .buttonStyle(.plain)
+
+            AddressRow
+
+            RDButton(
+                variant: .red,
+                leadingIcon: SFSymbols.plus,
+                label: "Send to This List",
+                fullWidth: true,
+                disabled: selectedCopyAddress == nil
+            ) {
+                action(UninstallDestinationSheetAction.chooseCopy)
+            }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("Rooms copied 1:1")
@@ -189,6 +227,44 @@ private extension UninstallDestinationSheet {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // MARK: AddressRow
+
+    @ViewBuilder
+    var AddressRow: some View {
+        if let address = selectedCopyAddress {
+            HStack(spacing: 12) {
+                Image(systemName: SFSymbols.mappinAndEllipse)
+                    .foregroundStyle(.red)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(address.getStreetAddress() ?? address.formattedAddress)
+                        .font(.subheadline)
+
+                    if let cityStateZip = address.getCityStateZipcode() {
+                        Text(cityStateZip)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+
+                Spacer(minLength: 0)
+
+                RDButton(variant: .outline, size: .sm, label: "Change") {
+                    showAddressSheet = true
+                }
+            }
+        } else {
+            RDButton(
+                variant: .outline,
+                leadingIcon: SFSymbols.mappinAndEllipse,
+                label: "Select Address",
+                fullWidth: true
+            ) {
+                showAddressSheet = true
+            }
+        }
     }
 
     // MARK: ExistingListOptions

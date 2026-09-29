@@ -81,25 +81,33 @@ extension UninstallInstalledListSheetViewModel {
         }
     }
 
-    /// Mints the copy pull list's ID the first time anything is routed to it.
-    /// The `PullListV2` document itself isn't created until commit, so opening
-    /// this option and then backing out leaves nothing behind.
+    /// Picking the address is what brings the copy into existence: it mints the
+    /// pull list's ID alongside it, so nothing can be routed to a copy that has
+    /// nowhere to go. The `PullListV2` document itself still isn't created
+    /// until commit, so backing out afterward leaves nothing behind.
     @MainActor
-    func copyDestination() async -> UninstallDestination? {
-        guard isOwner, let session = sessionState else { return nil }
+    func setCopyAddress(_ address: Address) async {
+        guard isOwner, let session = sessionState else { return }
 
-        if let existing = session.copyPullListId {
-            return UninstallDestination(type: .copy, locationId: existing)
-        }
-
-        let newId = UUID().uuidString
         do {
-            try await sessionRepo.setCopyPullListId(sessionId: session.id, newId)
-            return UninstallDestination(type: .copy, locationId: newId)
+            try await sessionRepo.setCopyDestination(
+                sessionId: session.id,
+                copyId: session.copyPullListId ?? UUID().uuidString,
+                address: address
+            )
         } catch {
             present(error)
-            return nil
         }
+    }
+
+    func copyDestination() -> UninstallDestination? {
+        guard isOwner,
+              let session = sessionState,
+              let copyId = session.copyPullListId,
+              session.copyListAddress != nil
+        else { return nil }
+
+        return UninstallDestination(type: .copy, locationId: copyId)
     }
 
     @MainActor
@@ -150,16 +158,6 @@ extension UninstallInstalledListSheetViewModel {
 // MARK: - Grouping
 
 extension UninstallInstalledListSheetViewModel {
-    /// Excludes essentials members throughout: they render in their own
-    /// section and are assigned as a unit, so they must never appear as an
-    /// individually assignable room row.
-    var allRoomItems: [(item: ItemV2, room: RoomV2)] {
-        rooms.flatMap { room in
-            (itemsByRoom[room.id] ?? [])
-                .filter { !essentialsItemIds.contains($0.id) }
-                .map { (item: $0, room: room) }
-        }
-    }
 
     var unassignedItemsByRoom: [(room: RoomV2, items: [ItemV2])] {
         rooms.map { room in
@@ -169,54 +167,17 @@ extension UninstallInstalledListSheetViewModel {
             return (room: room, items: items)
         }
     }
-
-    var assignedItemsByDestination: [(label: String, items: [(item: ItemV2, room: RoomV2)])] {
-        var order: [String] = []
-        var groups: [String: [(item: ItemV2, room: RoomV2)]] = [:]
-
-        for entry in allRoomItems {
-            guard let label = destinationLabel(for: entry.item.id) else { continue }
-            if groups[label] == nil {
-                order.append(label)
-                groups[label] = []
-            }
-            groups[label]?.append(entry)
-        }
-
-        return order.map { label in
-            (label: label, items: groups[label]!.sorted { $0.item.displayName < $1.item.displayName })
-        }
-    }
-
-    var assignedItemCount: Int {
-        assignedItemsByDestination.reduce(0) { $0 + $1.items.count }
-    }
 }
 
-// MARK: - Destination lookup
+// MARK: - UninstallDestinationSectioning
 
-extension UninstallInstalledListSheetViewModel {
+extension UninstallInstalledListSheetViewModel: UninstallDestinationSectioning {
 
-    func destination(for itemId: String) -> UninstallDestination? {
-        sessionState?.itemDestinations[itemId]
-    }
+    var uninstallSession: UninstallSession? { sessionState }
 
-    var essentialsDestinationLabel: String? {
-        sessionState?.essentialsDestination.map { label(for: $0) }
-    }
+    var copyOriginDisplayName: String { installedListState.displayName }
 
-    func destinationLabel(for itemId: String) -> String? {
-        destination(for: itemId).map { label(for: $0) }
-    }
+    var showCopySection: Bool { sessionState?.copyListAddress != nil }
 
-    func label(for destination: UninstallDestination) -> String {
-        switch destination.type {
-        case .warehouse:
-            return warehouses.first(where: { $0.id == destination.locationId })?.displayName ?? "Warehouse"
-        case .copy:
-            return "Copy of \(installedListState.displayName)"
-        case .existingList:
-            return existingPullList?.displayName ?? "Pull list"
-        }
-    }
+    var showExistingSection: Bool { sessionState?.existingPullListId != nil }
 }

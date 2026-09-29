@@ -73,11 +73,23 @@ struct AddressEntryView: View {
             Spacer()
 
 
-            RDButton(variant: .default, label: "Save Address", fullWidth: true) {
+            RDButton(
+                variant: .default,
+                label: "Save Address",
+                fullWidth: true,
+                disabled: !canSave
+            ) {
                 updateSelectedAddress()
                 dismiss()
             }
         }
+    }
+
+    /// Everything but the unit, which is explicitly optional. Saving a blank
+    /// form otherwise produces an address whose id is the empty string.
+    private var canSave: Bool {
+        ![street, town, zipcode, country]
+            .contains { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
     }
     
     @ViewBuilder

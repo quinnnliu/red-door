@@ -53,13 +53,23 @@ private extension ConfirmUninstallSheet {
             )
             .font(.headline)
 
-            ForEach(summary.groups, id: \.label) { group in
-                HStack(spacing: 8) {
+            // Indexed rather than keyed on the title: two warehouses can share
+            // a display name, and duplicate ids break the rows.
+            ForEach(Array(summary.groups.enumerated()), id: \.offset) { _, group in
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
                     Image(systemName: SFSymbols.shippingbox)
                         .foregroundStyle(.secondary)
 
-                    Text("\(group.label) — \(group.count) \(group.count == 1 ? "item" : "items")")
-                        .font(.subheadline)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("\(group.title) — \(group.count) \(group.count == 1 ? "item" : "items")")
+                            .font(.subheadline)
+
+                        if let subtitle = group.subtitle {
+                            Text(subtitle)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
             }
 

@@ -78,9 +78,17 @@ private extension PullListListItemV2 {
     var LeadingContent: some View {
         HStack(spacing: 12) {
             PrimaryImageView(image: list.image, size: Constants.Image.listItemLarge, isExpandable: false)
-            
-            Text(list.displayName)
-                .font(.headline)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(list.displayName)
+                    .font(.headline)
+
+                if let copiedFrom = list.copiedFromDisplayName {
+                    Text("Copy of \(copiedFrom)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
     }
 }

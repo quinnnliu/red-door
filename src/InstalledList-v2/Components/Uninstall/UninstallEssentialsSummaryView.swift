@@ -12,6 +12,7 @@ struct UninstallEssentialsSummaryView<Trailing: View>: View {
     let items: [ItemV2]
     let accessories: Accessories?
     let destinationLabel: String?
+    var destinationSubtitle: String? = nil
     @ViewBuilder let trailing: () -> Trailing
 
     var body: some View {
@@ -25,10 +26,19 @@ struct UninstallEssentialsSummaryView<Trailing: View>: View {
                 Spacer(minLength: 0)
 
                 if let destinationLabel {
-                    Text(destinationLabel)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(destinationLabel)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+
+                        if let destinationSubtitle {
+                            Text(destinationSubtitle)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
+                    }
                 }
 
                 trailing()
@@ -65,13 +75,15 @@ extension UninstallEssentialsSummaryView where Trailing == EmptyView {
         group: EssentialsGroup,
         items: [ItemV2],
         accessories: Accessories?,
-        destinationLabel: String?
+        destinationLabel: String?,
+        destinationSubtitle: String? = nil
     ) {
         self.init(
             group: group,
             items: items,
             accessories: accessories,
-            destinationLabel: destinationLabel
+            destinationLabel: destinationLabel,
+            destinationSubtitle: destinationSubtitle
         ) { EmptyView() }
     }
 }

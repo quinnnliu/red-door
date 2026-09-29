@@ -30,6 +30,10 @@ enum Constants {
         static let medium: CGFloat = 8
         static let large: CGFloat = 12
     }
+    
+    func Padding(_ size: CGFloat) -> CGFloat {
+        return size * 8
+    }
 }
 
 enum SFSymbols {
@@ -84,6 +88,7 @@ enum SFSymbols {
     static let sliderHorizontal3 = "slider.horizontal.3"
     static let listBulletClipboardFill = "list.bullet.clipboard.fill"
     static let houseFill = "house.fill"
+    static let mappinAndEllipse = "mappin.and.ellipse"
     static let lockFill = "lock.fill"
     static let infoCircleFill = "info.circle.fill"
     static let docOnDoc = "doc.on.doc"

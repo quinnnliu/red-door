@@ -133,6 +133,10 @@ extension UninstallSessionRepository {
         pullListRepo: PullListRepository,
         transaction: Transaction
     ) throws {
+        // The address is chosen during the flow, never inherited. Failing here
+        // beats silently standing the copy up at the address it came from.
+        guard let address = session.copyListAddress else { throw RepositoryError.missingCopyAddress }
+
         let essentialsHeadedHere = session.essentialsDestination?.type == .copy
 
         // Assigned items land in their original rooms, but group members have
@@ -140,6 +144,7 @@ extension UninstallSessionRepository {
         let copyList = PullListV2(
             from: installedList,
             id: copyId,
+            address: address,
             roomIds: rooms.map(\.id),
             unassignedItemIds: essentialsHeadedHere ? Array(essentialsGroup?.itemIds ?? []) : [],
             essentialGroupId: essentialsHeadedHere ? essentialsGroup?.id : nil

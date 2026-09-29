@@ -12,7 +12,7 @@ import Foundation
 /// new groups without touching this type.
 struct ConfirmUninstallSummary {
     let address: String
-    let groups: [(label: String, count: Int)]
+    let groups: [(title: String, subtitle: String?, count: Int)]
     let totalCount: Int
 }
 
@@ -28,20 +28,55 @@ extension UninstallInstalledListSheetViewModel {
         guard isOwner, !isLoading, allRoomsLoaded, let session = sessionState else { return false }
         let itemsAssigned = allRoomItems.allSatisfy { session.itemDestinations[$0.item.id] != nil }
         let essentialsAssigned = essentialsGroupState == nil || session.essentialsDestination != nil
-        return itemsAssigned && essentialsAssigned
+        // Commit refuses to build a copy with no address, so don't offer it.
+        let copyAddressed = !session.targetsCopy || session.copyListAddress != nil
+        return itemsAssigned && essentialsAssigned && copyAddressed
     }
 
-    /// Essentials members are excluded from `assignedItemsByDestination` so they
-    /// don't duplicate their own section, so their count is folded in here.
+    /// Mirrors the three destination sections. Essentials members are excluded
+    /// from those sections so they don't duplicate their own row, so their
+    /// count is folded into whichever destination they're headed for.
     var confirmUninstallSummary: ConfirmUninstallSummary {
-        var groups = assignedItemsByDestination.map { (label: $0.label, count: $0.items.count) }
+        let essentials = sessionState?.essentialsDestination
+        let essentialsCount = essentialsItems.count
 
-        if let label = essentialsDestinationLabel {
-            if let index = groups.firstIndex(where: { $0.label == label }) {
-                groups[index].count += essentialsItems.count
-            } else {
-                groups.append((label: label, count: essentialsItems.count))
-            }
+        var groups: [(title: String, subtitle: String?, count: Int)] = []
+        var essentialsCounted = false
+
+        func count(_ base: Int, addingEssentialsFor type: UninstallDestinationType, locationId: String? = nil) -> Int {
+            guard let essentials, essentials.type == type else { return base }
+            if let locationId, essentials.locationId != locationId { return base }
+            essentialsCounted = true
+            return base + essentialsCount
+        }
+
+        for group in storageGroups {
+            groups.append((
+                title: group.warehouse,
+                subtitle: nil,
+                count: count(group.items.count, addingEssentialsFor: .warehouse, locationId: group.warehouseId)
+            ))
+        }
+
+        let copyCount = count(copyItems.count, addingEssentialsFor: .copy)
+        if copyCount > 0 {
+            groups.append((title: copySectionTitle, subtitle: copySectionSubtitle, count: copyCount))
+        }
+
+        let existingCount = count(existingListItems.count, addingEssentialsFor: .existingList)
+        if existingCount > 0 {
+            groups.append((title: existingSectionTitle, subtitle: nil, count: existingCount))
+        }
+
+        // Essentials can be the only thing sent to a given warehouse, which has
+        // no storage group of its own to fold into.
+        if let essentials, !essentialsCounted, essentialsCount > 0 {
+            let essentialsLabel = label(for: essentials)
+            groups.append((
+                title: essentialsLabel.title,
+                subtitle: essentialsLabel.subtitle,
+                count: essentialsCount
+            ))
         }
 
         return ConfirmUninstallSummary(
