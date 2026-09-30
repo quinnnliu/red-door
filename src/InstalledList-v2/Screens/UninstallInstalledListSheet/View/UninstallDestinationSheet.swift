@@ -24,8 +24,6 @@ struct UninstallDestinationSheet: View {
     let roomNames: [String]
     let action: (Any?) -> Void
 
-    /// Drives `AddressSheet` only. The committed choice is whatever came back
-    /// from the session as `selectedCopyAddress`.
     @State private var draftAddress: Address
     @State private var draftAddressId: String = ""
     @State private var showAddressSheet: Bool = false
@@ -100,8 +98,6 @@ struct UninstallDestinationSheet: View {
         .sheet(isPresented: $showAddressSheet) {
             AddressSheet(selectedAddress: $draftAddress, addressId: $draftAddressId)
         }
-        // `AddressSheet` dismisses itself and reports nothing back, so the
-        // write is driven off the binding it wrote. Does not fire for the seed.
         .onChange(of: draftAddress) {
             guard draftAddress.isInitialized() else { return }
             action(UninstallDestinationSheetAction.selectCopyAddress(draftAddress))

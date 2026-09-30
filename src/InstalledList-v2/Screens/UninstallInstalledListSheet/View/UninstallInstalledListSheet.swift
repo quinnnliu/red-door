@@ -187,9 +187,6 @@ private extension UninstallInstalledListSheet {
     }
 
     // MARK: UnassignedRoomGroups
-
-    /// Nothing has moved yet, so unassigned items are still grouped by the
-    /// room they're physically in.
     var UnassignedRoomGroups: some View {
         LazyVStack(spacing: 8) {
             ForEach(viewModel.unassignedItemsByRoom, id: \.room.id) { entry in

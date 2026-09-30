@@ -122,28 +122,55 @@ struct ItemV2: RDDocument {
 }
 
 enum ItemType: String, Filterable, CaseIterable {
-    case chair = "Chair"
+    case bed = "Bed"
+    case boxspring = "Boxspring"
+    case topper = "Topper"
+    case diningTable = "Dining Table"
+    case coffeeTable = "Coffee Table"
+    case console = "Console"
+    case endTable = "End Table"
+    case nightstand = "Nightstand"
+    case barCart = "Bar Cart"
+    case outdoorFurniture = "Outdoor Furniture"
+    case sofa = "Sofa"
     case desk = "Desk"
-    case table = "Table"
+    case dayBed = "Day Bed"
+    case stool = "Stool"
+    case deskChair = "Desk Chair"
+    case diningChair = "Dining Chair"
+    case accentChair = "Accent Chair"
+    case bench = "Bench"
+    case ottoman = "Ottoman"
     case lamp = "Lamp"
-    case accessories = "Accessories"
+    case rug = "Rug"
+    case framedArt = "Framed Art"
+    case unframedArt = "Unframed Art"
+    case decor = "Decor"
     case misc = "Miscellaneous"
 
     var title: String { rawValue }
     var icon: String? {
         switch self {
-        case .chair:
-            SFSymbols.chairFill
-        case .desk:
-            SFSymbols.deskFill
-        case .table:
+        case .diningTable, .coffeeTable, .console, .endTable, .nightstand, .barCart, .desk:
             SFSymbols.tableFill
+        case .sofa:
+            SFSymbols.couchFill
+        case .stool, .deskChair, .diningChair, .bench, .ottoman:
+            SFSymbols.chairFill
+        case .accentChair:
+            SFSymbols.chairLoungeFill
         case .lamp:
             SFSymbols.lampFill
-        case .accessories:
-            SFSymbols.pencil // TODO: find a better icon
-        case .misc:
-            SFSymbols.ellipsis
+        case .framedArt, .unframedArt, .decor:
+            SFSymbols.art
+        case .bed, .boxspring:
+            SFSymbols.bedDoubleFill
+        case .outdoorFurniture:
+            SFSymbols.sunLefthalfFilled
+        case .rug:
+            SFSymbols.rectangle
+        case .topper, .dayBed, .misc:
+            nil
         }
     }
     var color: Color? { nil }

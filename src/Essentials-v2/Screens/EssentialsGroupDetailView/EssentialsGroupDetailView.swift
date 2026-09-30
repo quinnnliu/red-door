@@ -185,10 +185,23 @@ private extension EssentialsGroupDetailView {
             }
             
             LazyVStack(spacing: 8) {
-                ForEach(viewModel.items, id: \.id) { item in
-                    ItemListItemView(item: item, style: .essentialsGroup, action: handleAction(_:))
+                ForEach(groupedItems, id: \.type) { group in
+                    ExpandableSectionView(style: .itemTypeGroup(type: group.type, count: group.items.count)) {
+                        VStack(spacing: 8) {
+                            ForEach(group.items, id: \.id) { item in
+                                ItemListItemView(item: item, style: .essentialsGroup, action: handleAction(_:))
+                            }
+                        }
+                    }
                 }
             }
+        }
+    }
+
+    var groupedItems: [(type: ItemType, items: [ItemV2])] {
+        ItemType.allCases.compactMap { type in
+            let items = viewModel.items.filter { $0.type == type }
+            return items.isEmpty ? nil : (type, items)
         }
     }
 }
