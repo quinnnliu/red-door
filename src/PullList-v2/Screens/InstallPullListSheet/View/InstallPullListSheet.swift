@@ -119,7 +119,11 @@ extension InstallPullListSheet {
             LazyVStack(spacing: 8) {
                 ForEach(viewModel.rooms) { room in
                     let items = viewModel.itemsByRoom[room.id] ?? []
-                    RoomListItemView(room: room, itemCount: items.count, style: .installingPullList, action: handleAction) {
+                    ExpandableSectionView(
+                        style: .installingRoom(room: room, itemCount: items.count),
+                        isExpanded: false,
+                        action: handleAction
+                    ) {
                         LazyVStack(spacing: 8) {
                             ForEach(items) { item in
                                 InstallItemListItemView(
@@ -154,11 +158,11 @@ extension InstallPullListSheet {
         guard let action = actionArgument else { return }
         
         switch action {
-        case let roomViewAction as RoomListItemViewAction:
-            switch roomViewAction {
+        case let sectionAction as ExpandableSectionAction:
+            switch sectionAction {
             case .refreshRoom(let roomId):
                 viewModel.refreshRoom(roomId)
-            case .navigate:
+            case .headerAction:
                 return
             }
         case let roomAction as InstallPullListRoomAction:

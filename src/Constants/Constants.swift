@@ -96,4 +96,5 @@ enum SFSymbols {
     static let lockFill = "lock.fill"
     static let infoCircleFill = "info.circle.fill"
     static let docOnDoc = "doc.on.doc"
+    static let sparkles = "sparkles"
 }

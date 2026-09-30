@@ -424,7 +424,11 @@ private extension PullListDetailsViewV2 {
         LazyVStack(spacing: 16) {
             ForEach(viewModel.rooms, id: \.id) { room in
                 let items = viewModel.itemsByRoom[room.id] ?? []
-                RoomListItemView(room: room, itemCount: items.count, style: .pullListDetails, action: handleAction) {
+                ExpandableSectionView(
+                    style: .pullListRoom(room: room, itemCount: items.count),
+                    isExpanded: false,
+                    action: handleAction
+                ) {
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                         ForEach(items, id: \.self) { item in
                             RoomItemPreview(item, room: room)
@@ -501,15 +505,17 @@ private extension PullListDetailsViewV2 {
     func handleAction(_ actionArgument: Any?) {
         guard actionArgument != nil else { return }
 
-        if let roomListItemAction = actionArgument as? RoomListItemViewAction {
-            switch roomListItemAction {
-            case .navigate(let room):
+        if let sectionAction = actionArgument as? ExpandableSectionAction {
+            switch sectionAction {
+            case .headerAction(.pullListRoom(let room, _)):
                 coordinator.appendToSelectedPath(NavigationDestination.pulllistRoomDetailView(
                     items: viewModel.itemsByRoom[room.id] ?? [],
                     room: room
                 ))
             case .refreshRoom(let roomId):
                 viewModel.refreshRoom(roomId)
+            default:
+                break
             }
         }
 

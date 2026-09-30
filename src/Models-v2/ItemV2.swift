@@ -161,15 +161,19 @@ enum ItemType: String, Filterable, CaseIterable {
             SFSymbols.chairLoungeFill
         case .lamp:
             SFSymbols.lampFill
-        case .framedArt, .unframedArt, .decor:
+        case .framedArt:
             SFSymbols.art
-        case .bed, .boxspring:
+        case .unframedArt:
+            SFSymbols.photo
+        case .decor:
+            SFSymbols.sparkles
+        case .bed, .boxspring, .dayBed:
             SFSymbols.bedDoubleFill
         case .outdoorFurniture:
             SFSymbols.sunLefthalfFilled
-        case .rug:
+        case .rug, .topper:
             SFSymbols.rectangle
-        case .topper, .dayBed, .misc:
+        case .misc:
             nil
         }
     }

@@ -190,7 +190,11 @@ private extension UninstallInstalledListSheet {
     var UnassignedRoomGroups: some View {
         LazyVStack(spacing: 8) {
             ForEach(viewModel.unassignedItemsByRoom, id: \.room.id) { entry in
-                RoomListItemView(room: entry.room, itemCount: entry.items.count, style: .installingPullList, action: handleAction) {
+                ExpandableSectionView(
+                    style: .installingRoom(room: entry.room, itemCount: entry.items.count),
+                    isExpanded: false,
+                    action: handleAction
+                ) {
                     LazyVStack(spacing: 8) {
                         ForEach(entry.items) { item in
                             SelectableItemRow(item, room: entry.room)
@@ -357,11 +361,11 @@ private extension UninstallInstalledListSheet {
                 Task { await viewModel.unassignEssentials() }
             }
 
-        case let action as RoomListItemViewAction:
-            switch action {
+        case let sectionAction as ExpandableSectionAction:
+            switch sectionAction {
             case .refreshRoom(let roomId):
                 viewModel.refreshRoom(roomId)
-            case .navigate:
+            case .headerAction:
                 // No room-details navigation while uninstalling — the room's
                 // add/remove actions would race the session's own writes.
                 return

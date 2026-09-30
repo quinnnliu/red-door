@@ -86,7 +86,7 @@ private extension PullListListItemV2 {
                         .foregroundColor(.secondary)
                 )
             }
-            .font(.caption)
+            .font(.footnote)
         }
     }
 }

@@ -176,7 +176,7 @@ private extension EssentialsGroupDetailView {
             
             LazyVStack(spacing: 8) {
                 ForEach(groupedItems, id: \.type) { group in
-                    ExpandableSectionView(style: .itemTypeGroup(type: group.type, count: group.items.count)) {
+                    ExpandableSectionView(style: .essentialsItemTypeGroup(type: group.type, count: group.items.count)) {
                         VStack(spacing: 8) {
                             ForEach(group.items, id: \.id) { item in
                                 ItemListItemView(item: item, style: .essentialsGroup, action: handleAction(_:))
