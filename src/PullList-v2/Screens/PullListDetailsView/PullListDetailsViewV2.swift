@@ -27,18 +27,28 @@ struct PullListDetailsViewV2: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
-            TopBar
+        VStack(spacing: Constants.Padding(2)) {
+            VStack(spacing: Constants.Padding(0.25)) {
+                TopBar
+                
+                if let copiedFrom = viewModel.pullListState.copiedFromDisplayName {
+                    Text("Copy of \(copiedFrom)")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
 
             ScrollView {
-                LazyVStack(spacing: 16, pinnedViews: .sectionHeaders) {
+                LazyVStack(spacing: Constants.Padding(2), pinnedViews: .sectionHeaders) {
                     HStack {
                         PrimaryImageView(image: viewModel.pullListState.image)
-                        VStack {
-                            EssentialsGroupSectionHeader
-                            EssentialsGroupSectionContent
+                        if viewModel.essentialsGroupState != nil {
+                            VStack {
+                                EssentialsGroupSectionHeader
+                                EssentialsGroupSectionContent
+                            }
                         }
-
                     }
 
                     Section {

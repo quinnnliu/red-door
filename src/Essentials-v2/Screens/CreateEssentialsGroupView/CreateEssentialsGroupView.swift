@@ -69,7 +69,7 @@ struct CreateEssentialsGroupView: View {
             )
         }
         .sheet(isPresented: $viewModel.showAddAccessoriesSheet) {
-            // TODO: AddAccessoriesToEssentialsSheet
+            SelectAccessoriesSheet(action: handleAction(_:))
         }
         .task {
             await viewModel.loadGroupTypes()
@@ -86,6 +86,13 @@ struct CreateEssentialsGroupView: View {
             switch sheetAction {
             case .selected(let type):
                 viewModel.selectedGroupType = type
+            default:
+                break
+            }
+        case let accessoriesAction as AccessoriesListItemAction:
+            switch accessoriesAction {
+            case .select(let accessories):
+                viewModel.selectAccessory(accessories)
             default:
                 break
             }

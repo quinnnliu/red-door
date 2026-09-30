@@ -39,29 +39,12 @@ struct PullListListItemV2: View {
     }
 
     private var cellContent: some View {
-        HStack(alignment: .center, spacing: 0) {
+        HStack(alignment: .center, spacing: Constants.Padding(0.5)) {
             LeadingContent
             
+            CenterContent
+
             Spacer(minLength: 0)
-
-            VStack(alignment: .leading, spacing: 6) {
-                (
-                    Text("Install Date: ")
-                        .foregroundColor(.red)
-                    +
-                    Text(list.installDate.displayDate)
-                        .foregroundColor(.secondary)
-                )
-
-                (
-                    Text("Client ID: ")
-                        .foregroundColor(.red)
-                    +
-                    Text(list.clientId)
-                        .foregroundColor(.secondary)
-                )
-            }
-            .font(.caption)
 
         }
         .padding(12)
@@ -76,19 +59,34 @@ struct PullListListItemV2: View {
 
 private extension PullListListItemV2 {
     var LeadingContent: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: Constants.Padding(1)) {
             PrimaryImageView(image: list.image, size: Constants.Image.listItemLarge, isExpandable: false)
+        }
+    }
+    
+    var CenterContent: some View {
+        VStack(alignment: .leading, spacing: Constants.Padding(0.5)) {
+            Text(list.displayName)
+                .font(.headline)
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(list.displayName)
-                    .font(.headline)
+            VStack(alignment: .leading, spacing: Constants.Padding(0.25)) {
+                (
+                    Text("Install Date: ")
+                        .foregroundColor(.red)
+                    +
+                    Text(list.installDate.displayDate)
+                        .foregroundColor(.secondary)
+                )
 
-                if let copiedFrom = list.copiedFromDisplayName {
-                    Text("Copy of \(copiedFrom)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+                (
+                    Text("Client: ")
+                        .foregroundColor(.red)
+                    +
+                    Text(list.clientId)
+                        .foregroundColor(.secondary)
+                )
             }
+            .font(.caption)
         }
     }
 }

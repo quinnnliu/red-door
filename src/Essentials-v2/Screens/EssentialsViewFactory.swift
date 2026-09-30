@@ -11,12 +11,14 @@ struct EssentialsViewFactory {
     private let essentialsRepo = EssentialsRepository()
     private let essentialsGroupTypeRepo = EssentialsGroupTypeRepository()
     private let storageLocationRepo = StorageLocationRepository()
+    private let accessoriesRepo = AccessoriesRepository()
 
     func makeCreateEssentialsGroupView() -> CreateEssentialsGroupView {
         let vm = CreateEssentialsGroupViewModel(
             essentialsRepo: essentialsRepo,
             essentialsGroupTypeRepo: essentialsGroupTypeRepo,
-            storageLocationRepo: storageLocationRepo
+            storageLocationRepo: storageLocationRepo,
+            accessoriesRepo: accessoriesRepo
         )
         return CreateEssentialsGroupView(viewModel: vm)
     }

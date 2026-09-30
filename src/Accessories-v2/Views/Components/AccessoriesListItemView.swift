@@ -9,6 +9,7 @@ import SwiftUI
 
 enum AccessoriesListItemAction {
     case navigate(Accessories)
+    case select(Accessories)
 }
 
 struct AccessoriesListItemView: View {

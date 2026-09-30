@@ -412,6 +412,8 @@ private extension ItemDocumentListViewV2 {
             switch rowAction {
             case .navigate(let accessories):
                 path.append(NavigationDestination.accessoriesDetailView(accessories))
+            default:
+                break
             }
         default:
             break

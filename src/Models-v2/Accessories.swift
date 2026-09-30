@@ -29,7 +29,7 @@ struct AccessoriesType: ConfigurationOption {
 
 struct Accessories: RDDocument {
     static let collectionName: String = "accessories"
-    static let orderByField: String = Accessories.CodingKeys.baseName.stringValue
+    static let orderByField: String = Accessories.CodingKeys.baseNameLowercased.stringValue
     static let searchField: String = Accessories.CodingKeys.baseNameLowercased.stringValue
 
     let id: String
@@ -45,6 +45,8 @@ struct Accessories: RDDocument {
     var accessoriesNumber: Int
     var nickname: String?
 
+    @NullEncodable var essentialsGroupId: String?
+
     init(
         id: String = UUID().uuidString,
         baseName: String,
@@ -54,7 +56,8 @@ struct Accessories: RDDocument {
         location: DocumentLocation,
         description: String,
         accessoriesNumber: Int = 0,
-        nickname: String? = nil
+        nickname: String? = nil,
+        essentialsGroupId: String? = nil
     ) {
         self.id = id
         self.baseName = baseName
@@ -66,6 +69,7 @@ struct Accessories: RDDocument {
         self.description = description
         self.accessoriesNumber = accessoriesNumber
         self.nickname = nickname
+        self.essentialsGroupId = essentialsGroupId
     }
 
     enum CodingKeys: String, CodingKey {
@@ -77,5 +81,6 @@ struct Accessories: RDDocument {
         case secondaryImages = "secondary_images"
         case location
         case accessoriesNumber = "accessories_number"
+        case essentialsGroupId = "essentials_group_id"
     }
 }

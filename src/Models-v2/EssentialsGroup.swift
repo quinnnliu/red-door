@@ -35,7 +35,7 @@ struct EssentialsGroupType: ConfigurationOption {
 
 struct EssentialsGroup: ItemsListableDocument {
     static let collectionName: String = "essentials"
-    static let orderByField: String = EssentialsGroup.CodingKeys.baseName.stringValue
+    static let orderByField: String = EssentialsGroup.CodingKeys.baseNameLowercased.stringValue
     static let searchField: String = EssentialsGroup.CodingKeys.baseNameLowercased.stringValue
 
     var id: String
@@ -82,5 +82,17 @@ struct EssentialsGroup: ItemsListableDocument {
         self.accessoriesId = accessoriesId
         self.groupNumber = groupNumber
         self.nickname = nickname
+    }
+}
+
+// MARK: - Metadata
+
+extension EssentialsGroupType {
+    var metadata: String? { emoji }
+}
+
+extension EssentialsGroup {
+    var metadata: String? {
+        "\(emoji) • \(itemIds.count) \(itemIds.count == 1 ? "item" : "items")"
     }
 }

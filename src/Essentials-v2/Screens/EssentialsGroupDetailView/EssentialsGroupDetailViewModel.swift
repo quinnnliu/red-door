@@ -17,7 +17,6 @@ final class EssentialsGroupDetailViewModel {
 
     var groupState: EssentialsGroup
     var accessoriesState: Accessories? = nil
-    var availableAccessories: [Accessories] = []
 
     var items: [ItemV2] = []
     var isLoading: Bool = false
@@ -98,21 +97,35 @@ final class EssentialsGroupDetailViewModel {
 
     // MARK: - Accessories
 
-    func fetchAvailableAccessories() async {
-        do {
-            availableAccessories = try await accessoriesRepo.getAll()
-        } catch {
-            alertMessage = "Failed to load accessories: \(error.localizedDescription)"
-            showAlert = true
-        }
-    }
-
+    /// Both sides of the link move together: the group's `accessoriesId` and
+    /// the accessory's `essentialsGroupId`. A half-applied write would leave an
+    /// accessory permanently unpickable, since the picker filters on the
+    /// back-reference.
     func setAccessories(_ accessories: Accessories) async {
-        do {
-            try await essentialsRepo.update(
-                id: groupState.id,
-                fields: [EssentialsGroup.CodingKeys.accessoriesId.stringValue: accessories.id]
+        let batch = essentialsRepo.db.batch()
+
+        essentialsRepo.update(
+            id: groupState.id,
+            fields: [EssentialsGroup.CodingKeys.accessoriesId.stringValue: accessories.id],
+            inBatch: batch
+        )
+        accessoriesRepo.update(
+            id: accessories.id,
+            fields: [Accessories.CodingKeys.essentialsGroupId.stringValue: groupState.id],
+            inBatch: batch
+        )
+
+        // Release the accessory being displaced, if this is a replacement.
+        if let previousId = groupState.accessoriesId, previousId != accessories.id {
+            accessoriesRepo.update(
+                id: previousId,
+                fields: [Accessories.CodingKeys.essentialsGroupId.stringValue: NSNull()],
+                inBatch: batch
             )
+        }
+
+        do {
+            try await batch.commit()
             accessoriesState = accessories
             groupState.accessoriesId = accessories.id
         } catch {
@@ -122,11 +135,23 @@ final class EssentialsGroupDetailViewModel {
     }
 
     func removeAccessories() async {
+        guard let accessoriesId = groupState.accessoriesId else { return }
+
+        let batch = essentialsRepo.db.batch()
+
+        essentialsRepo.update(
+            id: groupState.id,
+            fields: [EssentialsGroup.CodingKeys.accessoriesId.stringValue: NSNull()],
+            inBatch: batch
+        )
+        accessoriesRepo.update(
+            id: accessoriesId,
+            fields: [Accessories.CodingKeys.essentialsGroupId.stringValue: NSNull()],
+            inBatch: batch
+        )
+
         do {
-            try await essentialsRepo.update(
-                id: groupState.id,
-                fields: [EssentialsGroup.CodingKeys.accessoriesId.stringValue: NSNull()]
-            )
+            try await batch.commit()
             accessoriesState = nil
             groupState.accessoriesId = nil
         } catch {

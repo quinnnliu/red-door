@@ -12,17 +12,20 @@ final class CreateEssentialsGroupViewModel {
     private let essentialsRepo: EssentialsRepository
     private let essentialsGroupTypeRepo: EssentialsGroupTypeRepository
     private let storageLocationRepo: StorageLocationRepository
+    private let accessoriesRepo: AccessoriesRepository
     private let configService: ConfigurationService
 
     init(
         essentialsRepo: EssentialsRepository,
         essentialsGroupTypeRepo: EssentialsGroupTypeRepository,
         storageLocationRepo: StorageLocationRepository,
+        accessoriesRepo: AccessoriesRepository,
         configService: ConfigurationService = .shared
     ) {
         self.essentialsRepo = essentialsRepo
         self.essentialsGroupTypeRepo = essentialsGroupTypeRepo
         self.storageLocationRepo = storageLocationRepo
+        self.accessoriesRepo = accessoriesRepo
         self.configService = configService
     }
 
@@ -130,7 +133,16 @@ final class CreateEssentialsGroupViewModel {
                 groupNumber: maxNumber + 1,
                 nickname: nickname.isEmpty ? nil : nickname
             )
-            try essentialsRepo.set(document: group)
+            let batch = essentialsRepo.db.batch()
+            try essentialsRepo.set(document: group, id: group.id, inBatch: batch)
+            if let accessory = selectedAccessory {
+                accessoriesRepo.update(
+                    id: accessory.id,
+                    fields: [Accessories.CodingKeys.essentialsGroupId.stringValue: group.id],
+                    inBatch: batch
+                )
+            }
+            try await batch.commit()
             return true
         } catch {
             print("Error creating essentials group: \(error)")
@@ -139,6 +151,10 @@ final class CreateEssentialsGroupViewModel {
     }
 
     // MARK: - Accessories
+
+    func selectAccessory(_ accessories: Accessories) {
+        selectedAccessory = accessories
+    }
 
     func clearAccessory() {
         selectedAccessory = nil

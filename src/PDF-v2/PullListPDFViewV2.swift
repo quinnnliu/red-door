@@ -19,7 +19,7 @@ struct PullListPDFViewV2: View {
     let list: PullListV2
 
     private let itemRepository = ItemRepository()
-    private let roomRepository: RoomRepository
+    private let roomRepository: RoomRepository<PullListV2>
 
     init(list: PullListV2) {
         self.roomRepository = RoomRepository(list: list)

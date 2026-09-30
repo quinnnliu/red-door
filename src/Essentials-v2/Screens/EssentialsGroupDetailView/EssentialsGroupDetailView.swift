@@ -62,17 +62,7 @@ struct EssentialsGroupDetailView: View {
             AddEssentialsGroupToPullListSheet(action: handleAction(_:))
         }
         .sheet(isPresented: $showSelectAccessoriesSheet) {
-            SelectDocumentSheet(
-                title: "Select Accessories",
-                documents: viewModel.availableAccessories,
-                refreshAction: { Task { await viewModel.fetchAvailableAccessories() } },
-                action: { action in
-                    if case let .selected(accessories) = action as? SelectDocumentSheetAction<Accessories> {
-                        Task { await viewModel.setAccessories(accessories) }
-                    }
-                }
-            )
-            .task { await viewModel.fetchAvailableAccessories() }
+            SelectAccessoriesSheet(action: handleAction(_:))
         }
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("OK") { }
@@ -214,6 +204,13 @@ private extension EssentialsGroupDetailView {
             case .removeItem(let item):
                 itemToRemove = item
                 showRemoveAlert = true
+            default:
+                return
+            }
+        case let accessoriesAction as AccessoriesListItemAction:
+            switch accessoriesAction {
+            case .select(let accessories):
+                Task { await viewModel.setAccessories(accessories) }
             default:
                 return
             }

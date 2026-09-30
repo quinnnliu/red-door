@@ -29,3 +29,9 @@ struct StorageLocation: ConfigurationOption {
         case address
     }
 }
+
+// MARK: - Metadata
+
+extension StorageLocation {
+    var metadata: String? { address.getStreetAddress() }
+}

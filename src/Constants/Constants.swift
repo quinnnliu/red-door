@@ -31,7 +31,7 @@ enum Constants {
         static let large: CGFloat = 12
     }
     
-    func Padding(_ size: CGFloat) -> CGFloat {
+    static func Padding(_ size: CGFloat) -> CGFloat {
         return size * 8
     }
 }

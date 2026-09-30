@@ -57,13 +57,21 @@ struct SelectDocumentSheet<T: RDDocument, Footer: View>: View {
                             action(SelectDocumentSheetAction.selected(doc))
                             dismiss()
                         } label: {
-                            Text(doc.displayName)
-                                .padding()
-                                .frame(maxWidth: .infinity)
-                                .background(Color(.systemGray5))
-                                .cornerRadius(Constants.CornerRadius.medium)
-                                .foregroundColor(.primary)
-                                .bold()
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(doc.displayName)
+                                    .bold()
+
+                                if let metadata = doc.metadata {
+                                    Text(metadata)
+                                        .font(.footnote)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color(.systemGray5))
+                            .cornerRadius(Constants.CornerRadius.medium)
+                            .foregroundColor(.primary)
                         }
                         .buttonStyle(.plain)
                     }

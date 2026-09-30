@@ -68,3 +68,9 @@ extension RoomV2 {
         return rooms.contains { normalizeRoomName($0.displayName) == normalizedNewRoomName }
     }
 }
+
+// MARK: - Metadata
+
+extension RoomV2 {
+    var metadata: String? { "\(itemIds.count) \(itemIds.count == 1 ? "item" : "items")" }
+}
