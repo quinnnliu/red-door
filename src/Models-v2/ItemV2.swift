@@ -179,6 +179,7 @@ enum ItemType: String, Filterable, CaseIterable {
 enum ItemColor: String, Filterable {
     case black = "Black"
     case blue = "Blue"
+    case brass = "Brass"
     case brown = "Brown"
     case cyan = "Cyan"
     case gray = "Gray"
@@ -189,6 +190,7 @@ enum ItemColor: String, Filterable {
     case pink = "Pink"
     case purple = "Purple"
     case red = "Red"
+    case silver = "Silver"
     case teal = "Teal"
     case white = "White"
     case yellow = "Yellow"
@@ -199,6 +201,7 @@ enum ItemColor: String, Filterable {
         switch self {
         case .black: return .black
         case .blue: return .blue
+        case .brass: return Color(red: 0.71, green: 0.65, blue: 0.26)
         case .brown: return .brown
         case .cyan: return .cyan
         case .gray: return .gray
@@ -209,6 +212,7 @@ enum ItemColor: String, Filterable {
         case .pink: return .pink
         case .purple: return .purple
         case .red: return .red
+        case .silver: return Color(red: 0.75, green: 0.75, blue: 0.75)
         case .teal: return .teal
         case .white: return .white
         case .yellow: return .yellow
@@ -236,6 +240,7 @@ enum ItemMaterial: String, Codable, Filterable {
     case resin = "Resin"
     case stainlessSteel = "Stainless Steel"
     case stone = "Stone"
+    case velvet = "Velvet"
     case veneer = "Veneer"
     case vinyl = "Vinyl"
     case wicker = "Wicker"

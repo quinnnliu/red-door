@@ -109,7 +109,7 @@ private extension InstalledListDetailsViewV2 {
             },
             header: {
                 HStack {
-                    Image(systemName: SFSymbols.mappinAndEllipse)
+                    Image(systemName: SFSymbols.mapPinAndEllipse)
                         .bold()
                         .foregroundStyle(.red)
                     Text(viewModel.installedListState.address.getStreetAddress() ?? viewModel.installedListState.address.formattedAddress)

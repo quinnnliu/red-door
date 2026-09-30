@@ -39,7 +39,7 @@ struct PullListListItemV2: View {
     }
 
     private var cellContent: some View {
-        HStack(alignment: .center, spacing: Constants.Padding(0.5)) {
+        HStack(alignment: .center, spacing: Constants.Padding(1)) {
             LeadingContent
             
             CenterContent

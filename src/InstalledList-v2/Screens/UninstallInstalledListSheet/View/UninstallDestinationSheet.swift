@@ -231,7 +231,7 @@ private extension UninstallDestinationSheet {
     var AddressRow: some View {
         if let address = selectedCopyAddress {
             HStack(spacing: 12) {
-                Image(systemName: SFSymbols.mappinAndEllipse)
+                Image(systemName: SFSymbols.mapPinAndEllipse)
                     .foregroundStyle(.red)
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -254,7 +254,7 @@ private extension UninstallDestinationSheet {
         } else {
             RDButton(
                 variant: .outline,
-                leadingIcon: SFSymbols.mappinAndEllipse,
+                leadingIcon: SFSymbols.mapPinAndEllipse,
                 label: "Select Address",
                 fullWidth: true
             ) {

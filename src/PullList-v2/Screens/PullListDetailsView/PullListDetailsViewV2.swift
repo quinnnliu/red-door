@@ -145,7 +145,7 @@ private extension PullListDetailsViewV2 {
             },
             header: {
                 HStack {
-                    Text("Address:")
+                    Image(systemName: SFSymbols.mapPinAndEllipse)
                         .bold()
                         .foregroundStyle(.red)
                     Text(viewModel.pullListState.address.getStreetAddress() ?? viewModel.pullListState.address.formattedAddress)
