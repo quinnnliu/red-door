@@ -89,6 +89,9 @@ final class EssentialsGroupDetailViewModel {
     @MainActor
     private func handleListenerError(_ error: Error) async {
         isLoading = false
+
+        guard !RepositoryError.isDocumentNotFound(error) else { return }
+
         alertMessage = "Failed to load group: \(error.localizedDescription)"
         showAlert = true
     }

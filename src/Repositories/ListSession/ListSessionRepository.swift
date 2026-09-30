@@ -16,9 +16,11 @@ class ListSessionRepository<T: ListSessionDocument>: GenericRepository<T> {
     /// `.success(nil)` means the document does not exist — the session has not
     /// been created yet, or was deleted out of band.
     ///
-    /// `GenericRepository.addDocumentListener` cannot express this: it calls
-    /// `snapshot.data(as:)` unconditionally, which throws on a missing document
-    /// and surfaces deletion as a `.failure` indistinguishable from a real error.
+    /// Kept separate from `GenericRepository.addDocumentListener`, which
+    /// reports a missing document as `.failure(.documentNotFound)`. That suits
+    /// a detail screen, which only needs to stop complaining once its document
+    /// is gone; here absence is a state the caller acts on, so it belongs on
+    /// the success path.
     func addSessionListener(
         id: String,
         onChange: @escaping (Result<T?, Error>) -> Void

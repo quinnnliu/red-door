@@ -158,7 +158,7 @@ private struct PrimaryImageContent: View {
             } else if let imageUrl = image?.imageURL {
                 RDImageView(url: imageUrl)
             } else {
-                RDImagePlaceholder(content: .empty(editable: editable), size: size / 2)
+                RDImagePlaceholder(content: .empty(editable: editable), size: size)
             }
         }
         .frame(size)

@@ -7,8 +7,20 @@
 
 enum RepositoryError: String, Error {
     case decodeFailure
+    case documentNotFound
     case sessionComplete
     case missingCopyAddress
+}
+
+extension RepositoryError {
+
+    /// True when a listener fired because its document was deleted. That is a
+    /// normal end of life for a detail screen — an install deletes the pull
+    /// list and its rooms out from under whatever is still listening — so
+    /// callers skip their error alert rather than blaming the user for it.
+    static func isDocumentNotFound(_ error: Error) -> Bool {
+        (error as? RepositoryError) == .documentNotFound
+    }
 }
 
 /// Thrown by an assignment transaction that found nothing it could apply.

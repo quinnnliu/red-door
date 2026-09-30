@@ -76,6 +76,12 @@ final class PullListRoomDetailsViewModel {
     @MainActor
     private func handleListenerError(_ error: Error) async {
         isLoading = false
+
+        // A deleted document ends its listener normally — an install deletes
+        // the pull list and its rooms, and a detail screen can still be
+        // listening as it dismisses. Nothing to tell the user.
+        guard !RepositoryError.isDocumentNotFound(error) else { return }
+
         alertMessage = "Failed to load room: \(error.localizedDescription)"
         showAlert = true
     }

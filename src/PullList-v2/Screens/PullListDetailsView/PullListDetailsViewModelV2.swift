@@ -23,6 +23,8 @@ final class PullListDetailsViewModelV2 {
     var availableStorageLocations: [StorageLocation] = []
 
     private var roomsListener: ListenerRegistration? = nil
+    private var listListener: ListenerRegistration? = nil
+    private var didApplyFirstListSnapshot = false
 
     private let roomRepo: RoomRepository<PullListV2>
     private let itemRepo: ItemRepository
@@ -56,6 +58,7 @@ final class PullListDetailsViewModelV2 {
     /// `stopListening()` mutates state the UI reads on the main thread.
     deinit {
         roomsListener?.remove()
+        listListener?.remove()
     }
 
     // MARK: start / stop listening
@@ -77,14 +80,30 @@ final class PullListDetailsViewModelV2 {
             }
         }
 
-        Task {
-            await fetchEssentialsGroup()
+        // The rooms listener alone misses changes to the list document itself
+        // — attaching an essentials group or assigning an item from another
+        // device rewrites `unassignedItemIds` without touching any room.
+        // Loading the essentials group and the unassigned pool hangs off this
+        // listener's first snapshot rather than a separate fetch here, so the
+        // list document has exactly one writer.
+        listListener = pullListRepo.addDocumentListener(id: pullListState.id) { [weak self] result in
+            Task { @MainActor in
+                switch result {
+                case .success(let list):
+                    await self?.handleListSnapshot(list)
+                case .failure(let error):
+                    await self?.handleListenerError(error)
+                }
+            }
         }
     }
 
     func stopListening() {
         roomsListener?.remove()
         roomsListener = nil
+        listListener?.remove()
+        listListener = nil
+        didApplyFirstListSnapshot = false
         loader.invalidate()
         itemsByRoom.removeAll()
     }
@@ -99,14 +118,40 @@ final class PullListDetailsViewModelV2 {
         for room in self.rooms {
             await fetchItemsForRoom(room)
         }
+    }
 
-        await refreshPullListDetails()
-        await fetchUnassignedItems()
+    // MARK: handleListSnapshot
+
+    /// Gated on what actually changed: the list document is rewritten by room
+    /// creation and by every item assignment, so refetching unconditionally
+    /// would re-read the whole unassigned pool on writes that never touched
+    /// it. Compared as sets because `arrayUnion` appends and `arrayRemove`
+    /// compacts, so the stored order churns without the membership moving.
+    @MainActor
+    private func handleListSnapshot(_ list: PullListV2) async {
+        let isFirstSnapshot = !didApplyFirstListSnapshot
+        didApplyFirstListSnapshot = true
+
+        let unassignedChanged = isFirstSnapshot
+            || Set(list.unassignedItemIds) != Set(pullListState.unassignedItemIds)
+        let essentialsChanged = isFirstSnapshot
+            || list.essentialGroupId != pullListState.essentialGroupId
+
+        pullListState = list
+
+        if essentialsChanged { await fetchEssentialsGroup() }
+        if unassignedChanged { await fetchUnassignedItems() }
     }
 
     @MainActor
     private func handleListenerError(_ error: Error) async {
         isLoading = false
+
+        // Committing an install deletes this list while the install sheet is
+        // still covering this screen. The screen is on its way out; there is
+        // nothing to tell the user.
+        guard !RepositoryError.isDocumentNotFound(error) else { return }
+
         showAlert = true
         alertMessage = error.localizedDescription
     }
@@ -122,8 +167,13 @@ final class PullListDetailsViewModelV2 {
             return
         }
         do {
-            let fetched = try await itemRepo.get(ids: ids)
-            unassignedItems = Set(fetched)
+            // Selection is re-derived by ID, not carried over: another device
+            // can pull an item out of the pool from under a selection, and a
+            // refetched item is a different value even when it is the same
+            // item, which `Set<ItemV2>` membership would miss.
+            let selectedIds = Set(selectedUnassignedItems.map(\.id))
+            unassignedItems = Set(try await loader.items(ids: ids))
+            selectedUnassignedItems = unassignedItems.filter { selectedIds.contains($0.id) }
         } catch {
             alertMessage = error.localizedDescription
             showAlert = true
@@ -160,27 +210,18 @@ final class PullListDetailsViewModelV2 {
 
     // MARK: refreshPullListAndRooms
 
+    /// The list document and its rooms arrive via listeners, so only the item
+    /// and essentials documents they reference need a manual re-read. Re-reading
+    /// the list here too would race its own listener with a staler value.
     func refreshPullListAndRooms() {
         loader.invalidate()
         itemsByRoom.removeAll()
         Task { @MainActor in
-            await refreshPullListDetails()
             for room in rooms {
                 await fetchItemsForRoom(room)
             }
-        }
-    }
-
-    // MARK: refreshPullListDetails
-
-    func refreshPullListDetails() async {
-        do {
-            pullListState = try await pullListRepo.get(id: pullListState.id)
             await fetchEssentialsGroup()
             await fetchUnassignedItems()
-        } catch {
-            alertMessage = "Error refreshing pull list, please try again"
-            showAlert = true
         }
     }
 
@@ -265,6 +306,9 @@ final class PullListDetailsViewModelV2 {
 
         do {
             try await batch.commit()
+            // These items' locations just moved to storage; the cached copies
+            // still say otherwise.
+            loader.invalidate(group.itemIds)
             pullListState.essentialGroupId = nil
             pullListState.unassignedItemIds.removeAll { essentialItemSet.contains($0) }
             unassignedItems = unassignedItems.filter { !essentialItemSet.contains($0.id) }
@@ -385,6 +429,7 @@ extension PullListDetailsViewModelV2 {
                 pullListRepo: pullListRepo
             )
 
+            loader.invalidate(itemIds)
             unassignedItems.subtract(selectedUnassignedItems)
             pullListState.unassignedItemIds.removeAll { itemIds.contains($0) }
             selectedUnassignedItems.removeAll()
@@ -413,6 +458,7 @@ extension PullListDetailsViewModelV2 {
                 itemRepo: itemRepo
             )
 
+            loader.invalidate([item.id])
             pullListState.unassignedItemIds.removeAll { $0 == item.id }
             unassignedItems = unassignedItems.filter { $0.id != item.id }
             selectedUnassignedItems = selectedUnassignedItems.filter { $0.id != item.id }

@@ -78,6 +78,9 @@ final class InstalledListRoomDetailsViewModel {
     @MainActor
     private func handleListenerError(_ error: Error) async {
         isLoading = false
+
+        guard !RepositoryError.isDocumentNotFound(error) else { return }
+
         alertMessage = "Failed to load room: \(error.localizedDescription)"
         showAlert = true
     }

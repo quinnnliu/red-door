@@ -28,18 +28,24 @@ final class ItemsListLoader {
 
     // MARK: - Fetch
 
-    /// Fetches any of the document's items that aren't cached yet, then returns
-    /// every item that resolved, sorted by display name.
+    /// Fetches any of `ids` that aren't cached yet, then returns every item
+    /// that resolved, sorted by display name.
     ///
-    /// Callers that publish one section per document should check
-    /// `isComplete(_:)` first, so a section never renders half-filled.
-    func items(for document: some ItemsListableDocument) async throws -> [ItemV2] {
+    /// Takes raw IDs rather than a document so that item collections which
+    /// aren't an `ItemsListableDocument` can share the cache — a pull list's
+    /// unassigned pool is a plain `[String]` on the list, and the list itself
+    /// can't conform, since its items also live across rooms and an
+    /// essentials group.
+    ///
+    /// `Collection` rather than `Sequence`: `ids` is traversed twice, and a
+    /// single-pass sequence would be consumed by the cache check.
+    func items(ids: some Collection<String>) async throws -> [ItemV2] {
         let uncachedIds = lock.withLock {
-            document.itemIds.filter { cache[$0] == nil }
+            ids.filter { cache[$0] == nil }
         }
 
         if !uncachedIds.isEmpty {
-            let fetched = try await itemRepo.get(ids: Array(uncachedIds))
+            let fetched = try await itemRepo.get(ids: uncachedIds)
             lock.withLock {
                 for item in fetched {
                     cache[item.id] = item
@@ -48,17 +54,27 @@ final class ItemsListLoader {
         }
 
         return lock.withLock {
-            document.itemIds.compactMap { cache[$0] }
+            ids.compactMap { cache[$0] }
         }
         .sorted { $0.displayName < $1.displayName }
     }
 
-    /// True when every item the document references resolved. A document can
-    /// come back partially loaded if some items are missing or still in flight.
-    func isComplete(_ document: some ItemsListableDocument) -> Bool {
+    /// Callers that publish one section per document should check
+    /// `isComplete(_:)` first, so a section never renders half-filled.
+    func items(for document: some ItemsListableDocument) async throws -> [ItemV2] {
+        try await items(ids: document.itemIds)
+    }
+
+    /// True when every one of `ids` resolved. A collection can come back
+    /// partially loaded if some items are missing or still in flight.
+    func isComplete(ids: some Collection<String>) -> Bool {
         lock.withLock {
-            document.itemIds.allSatisfy { cache[$0] != nil }
+            ids.allSatisfy { cache[$0] != nil }
         }
+    }
+
+    func isComplete(_ document: some ItemsListableDocument) -> Bool {
+        isComplete(ids: document.itemIds)
     }
 
     // MARK: - Cache

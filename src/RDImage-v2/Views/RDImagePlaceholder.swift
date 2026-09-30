@@ -29,17 +29,10 @@ struct RDImagePlaceholder: View {
                 case .loading:
                     ProgressView()
                 case .empty(let editable):
-                    if editable {
-                        Image(systemName: SFSymbols.photoBadgePlus)
-                            .frame(size)
-                            .bold()
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Image(systemName: SFSymbols.photoBadgeExclamationmarkFill)
-                            .frame(size)
-                            .bold()
-                            .foregroundStyle(.secondary)
-                    }
+                    Image(systemName: editable ? SFSymbols.photoBadgePlus : SFSymbols.photoBadgeExclamationmarkFill)
+                        .frame(size)
+                        .bold()
+                        .tint(.gray)
                 case .error:
                     Image(systemName: SFSymbols.photoBadgeExclamationmarkFill)
                         .foregroundStyle(.secondary)

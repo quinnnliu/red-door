@@ -44,6 +44,7 @@ final class ItemDetailViewModel {
                 case .success(let updatedItem):
                     self?.itemState = updatedItem
                 case .failure(let error):
+                    guard !RepositoryError.isDocumentNotFound(error) else { return }
                     print("item listener error: \(error.localizedDescription)")
                 }
             }

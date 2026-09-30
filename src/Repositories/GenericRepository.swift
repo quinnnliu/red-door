@@ -153,6 +153,15 @@ class GenericRepository<T: RDDocument> {
                 return
             }
 
+            /// A listener fires once more when its document is deleted, where
+            /// `data(as:)` would throw a decoding error. Reported as its own
+            /// case so callers can tell a vanished document from a malformed
+            /// one and decide separately whether it is worth surfacing.
+            guard snapshot.exists else {
+                onChange(.failure(RepositoryError.documentNotFound))
+                return
+            }
+
             do {
                 let document = try snapshot.data(as: T.self)
                 onChange(.success(document))
