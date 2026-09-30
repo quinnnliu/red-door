@@ -11,7 +11,7 @@ import Foundation
 final class PullListRepository: GenericRepository<PullListV2> {
     
     func getRooms(listId: String) async throws -> [RoomV2] {
-        let roomRepo = RoomRepository(listId: listId)
+        let roomRepo = RoomRepository<PullListV2>(listId: listId)
         let list = try await get(id: listId)
         return try await roomRepo.get(ids: list.roomIds)
     }
@@ -33,7 +33,7 @@ extension PullListRepository {
     func delete(
         _ listId: String,
         rooms: [RoomV2],
-        roomRepo: RoomRepository
+        roomRepo: RoomRepository<PullListV2>
     ) async throws {
         let batch = newBatch()
 

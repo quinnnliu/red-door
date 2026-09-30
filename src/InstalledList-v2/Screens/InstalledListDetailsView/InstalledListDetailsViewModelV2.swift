@@ -26,7 +26,7 @@ final class InstalledListDetailsViewModelV2 {
     private var listListener: ListenerRegistration? = nil
 
     private let installedListRepo: InstalledListRepository
-    private let roomRepo: RoomRepository
+    private let roomRepo: RoomRepository<InstalledListV2>
     private let itemRepo: ItemRepository
     private let essentialsRepo: EssentialsRepository
     private let accessoriesRepo: AccessoriesRepository
@@ -36,7 +36,7 @@ final class InstalledListDetailsViewModelV2 {
     init(
         list: InstalledListV2,
         installedListRepo: InstalledListRepository,
-        roomRepo: RoomRepository,
+        roomRepo: RoomRepository<InstalledListV2>,
         itemRepo: ItemRepository,
         essentialsRepo: EssentialsRepository,
         accessoriesRepo: AccessoriesRepository

@@ -31,8 +31,8 @@ extension AddItemToDocumentDetailViewModel {
         defer { isLoading = false }
 
         switch destination {
-        case .room(let room):
-            await addItemToPullListRoom(item: item, room: room)
+        case .room(let room, let listKind):
+            await addItemToRoom(item: item, room: room, listKind: listKind)
         case .essentialsGroup(let group):
             await addItemToEssentialsGroup(item: item, group: group)
         }
@@ -43,14 +43,18 @@ extension AddItemToDocumentDetailViewModel {
 
 private extension AddItemToDocumentDetailViewModel {
 
-    func addItemToPullListRoom(item: ItemV2, room: RoomV2) async {
+    /// The switch erases `listKind` back into a concrete `RoomRepository`
+    /// parameter, which is what picks the collection and the item's new status.
+    func addItemToRoom(item: ItemV2, room: RoomV2, listKind: RDListKind) async {
         do {
-            try await RoomRepository(room: room).addItems(
-                [item.id],
-                toRoomId: room.id,
-                listId: room.listId,
-                itemRepo: itemRepo
-            )
+            switch listKind {
+            case .pullList:
+                try await RoomRepository<PullListV2>(room: room)
+                    .addItems([item.id], toRoomId: room.id, itemRepo: itemRepo)
+            case .installedList:
+                try await RoomRepository<InstalledListV2>(room: room)
+                    .addItems([item.id], toRoomId: room.id, itemRepo: itemRepo)
+            }
         } catch let error as ItemAssignmentError {
             handleAssignmentError(error, destinationDocument: room)
         } catch {
@@ -79,6 +83,7 @@ private extension AddItemToDocumentDetailViewModel {
     enum AddItemError: Error {
         case itemUnavailable(_ item: ItemV2)
         case itemAlreadyInDestination(_ item: ItemV2, destinationDocument: any RDDocument)
+        case destinationClosed(name: String)
         case genericError(item: ItemV2, destinationDocument: any RDDocument, error: Error)
     }
     
@@ -93,6 +98,8 @@ private extension AddItemToDocumentDetailViewModel {
             } else {
                 handleAddItemError(.genericError(item: item, destinationDocument: destinationDocument, error: error))
             }
+        case .destinationClosed(let name):
+            handleAddItemError(.destinationClosed(name: name))
         }
     }
 
@@ -103,6 +110,9 @@ private extension AddItemToDocumentDetailViewModel {
             showAlert = true
         case .itemUnavailable(let item):
             alertText = "[ERROR]: Item \(item.displayName) is not available to be added. It is currently \(item.location.status.displayTitle)."
+            showAlert = true
+        case .destinationClosed(let name):
+            alertText = "\(name) was uninstalled and no longer accepts items."
             showAlert = true
         case .genericError(let item, let destinationDocument, let error):
             print("[FATAL ERROR]: Failed to add \(item.displayName) to \(destinationDocument.displayName): \(error.localizedDescription)")

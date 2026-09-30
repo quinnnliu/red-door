@@ -93,10 +93,7 @@ extension PullListRepository {
 
                 try self.set(document: copyList, id: newListId, transaction: transaction)
 
-                let copyRoomRepo = RoomRepository(
-                    parentCollectionName: PullListV2.collectionName,
-                    listId: newListId
-                )
+                let copyRoomRepo = RoomRepository<PullListV2>(listId: newListId)
 
                 for room in sourceRooms {
                     var copyRoom = room

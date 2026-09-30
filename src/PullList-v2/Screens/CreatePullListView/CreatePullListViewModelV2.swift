@@ -47,7 +47,7 @@ final class CreatePullListViewModelV2 {
             updatedPullList.address.town = pullListState.address.town.lowercased()
             try pullListRepo.set(document: updatedPullList)
             
-            let roomRepo = RoomRepository(list: pullListState)
+            let roomRepo = RoomRepository<PullListV2>(list: pullListState)
             
             let batch = pullListRepo.db.batch()
             for room in rooms {

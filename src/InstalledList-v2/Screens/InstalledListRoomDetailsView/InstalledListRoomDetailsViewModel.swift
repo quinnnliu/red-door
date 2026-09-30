@@ -10,7 +10,7 @@ import Firebase
 
 @Observable
 final class InstalledListRoomDetailsViewModel {
-    private let roomRepo: RoomRepository
+    private let roomRepo: RoomRepository<InstalledListV2>
     private let itemRepo: ItemRepository
 
     var roomState: RoomV2
@@ -26,7 +26,7 @@ final class InstalledListRoomDetailsViewModel {
 
     init(
         room: RoomV2,
-        roomRepo: RoomRepository,
+        roomRepo: RoomRepository<InstalledListV2>,
         items: [ItemV2] = [],
         uninstalled: Bool = false
     ) {

@@ -24,10 +24,10 @@ extension InstallSessionRepository {
         rooms: [RoomV2],
         essentialsGroup: EssentialsGroup?,
         itemRepo: ItemRepository,
-        roomRepo: RoomRepository,
+        roomRepo: RoomRepository<PullListV2>,
         pullListRepo: PullListRepository,
         installedListRepo: InstalledListRepository,
-        installedRoomRepo: RoomRepository,
+        installedRoomRepo: RoomRepository<InstalledListV2>,
         essentialsRepo: EssentialsRepository,
         accessoriesRepo: AccessoriesRepository
     ) async throws -> InstalledListV2 {

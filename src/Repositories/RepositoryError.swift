@@ -18,6 +18,10 @@ enum RepositoryError: String, Error {
 /// ended up.
 enum ItemAssignmentError: Error {
     case noEligibleItems(unavailable: [ItemV2], duplicates: [ItemV2])
+
+    /// The parent list stopped accepting items — it was uninstalled while the
+    /// add flow was open. Carries the list's name so the alert can say which.
+    case destinationClosed(name: String)
     
     static func eligibleItems(
         from items: [ItemV2],

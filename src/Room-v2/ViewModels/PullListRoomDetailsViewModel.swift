@@ -10,7 +10,7 @@ import Firebase
 
 @Observable
 final class PullListRoomDetailsViewModel {
-    private let roomRepo: RoomRepository
+    private let roomRepo: RoomRepository<PullListV2>
     private let itemRepo: ItemRepository
     private let pullListRepo: PullListRepository
 
@@ -28,7 +28,7 @@ final class PullListRoomDetailsViewModel {
         room: RoomV2,
         items: [ItemV2] = []
     ) {
-        self.roomRepo = RoomRepository(room: room)
+        self.roomRepo = RoomRepository<PullListV2>(room: room)
         self.itemRepo = ItemRepository()
         self.pullListRepo = PullListRepository()
         self.roomState = room
@@ -142,7 +142,6 @@ extension PullListRoomDetailsViewModel {
             try await roomRepo.unassignItem(
                 item.id,
                 fromRoomId: roomState.id,
-                listId: roomState.listId,
                 pullListRepo: pullListRepo
             )
             loader.invalidate([item.id])

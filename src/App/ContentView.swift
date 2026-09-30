@@ -13,20 +13,20 @@ struct ContentView: View {
 
     var body: some View {
         TabView(selection: $coordinator.selectedTab) {
-            Tab("Pull Lists",
-                systemImage: "pencil.and.list.clipboard",
-                value: NavigationCoordinator.Tab.pullListV2
-            ) {
-                PullListDocumentListViewV2(path: $coordinator.pullListV2Path)
-                    .tint(.blue)
-                    .environment(coordinator)
-            }
-            
             Tab("Inventory",
                 systemImage: "chair.lounge.fill",
                 value: NavigationCoordinator.Tab.itemInventory
             ) {
                 ItemDocumentListViewV2(path: $coordinator.itemInventoryPath)
+                    .tint(.blue)
+                    .environment(coordinator)
+            }
+            
+            Tab("Pull Lists",
+                systemImage: "pencil.and.list.clipboard",
+                value: NavigationCoordinator.Tab.pullListV2
+            ) {
+                PullListDocumentListViewV2(path: $coordinator.pullListV2Path)
                     .tint(.blue)
                     .environment(coordinator)
             }
@@ -45,30 +45,6 @@ struct ContentView: View {
                 value: NavigationCoordinator.Tab.optionsV2
             ) {
                 OptionsViewV2()
-                    .tint(.blue)
-                    .environment(coordinator)
-            }
-
-            Tab("Pull (V1)", systemImage: "pencil.and.list.clipboard", value: NavigationCoordinator.Tab.pullList) {
-                PullListDocumentView(path: $coordinator.pullListPath)
-                    .tint(.blue)
-                    .environment(coordinator)
-            }
-            
-            Tab("Inventory (V1)", systemImage: "chair.lounge.fill", value: NavigationCoordinator.Tab.inventory) {
-                ModelInventoryView(path: $coordinator.inventoryPath)
-                    .tint(.blue)
-                    .environment(coordinator)
-            }
-            
-            Tab("Installed (V1)", systemImage: "list.bullet.clipboard", value: NavigationCoordinator.Tab.installedList) {
-                InstalledListDocumentView(path: $coordinator.installedListPath)
-                    .tint(.blue)
-                    .environment(coordinator)
-            }
-
-            Tab("Options", systemImage: "ellipsis.circle", value: NavigationCoordinator.Tab.options) {
-                OptionsView()
                     .tint(.blue)
                     .environment(coordinator)
             }

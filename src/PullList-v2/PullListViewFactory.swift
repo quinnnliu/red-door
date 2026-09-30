@@ -16,7 +16,7 @@ struct PullListViewFactory {
     func makeDetailsView(list: PullListV2) -> PullListDetailsViewV2 {
         let vm = PullListDetailsViewModelV2(
             list: list,
-            roomRepo: RoomRepository(list: list),
+            roomRepo: RoomRepository<PullListV2>(list: list),
             itemRepo: itemRepo,
             pullListRepo: pullListRepo,
             essentialsRepo: essentialsRepo,
@@ -33,10 +33,7 @@ struct PullListViewFactory {
     ) -> CopyFromInstalledListView {
         let vm = CopyFromInstalledListViewModel(
             installedList: installedList,
-            installedRoomRepo: RoomRepository(
-                parentCollectionName: InstalledListV2.collectionName,
-                listId: installedList.id
-            ),
+            installedRoomRepo: RoomRepository<InstalledListV2>(listId: installedList.id),
             itemRepo: itemRepo,
             pullListRepo: pullListRepo,
             essentialsRepo: essentialsRepo,

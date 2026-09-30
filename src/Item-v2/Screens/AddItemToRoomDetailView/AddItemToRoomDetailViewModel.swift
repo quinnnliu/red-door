@@ -10,7 +10,7 @@ import SwiftUI
 
 @Observable
 final class AddItemToRoomDetailViewModel {
-    let roomRepo: RoomRepository
+    let roomRepo: RoomRepository<PullListV2>
     let itemRepo: ItemRepository = .init()
     var room: RoomV2
     let item: ItemV2
@@ -26,7 +26,7 @@ final class AddItemToRoomDetailViewModel {
         item: ItemV2,
         room: RoomV2
     ) {
-        self.roomRepo = RoomRepository(room: room)
+        self.roomRepo = RoomRepository<PullListV2>(room: room)
         self.room = room
         self.item = item
     }
@@ -39,7 +39,6 @@ extension AddItemToRoomDetailViewModel {
             try await roomRepo.addItems(
                 [item.id],
                 toRoomId: room.id,
-                listId: room.listId,
                 itemRepo: itemRepo
             )
             alertMessage = "Added \(item.displayName) to \(room.displayName)"

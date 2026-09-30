@@ -9,35 +9,39 @@ import Foundation
 
 @Observable
 final class MoveItemV2RoomSheetViewModel {
-    
-    let roomRepo: RoomRepository
+
     let itemRepo: ItemRepository
-    let listRepo: PullListRepository
-    
+
     let room: RoomV2
     let item: ItemV2
+    /// Which collection `room` lives in. Without it this screen would read and
+    /// write the pull list subcollection for an installed list's rooms.
+    let listKind: RDListKind
     var rooms: [RoomV2] = []
-    
+
     var showAlert: Bool = false
     var alertMessage: String = ""
-    
-    init(item: ItemV2, room: RoomV2) {
-        self.roomRepo = RoomRepository(room: room)
+
+    init(item: ItemV2, room: RoomV2, listKind: RDListKind) {
         self.itemRepo = ItemRepository()
-        self.listRepo = PullListRepository()
         self.room = room
         self.item = item
+        self.listKind = listKind
     }
-    
+
     @MainActor
     func moveItemToNewRoom(newRoom: RoomV2) async {
         do {
-            let outcome = try await roomRepo.moveItem(
-                item.id,
-                fromRoomId: room.id,
-                toRoomId: newRoom.id,
-                itemRepo: itemRepo
-            )
+            let outcome: MoveItemOutcome
+            switch listKind {
+            case .pullList:
+                outcome = try await RoomRepository<PullListV2>(room: room)
+                    .moveItem(item.id, fromRoomId: room.id, toRoomId: newRoom.id, itemRepo: itemRepo)
+            case .installedList:
+                outcome = try await RoomRepository<InstalledListV2>(room: room)
+                    .moveItem(item.id, fromRoomId: room.id, toRoomId: newRoom.id, itemRepo: itemRepo)
+            }
+
             switch outcome {
             case .moved:
                 alertMessage = "Added \(item.displayName) to \(newRoom.displayName)"
@@ -52,18 +56,22 @@ final class MoveItemV2RoomSheetViewModel {
         }
     }
 
+    /// Reads siblings straight out of the room's own subcollection. Going
+    /// through the parent list's `roomIds` would mean knowing which list
+    /// repository to ask; the scoped room repository already knows.
     @MainActor
     func fetchRoomsForMove() async {
-        if rooms.isEmpty {
-            do {
-                async let fetchedRooms = listRepo.getRooms(listId: room.listId)
-                rooms = try await fetchedRooms
-            } catch {
-                alertMessage = "[ERROR] Unable to fetch other rooms in pull list: \(error.localizedDescription)"
-                showAlert = true
+        guard rooms.isEmpty else { return }
+        do {
+            switch listKind {
+            case .pullList:
+                rooms = try await RoomRepository<PullListV2>(room: room).getAll()
+            case .installedList:
+                rooms = try await RoomRepository<InstalledListV2>(room: room).getAll()
             }
-        } else {
-           return
+        } catch {
+            alertMessage = "[ERROR] Unable to fetch other rooms: \(error.localizedDescription)"
+            showAlert = true
         }
     }
 }

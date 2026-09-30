@@ -8,48 +8,52 @@
 import Foundation
 import Firebase
 
-final class RoomRepository: GenericRepository<RoomV2> {
-    // MARK: PullList init
-    convenience init(
-        db: Firestore = Firestore.firestore(),
-        list: PullListV2
-    ) {
-        self.init(db: db, parentCollectionName: PullListV2.collectionName, listId: list.id)
-    }
+/// Rooms of a single list, generic over which kind of list that is.
+///
+/// `RoomV2` documents are identical in `pull_list_v2` and `installed_list_v2`,
+/// so nothing on the room itself says which collection it came from. Carrying
+/// the parent as a type parameter means the collection path and the
+/// `LocationStatus` an added item receives are both derived from one source,
+/// and a room can't be read from one list's subcollection and written to the
+/// other's.
+final class RoomRepository<Parent: RDListDocument>: GenericRepository<RoomV2> {
+
+    /// Retained so writes that touch the parent list don't have to be handed
+    /// the ID they already implied by constructing this repository.
+    let listId: String
 
     // MARK: ListId init
-    convenience init(
-        db: Firestore = Firestore.firestore(),
-        listId: String
-    ) {
-        self.init(db: db, parentCollectionName: PullListV2.collectionName, listId: listId)
-    }
 
-    // MARK: Room init
-
-    convenience init(
-        db: Firestore = Firestore.firestore(),
-        room: RoomV2
-    ) {
-        self.init(db: db, parentCollectionName: PullListV2.collectionName, listId: room.listId)
-    }
-
-    // MARK: Generic parent collection init
-
-    init(
-        db: Firestore = Firestore.firestore(),
-        parentCollectionName: String,
-        listId: String
-    ) {
+    init(db: Firestore = Firestore.firestore(), listId: String) {
+        self.listId = listId
         super.init(
             db: db,
             collectionRef: db
-                .collection(parentCollectionName)
+                .collection(Parent.collectionPath)
                 .document(listId)
                 .collection(RoomV2.collectionName)
         )
     }
+
+    // MARK: List init
+
+    convenience init(db: Firestore = Firestore.firestore(), list: Parent) {
+        self.init(db: db, listId: list.id)
+    }
+
+    // MARK: Room init
+
+    convenience init(db: Firestore = Firestore.firestore(), room: RoomV2) {
+        self.init(db: db, listId: room.listId)
+    }
+
+    /// The parent list document, for guards that need its live state.
+    fileprivate var parentRef: DocumentReference {
+        db.collection(Parent.collectionPath).document(listId)
+    }
 }
+
+// MARK: - Listeners
 
 extension RoomRepository {
     func addRoomListener(
@@ -66,16 +70,20 @@ extension RoomRepository {
     }
 }
 
+// MARK: - MoveItemOutcome
+
+/// File-scope rather than nested in `RoomRepository`, so callers that switch on
+/// it don't have to name a generic parameter they don't otherwise care about.
+enum MoveItemOutcome: Equatable {
+    case moved
+    /// Someone else changed the item or either room first. A normal outcome
+    /// of two people working one list, not an error.
+    case stale
+}
+
 // MARK: - Move item
 
 extension RoomRepository {
-
-    enum MoveItemOutcome: Equatable {
-        case moved
-        /// Someone else changed the item or either room first. A normal outcome
-        /// of two people working one list, not an error.
-        case stale
-    }
 
     /// Moves an item between two rooms of the same list.
     ///
@@ -125,21 +133,28 @@ extension RoomRepository {
 
 extension RoomRepository {
 
-    /// Adds in-storage items to a room and points their location at the list.
+    /// Adds in-storage items to a room and points their location at this list.
     ///
-    /// Re-reads the room and the items inside the transaction, so two people
-    /// adding from stale inventory lists can't double-assign one item. Throws
-    /// `ItemAssignmentError.noEligibleItems` when none of them can be added.
+    /// Re-reads the parent list, the room, and the items inside the transaction,
+    /// so two people adding from stale inventory lists can't double-assign one
+    /// item and a list that closed mid-flow can't still be written to. Throws
+    /// `ItemAssignmentError.noEligibleItems` when none of them can be added, or
+    /// `.destinationClosed` when the list no longer accepts items.
     func addItems(
         _ itemIds: [String],
         toRoomId roomId: String,
-        listId: String,
         itemRepo: ItemRepository
     ) async throws {
         guard !itemIds.isEmpty else { return }
 
         _ = try await db.runTransaction { transaction, errorPointer -> Any? in
             do {
+                // Reads first — Firestore requires every read to precede every write.
+                let parent = try transaction.getDocument(self.parentRef).data(as: Parent.self)
+                guard parent.acceptsNewItems else {
+                    throw ItemAssignmentError.destinationClosed(name: parent.displayName)
+                }
+
                 let room = try self.get(id: roomId, transaction: transaction)
                 let items = try itemRepo.get(ids: itemIds, transaction: transaction)
                 let eligible = try ItemAssignmentError.eligibleItems(from: items, alreadyIn: room.itemIds)
@@ -150,7 +165,10 @@ extension RoomRepository {
                     transaction: transaction
                 )
 
-                let location = DocumentLocation(status: .inPullList, locationId: listId).firebaseUpdateFields
+                let location = DocumentLocation(
+                    status: Parent.itemLocationStatus,
+                    locationId: self.listId
+                ).firebaseUpdateFields
                 for item in eligible {
                     itemRepo.update(id: item.id, fields: location, transaction: transaction)
                 }
@@ -161,41 +179,6 @@ extension RoomRepository {
                 return nil
             }
         }
-    }
-
-    /// Places items already in the list's unassigned pool into a room.
-    ///
-    /// Separate from `addItems` on purpose: these items are already
-    /// `.inPullList`, so the in-storage eligibility check doesn't apply.
-    func assignUnassignedItems(
-        _ itemIds: [String],
-        toRoomId roomId: String,
-        listId: String,
-        itemRepo: ItemRepository,
-        pullListRepo: PullListRepository
-    ) async throws {
-        guard !itemIds.isEmpty else { return }
-
-        let batch = newBatch()
-
-        update(
-            id: roomId,
-            fields: [RoomV2.CodingKeys.itemIds.stringValue: FieldValue.arrayUnion(itemIds)],
-            inBatch: batch
-        )
-
-        let location = DocumentLocation(status: .inPullList, locationId: listId).firebaseUpdateFields
-        for itemId in itemIds {
-            itemRepo.update(id: itemId, fields: location, inBatch: batch)
-        }
-
-        pullListRepo.update(
-            id: listId,
-            fields: [PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayRemove(itemIds)],
-            inBatch: batch
-        )
-
-        try await batch.commit()
     }
 }
 
@@ -225,13 +208,55 @@ extension RoomRepository {
 
         try await batch.commit()
     }
+}
+
+// MARK: - Unassigned pool
+
+/// Only a pull list has an unassigned pool — an installed list's rooms are the
+/// record of where things physically went, so there is nowhere for an
+/// unplaced item to sit. Constraining these to `PullListV2` keeps them from
+/// being reachable on the installed side at all.
+extension RoomRepository where Parent == PullListV2 {
+
+    /// Places items already in the list's unassigned pool into a room.
+    ///
+    /// Separate from `addItems` on purpose: these items are already
+    /// `.inPullList`, so the in-storage eligibility check doesn't apply.
+    func assignUnassignedItems(
+        _ itemIds: [String],
+        toRoomId roomId: String,
+        itemRepo: ItemRepository,
+        pullListRepo: PullListRepository
+    ) async throws {
+        guard !itemIds.isEmpty else { return }
+
+        let batch = newBatch()
+
+        update(
+            id: roomId,
+            fields: [RoomV2.CodingKeys.itemIds.stringValue: FieldValue.arrayUnion(itemIds)],
+            inBatch: batch
+        )
+
+        let location = DocumentLocation(status: .inPullList, locationId: listId).firebaseUpdateFields
+        for itemId in itemIds {
+            itemRepo.update(id: itemId, fields: location, inBatch: batch)
+        }
+
+        pullListRepo.update(
+            id: listId,
+            fields: [PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayRemove(itemIds)],
+            inBatch: batch
+        )
+
+        try await batch.commit()
+    }
 
     /// Moves an item out of a room and back into the list's unassigned pool.
     /// Its location still points at the list, so only membership changes.
     func unassignItem(
         _ itemId: String,
         fromRoomId roomId: String,
-        listId: String,
         pullListRepo: PullListRepository
     ) async throws {
         let batch = newBatch()

@@ -230,7 +230,7 @@ struct PullListRoomDetailsView: View {
 private extension PullListRoomDetailsView {
     var AddItemsToRoomSheet: some View {
         AddItemToDocumentSheetV2(
-            destination: .room(viewModel.roomState),
+            destination: .room(viewModel.roomState, listKind: PullListV2.listKind),
             defaultFilters: [
                 "\(ItemV2.CodingKeys.location.rawValue).\(DocumentLocation.CodingKeys.status.rawValue)": LocationStatus.inStorage.rawValue,
                 ItemV2.CodingKeys.essentialGroupId.rawValue: NSNull() as AnyHashable

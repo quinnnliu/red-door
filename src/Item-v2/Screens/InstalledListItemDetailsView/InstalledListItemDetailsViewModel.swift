@@ -28,7 +28,7 @@ final class InstalledListItemDetailsViewModel {
     let room: RoomV2
 
     private let installedListRepo: InstalledListRepository = InstalledListRepository()
-    private let roomRepo: RoomRepository
+    private let roomRepo: RoomRepository<InstalledListV2>
     private let itemRepo: ItemRepository = ItemRepository()
 
     // MARK: - Initialization
@@ -37,7 +37,7 @@ final class InstalledListItemDetailsViewModel {
         item: ItemV2,
         room: RoomV2,
         uninstalled: Bool = false,
-        roomRepo: RoomRepository
+        roomRepo: RoomRepository<InstalledListV2>
     ) {
         self.itemState = item
         self.room = room

@@ -27,7 +27,7 @@ final class PullListItemDetailsViewModel {
     let room: RoomV2
 
     private let listRepo: PullListRepository = PullListRepository()
-	private let roomRepo: RoomRepository
+	private let roomRepo: RoomRepository<PullListV2>
     private let itemRepo: ItemRepository = ItemRepository()
 
 	// MARK: - Initialization
@@ -38,7 +38,7 @@ final class PullListItemDetailsViewModel {
 	) {
 		self.itemState = item
         self.room = room
-		self.roomRepo = RoomRepository(room: room)
+		self.roomRepo = RoomRepository<PullListV2>(room: room)
 	}
 
 
@@ -80,7 +80,6 @@ final class PullListItemDetailsViewModel {
             try await roomRepo.unassignItem(
                 itemState.id,
                 fromRoomId: room.id,
-                listId: room.listId,
                 pullListRepo: listRepo
             )
             return true

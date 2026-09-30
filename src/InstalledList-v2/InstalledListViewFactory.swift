@@ -21,7 +21,7 @@ struct InstalledListViewFactory {
             item: item,
             room: room,
             uninstalled: uninstalled,
-            roomRepo: RoomRepository(parentCollectionName: InstalledListV2.collectionName, listId: room.listId)
+            roomRepo: RoomRepository<InstalledListV2>(listId: room.listId)
         )
         return InstalledListItemDetailsView(viewModel: vm)
     }
@@ -29,7 +29,7 @@ struct InstalledListViewFactory {
     func makeRoomDetailsView(items: [ItemV2], room: RoomV2, uninstalled: Bool = false) -> InstalledListRoomDetailsView {
         let vm = InstalledListRoomDetailsViewModel(
             room: room,
-            roomRepo: RoomRepository(parentCollectionName: InstalledListV2.collectionName, listId: room.listId),
+            roomRepo: RoomRepository<InstalledListV2>(listId: room.listId),
             items: items,
             uninstalled: uninstalled
         )
@@ -40,10 +40,7 @@ struct InstalledListViewFactory {
         let vm = UninstallInstalledListSheetViewModel(
             list: list,
             installedListRepo: installedListRepo,
-            installedRoomRepo: RoomRepository(
-                parentCollectionName: InstalledListV2.collectionName,
-                listId: list.id
-            ),
+            installedRoomRepo: RoomRepository<InstalledListV2>(listId: list.id),
             itemRepo: itemRepo,
             sessionRepo: uninstallSessionRepo,
             pullListRepo: pullListRepo,
@@ -57,10 +54,7 @@ struct InstalledListViewFactory {
     func makeUninstallRecordSheet(list: InstalledListV2) -> UninstallRecordSheet {
         let vm = UninstallRecordSheetViewModel(
             list: list,
-            installedRoomRepo: RoomRepository(
-                parentCollectionName: InstalledListV2.collectionName,
-                listId: list.id
-            ),
+            installedRoomRepo: RoomRepository<InstalledListV2>(listId: list.id),
             itemRepo: itemRepo,
             sessionRepo: uninstallSessionRepo,
             pullListRepo: pullListRepo,
@@ -75,7 +69,7 @@ struct InstalledListViewFactory {
         let vm = InstalledListDetailsViewModelV2(
             list: list,
             installedListRepo: installedListRepo,
-            roomRepo: RoomRepository(parentCollectionName: InstalledListV2.collectionName, listId: list.id),
+            roomRepo: RoomRepository<InstalledListV2>(listId: list.id),
             itemRepo: itemRepo,
             essentialsRepo: essentialsRepo,
             accessoriesRepo: accessoriesRepo

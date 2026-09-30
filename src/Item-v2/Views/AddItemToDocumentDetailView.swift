@@ -84,8 +84,8 @@ struct AddItemToDocumentDetailView: View {
                 Button("OK") { }
             }
             .sheet(isPresented: $showMoveRoomSheet) {
-                if case .room(let room) = viewModel.destination {
-                    MoveItemV2RoomSheet(room: room, item: viewModel.item)
+                if case .room(let room, let listKind) = viewModel.destination {
+                    MoveItemV2RoomSheet(room: room, item: viewModel.item, listKind: listKind)
                 }
             }
 

@@ -151,10 +151,7 @@ extension UninstallSessionRepository {
         )
         try pullListRepo.set(document: copyList, id: copyId, transaction: transaction)
 
-        let copyRoomRepo = RoomRepository(
-            parentCollectionName: PullListV2.collectionName,
-            listId: copyId
-        )
+        let copyRoomRepo = RoomRepository<PullListV2>(listId: copyId)
 
         for room in rooms {
             var copyRoom = room

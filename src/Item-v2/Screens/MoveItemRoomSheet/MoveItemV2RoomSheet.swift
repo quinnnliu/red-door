@@ -12,8 +12,8 @@ struct MoveItemV2RoomSheet: View {
     
     @State var viewModel: MoveItemV2RoomSheetViewModel
     
-    init(room: RoomV2, item: ItemV2) {
-        self.viewModel = MoveItemV2RoomSheetViewModel(item: item, room: room)
+    init(room: RoomV2, item: ItemV2, listKind: RDListKind) {
+        self.viewModel = MoveItemV2RoomSheetViewModel(item: item, room: room, listKind: listKind)
     }
     
     var body: some View {

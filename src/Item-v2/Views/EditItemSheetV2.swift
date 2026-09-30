@@ -56,6 +56,7 @@ struct EditItemSheetV2: View {
                     RDButton(variant: .red, size: .default, leadingIcon: "trash", label: "Delete Item", fullWidth: false) {
                         showDeleteAlert = true
                     }
+                    .disabled(!editingItem.location.status.isAvailable || editingItem.essentialGroupId != nil)
                     .alert("Confirm Delete", isPresented: $showDeleteAlert) {
                         Button(role: .destructive) {
                             deleteItem()

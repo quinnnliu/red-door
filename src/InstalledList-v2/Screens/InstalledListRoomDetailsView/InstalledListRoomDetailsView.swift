@@ -205,7 +205,7 @@ struct InstalledListRoomDetailsView: View {
 private extension InstalledListRoomDetailsView {
     var AddItemsToRoomSheet: some View {
         AddItemToDocumentSheetV2(
-            destination: .room(viewModel.roomState),
+            destination: .room(viewModel.roomState, listKind: InstalledListV2.listKind),
             defaultFilters: [
                 "\(ItemV2.CodingKeys.location.rawValue).\(DocumentLocation.CodingKeys.status.rawValue)": LocationStatus.inStorage.rawValue,
                 ItemV2.CodingKeys.essentialGroupId.rawValue: NSNull() as AnyHashable

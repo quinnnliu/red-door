@@ -13,17 +13,17 @@ import SwiftUI
 class NavigationCoordinator {
 
     enum Tab: Int {
-        case pullListV2 = 0
-        case optionsV2 = 1
+        case itemInventory = 0
+        case pullListV2 = 1
         case installedListV2 = 2
-        case pullList = 3
-        case installedList = 4
-        case inventory = 5
-        case itemInventory = 6
+        case optionsV2 = 3
+        case pullList = 4
+        case installedList = 5
+        case inventory = 6
         case options = 7
     }
 
-    var selectedTab: Tab = .pullListV2
+    var selectedTab: Tab = .itemInventory
     var inventoryPath: NavigationPath = NavigationPath()
     var pullListPath: NavigationPath = NavigationPath()
     var installedListPath: NavigationPath = NavigationPath()
@@ -35,22 +35,24 @@ class NavigationCoordinator {
 
     var selectedPath: NavigationPath {
         switch selectedTab {
-        case .pullList:
-            return pullListPath
-        case .installedList:
-            return installedListPath
-        case .inventory:
-            return inventoryPath
         case .itemInventory:
             return itemInventoryPath
-        case .options:
-            return optionsPath
         case .pullListV2:
             return pullListV2Path
         case .optionsV2:
             return optionsV2Path
         case .installedListV2:
             return installedListV2Path
+            
+        // MARK: below are dead tabs
+        case .pullList:
+            return pullListPath
+        case .installedList:
+            return installedListPath
+        case .inventory:
+            return inventoryPath
+        case .options:
+            return optionsPath
         }
     }
 
@@ -60,64 +62,71 @@ class NavigationCoordinator {
 
     func appendToSelectedPath(_ item: any Hashable) {
         switch selectedTab {
-        case .pullList:
-            pullListPath.append(item)
-        case .installedList:
-            installedListPath.append(item)
-        case .inventory:
-            inventoryPath.append(item)
         case .itemInventory:
             itemInventoryPath.append(item)
-        case .options:
-            optionsPath.append(item)
         case .pullListV2:
             pullListV2Path.append(item)
         case .optionsV2:
             optionsV2Path.append(item)
         case .installedListV2:
             installedListV2Path.append(item)
+            
+        // MARK: below are dead tabs
+        case .pullList:
+            pullListPath.append(item)
+        case .installedList:
+            installedListPath.append(item)
+        case .inventory:
+            inventoryPath.append(item)
+        case .options:
+            optionsPath.append(item)
         }
     }
     
     func removeFromSelectedPath(_ k: Int? = nil) {
         switch selectedTab {
-        case .pullList:
-            pullListPath.removeLast(k ?? 1)
-        case .installedList:
-            installedListPath.removeLast(k ?? 1)
-        case .inventory:
-            inventoryPath.removeLast(k ?? 1)
         case .itemInventory:
             itemInventoryPath.removeLast(k ?? 1)
-        case .options:
-            optionsPath.removeLast(k ?? 1)
         case .pullListV2:
             pullListV2Path.removeLast(k ?? 1)
         case .optionsV2:
             optionsV2Path.removeLast(k ?? 1)
         case .installedListV2:
             installedListV2Path.removeLast(k ?? 1)
+            
+        // MARK: below are dead tabs
+        case .pullList:
+            pullListPath.removeLast(k ?? 1)
+        case .installedList:
+            installedListPath.removeLast(k ?? 1)
+        case .inventory:
+            inventoryPath.removeLast(k ?? 1)
+        case .options:
+            optionsPath.removeLast(k ?? 1)
+        
         }
     }
 
     func resetSelectedPath() {
         switch selectedTab {
-        case .pullList:
-            pullListPath = NavigationPath()
-        case .installedList:
-            installedListPath = NavigationPath()
-        case .inventory:
-            inventoryPath = NavigationPath()
         case .itemInventory:
             itemInventoryPath = NavigationPath()
-        case .options:
-            optionsPath = NavigationPath()
         case .pullListV2:
             pullListV2Path = NavigationPath()
         case .optionsV2:
             optionsV2Path = NavigationPath()
         case .installedListV2:
             installedListV2Path = NavigationPath()
+            
+        // MARK: below are dead tabs
+        case .pullList:
+            pullListPath = NavigationPath()
+        case .installedList:
+            installedListPath = NavigationPath()
+        case .inventory:
+            inventoryPath = NavigationPath()
+        case .options:
+            optionsPath = NavigationPath()
         }
     }
 }

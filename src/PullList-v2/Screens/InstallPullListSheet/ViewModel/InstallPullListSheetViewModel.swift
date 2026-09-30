@@ -43,11 +43,11 @@ final class InstallPullListSheetViewModel {
 
     let loader: ItemsListLoader
     let itemRepo: ItemRepository
-    let roomRepo: RoomRepository
+    let roomRepo: RoomRepository<PullListV2>
     let pullListRepo: PullListRepository
     let sessionRepo: InstallSessionRepository
     let installedListRepo: InstalledListRepository
-    let installedRoomRepo: RoomRepository
+    let installedRoomRepo: RoomRepository<InstalledListV2>
     let essentialsRepo: EssentialsRepository
     let accessoriesRepo: AccessoriesRepository
     let storageLocationRepo: StorageLocationRepository
@@ -66,11 +66,11 @@ final class InstallPullListSheetViewModel {
     ) {
         self.pullListState = list
         self.itemRepo = ItemRepository()
-        self.roomRepo = RoomRepository(list: list)
+        self.roomRepo = RoomRepository<PullListV2>(list: list)
         self.pullListRepo = PullListRepository()
         self.sessionRepo = InstallSessionRepository()
         self.installedListRepo = InstalledListRepository()
-        self.installedRoomRepo = RoomRepository(parentCollectionName: InstalledListV2.collectionName, listId: list.id)
+        self.installedRoomRepo = RoomRepository<InstalledListV2>(listId: list.id)
         self.essentialsRepo = EssentialsRepository()
         self.accessoriesRepo = AccessoriesRepository()
         self.storageLocationRepo = StorageLocationRepository()

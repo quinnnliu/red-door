@@ -37,7 +37,7 @@ final class UninstallRecordSheetViewModel {
     // MARK: - Collaborators
 
     private let loader: ItemsListLoader
-    private let installedRoomRepo: RoomRepository
+    private let installedRoomRepo: RoomRepository<InstalledListV2>
     private let itemRepo: ItemRepository
     private let sessionRepo: UninstallSessionRepository
     private let pullListRepo: PullListRepository
@@ -50,7 +50,7 @@ final class UninstallRecordSheetViewModel {
 
     init(
         list: InstalledListV2,
-        installedRoomRepo: RoomRepository,
+        installedRoomRepo: RoomRepository<InstalledListV2>,
         itemRepo: ItemRepository,
         sessionRepo: UninstallSessionRepository,
         pullListRepo: PullListRepository,

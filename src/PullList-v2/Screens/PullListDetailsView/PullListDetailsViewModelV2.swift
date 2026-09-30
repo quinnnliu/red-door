@@ -24,7 +24,7 @@ final class PullListDetailsViewModelV2 {
 
     private var roomsListener: ListenerRegistration? = nil
 
-    private let roomRepo: RoomRepository
+    private let roomRepo: RoomRepository<PullListV2>
     private let itemRepo: ItemRepository
     private let pullListRepo: PullListRepository
     private let essentialsRepo: EssentialsRepository
@@ -37,7 +37,7 @@ final class PullListDetailsViewModelV2 {
 
     init(
         list: PullListV2,
-        roomRepo: RoomRepository,
+        roomRepo: RoomRepository<PullListV2>,
         itemRepo: ItemRepository,
         pullListRepo: PullListRepository,
         essentialsRepo: EssentialsRepository,
@@ -381,7 +381,6 @@ extension PullListDetailsViewModelV2 {
             try await roomRepo.assignUnassignedItems(
                 itemIds,
                 toRoomId: room.id,
-                listId: pullListState.id,
                 itemRepo: itemRepo,
                 pullListRepo: pullListRepo
             )

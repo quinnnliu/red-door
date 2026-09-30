@@ -67,7 +67,7 @@ final class UninstallInstalledListSheetViewModel {
     let storageLocationRepo: StorageLocationRepository
     let configService: ConfigurationService
 
-    private let installedRoomRepo: RoomRepository
+    private let installedRoomRepo: RoomRepository<InstalledListV2>
     private var roomsListener: ListenerRegistration? = nil
     private var sessionListener: ListenerRegistration? = nil
 
@@ -76,7 +76,7 @@ final class UninstallInstalledListSheetViewModel {
     init(
         list: InstalledListV2,
         installedListRepo: InstalledListRepository,
-        installedRoomRepo: RoomRepository,
+        installedRoomRepo: RoomRepository<InstalledListV2>,
         itemRepo: ItemRepository,
         sessionRepo: UninstallSessionRepository,
         pullListRepo: PullListRepository,

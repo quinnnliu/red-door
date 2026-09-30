@@ -139,3 +139,9 @@ enum NewEnglandState: String, Filterable, CaseIterable, Codable {
     var icon: String? { nil }
     var color: Color? { nil }
 }
+
+// MARK: - RDListDocument
+
+extension PullListV2: RDListDocument {
+    static let listKind: RDListKind = .pullList
+}

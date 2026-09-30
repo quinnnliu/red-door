@@ -37,7 +37,7 @@ final class CopyFromInstalledListViewModel {
     // MARK: - Collaborators
 
     private let loader: ItemsListLoader
-    private let installedRoomRepo: RoomRepository
+    private let installedRoomRepo: RoomRepository<InstalledListV2>
     private let itemRepo: ItemRepository
     private let pullListRepo: PullListRepository
     private let essentialsRepo: EssentialsRepository
@@ -47,7 +47,7 @@ final class CopyFromInstalledListViewModel {
 
     init(
         installedList: InstalledListV2,
-        installedRoomRepo: RoomRepository,
+        installedRoomRepo: RoomRepository<InstalledListV2>,
         itemRepo: ItemRepository,
         pullListRepo: PullListRepository,
         essentialsRepo: EssentialsRepository,
