@@ -18,12 +18,11 @@ struct PullListPDFViewV2: View {
 
     let list: PullListV2
 
-    private let pullListRepository = PullListRepository()
     private let itemRepository = ItemRepository()
-    private let roomRepository: RoomRepository<PullListV2>
+    private let roomRepository: RoomRepository
 
     init(list: PullListV2) {
-        self.roomRepository = RoomRepository<PullListV2>(list: list)
+        self.roomRepository = RoomRepository(list: list)
         self.list = list
     }
 
@@ -32,70 +31,25 @@ struct PullListPDFViewV2: View {
             BackButton()
 
             VStack(alignment: .center, spacing: 0) {
-                if pdfDocument == nil {
-                    Spacer()
-
-                    if let errorMessage {
-                        VStack(spacing: 12) {
-                            Image(systemName: "exclamationmark.triangle")
-                                .font(.system(size: 32))
-                                .foregroundStyle(.red)
-                            Text("Error generating PDF")
-                                .font(.headline)
-                            Text(errorMessage)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    } else {
-                        VStack(spacing: 12) {
-                            ProgressView()
-                            Text("Generating PDF")
-                        }
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    }
-
-                    Spacer()
-                } else {
-                    PDFKitView(document: pdfDocument!)
+                if let pdfDocument {
+                    PDFKitView(document: pdfDocument)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .overlay(
                             RoundedRectangle(cornerRadius: 12)
                                 .stroke(Color.gray, lineWidth: 1)
                         )
 
-                    if isGeneratingPDF {
-                        ProgressView("Preparing PDF for export...")
-                            .padding()
+                    if let pdfData {
+                        ShareButton(pdfData)
                     }
-
-                    if #available(iOS 17, *), let pdfData {
-                        ShareLink(
-                            item: PDFFile(data: pdfData),
-                            preview: SharePreview(
-                                "(PullList) \(list.address.formattedAddress).pdf",
-                                image: Image(systemName: SFSymbols.docFill)
-                            ),
-                            label: {
-                                HStack(spacing: 8) {
-                                    Image(systemName: SFSymbols.squareAndArrowUp)
-                                        .font(.system(size: 16))
-                                        .fontWeight(.bold)
-
-                                    Text("Share / Export PDF")
-                                        .font(.body)
-                                        .fontWeight(.medium)
-                                }
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, 10)
-                                .frame(maxWidth: .infinity)
-                                .background(Color(.red))
-                                .clipShape(RoundedRectangle(cornerRadius: 6))
-                            }
-                        )
-                        .padding()
+                } else {
+                    Spacer()
+                    if let errorMessage {
+                        ErrorState(errorMessage)
+                    } else {
+                        LoadingState
                     }
+                    Spacer()
                 }
             }
         }
@@ -105,85 +59,140 @@ struct PullListPDFViewV2: View {
         .frameTop()
         .frameHorizontalPadding()
     }
+}
+
+// MARK: - States
+
+private extension PullListPDFViewV2 {
+
+    var LoadingState: some View {
+        VStack(spacing: 12) {
+            ProgressView()
+            Text("Generating PDF")
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    func ErrorState(_ message: String) -> some View {
+        VStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 32))
+                .foregroundStyle(.red)
+            Text("Error generating PDF")
+                .font(.headline)
+            Text(message)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    func ShareButton(_ data: Data) -> some View {
+        ShareLink(
+            item: PDFFile(data: data),
+            preview: SharePreview(
+                "(PullList) \(list.address.formattedAddress).pdf",
+                image: Image(systemName: SFSymbols.docFill)
+            ),
+            label: {
+                HStack(spacing: 8) {
+                    Image(systemName: SFSymbols.squareAndArrowUp)
+                        .font(.system(size: 16))
+                        .fontWeight(.bold)
+
+                    Text("Share / Export PDF")
+                        .font(.body)
+                        .fontWeight(.medium)
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .frame(maxWidth: .infinity)
+                .background(Color(.red))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+            }
+        )
+        .padding()
+    }
+}
+
+// MARK: - Generation
+
+private extension PullListPDFViewV2 {
 
     @MainActor
-    private func generatePDF() async {
-        do {
-            isGeneratingPDF = true
-            errorMessage = nil
+    func generatePDF() async {
+        isGeneratingPDF = true
+        errorMessage = nil
+        defer { isGeneratingPDF = false }
 
+        do {
             let rooms = try await fetchRooms()
             let itemsById = try await fetchItems(for: rooms)
-            let preloadedImages = await preloadImages(for: itemsById)
+            let images = await preloadImages(for: itemsById)
 
-            let pdfView = PLGeneratedPDFViewV2(
+            let content = PullListPDFContent(
                 pullList: list,
                 rooms: rooms,
                 itemsById: itemsById,
-                preloadedImages: preloadedImages
+                preloadedImages: images
             )
 
-            let renderer = ImageRenderer(content: pdfView)
-            renderer.proposedSize = .init(width: 850, height: 1100)
-
-            let tempURL = FileManager.default.temporaryDirectory
-                .appendingPathComponent(UUID().uuidString + ".pdf")
-
-            renderer.render { size, context in
-                var box = CGRect(origin: .zero, size: size)
-                guard let pdf = CGContext(tempURL as CFURL, mediaBox: &box, nil) else { return }
-
-                pdf.beginPDFPage(nil)
-                context(pdf)
-                pdf.endPDFPage()
-                pdf.closePDF()
+            let paginator = PDFPaginator()
+            let pages = paginator.paginate(content.blocks()) { page, total in
+                content.chrome(page: page, of: total)
             }
 
-            if let data = try? Data(contentsOf: tempURL) {
-                pdfData = data
-                pdfDocument = PDFDocument(data: data)
+            let data = try PDFWriter.data(pages: pages, pageSize: paginator.pageSize)
+            guard let document = PDFDocument(data: data) else {
+                throw PDFWriterError.emptyDocument
             }
 
-            try? FileManager.default.removeItem(at: tempURL)
-
-            isGeneratingPDF = false
+            pdfData = data
+            pdfDocument = document
         } catch {
             errorMessage = error.localizedDescription
-            isGeneratingPDF = false
         }
     }
 
-    private func fetchRooms() async throws -> [RoomV2] {
+    func fetchRooms() async throws -> [RoomV2] {
         guard !list.roomIds.isEmpty else { return [] }
-        return try await roomRepository.get(ids: list.roomIds)
+        return try await roomRepository
+            .get(ids: list.roomIds)
+            .sorted { $0.displayName < $1.displayName }
     }
 
-    private func fetchItems(for rooms: [RoomV2]) async throws -> [String: ItemV2] {
-        var itemsById: [String: ItemV2] = [:]
-        for room in rooms {
-            let items = try await itemRepository.get(ids: Array(room.itemIds))
-            for item in items {
-                itemsById[item.id] = item
-            }
-        }
-        return itemsById
+    /// One fetch for the whole list rather than one per room, so items shared
+    /// across rooms are only read once.
+    func fetchItems(for rooms: [RoomV2]) async throws -> [String: ItemV2] {
+        let ids = Array(Set(rooms.flatMap(\.itemIds)))
+        let items = try await itemRepository.get(ids: ids)
+
+        var byId: [String: ItemV2] = [:]
+        for item in items { byId[item.id] = item }
+        return byId
     }
 
-    private func preloadImages(for itemsById: [String: ItemV2]) async -> [String: UIImage] {
-        var result: [String: UIImage] = [:]
-
-        for (itemId, item) in itemsById {
-            if let imageURL = item.primaryImage.imageURL {
-                do {
-                    let (data, _) = try await URLSession.shared.data(from: imageURL)
-                    if let image = UIImage(data: data) {
-                        result[itemId] = image
-                    }
-                } catch {
-                    print("Failed to preload image for item \(itemId): \(error)")
+    /// Downloads concurrently: a full list serially fetching one image at a
+    /// time dominated generation time.
+    func preloadImages(for itemsById: [String: ItemV2]) async -> [String: UIImage] {
+        await withTaskGroup(of: (String, UIImage)?.self) { group in
+            for (itemId, item) in itemsById {
+                guard let imageURL = item.primaryImage.thumbnailURL ?? item.primaryImage.imageURL else { continue }
+                group.addTask {
+                    guard let (data, _) = try? await URLSession.shared.data(from: imageURL),
+                          let image = UIImage(data: data)
+                    else { return nil }
+                    return (itemId, image)
                 }
             }
+
+            var result: [String: UIImage] = [:]
+            for await entry in group {
+                if let entry { result[entry.0] = entry.1 }
+            }
+            return result
         }
-        return result
     }
 }
