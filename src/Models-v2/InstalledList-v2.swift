@@ -22,9 +22,9 @@ struct InstalledListV2: RDDocument {
     var baseName: String {
         address.getStreetAddress() ?? address.formattedAddress
     }
-    var createdDate: String
-    var installDate: String
-    var uninstallDate: String
+    @DayGranular var createdDate: Date
+    @DayGranular var installDate: Date
+    @DayGranular var uninstallDate: Date
     var clientId: String
     var roomIds: [String]
     var essentialGroupId: String?

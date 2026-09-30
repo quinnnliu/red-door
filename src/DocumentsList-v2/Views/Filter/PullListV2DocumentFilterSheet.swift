@@ -23,12 +23,8 @@ struct PullListV2DocumentFilterSheet: View {
     init(initialFilters: [String: AnyHashable] = [:], action: @escaping (Any?) -> Void) {
         self.action = action
 
-        let installString = initialFilters[PullListV2.CodingKeys.installDate.stringValue] as? String
-        let uninstallString = initialFilters[PullListV2.CodingKeys.uninstallDate.stringValue] as? String
-
-        let formatter = Date.FormatStyle().year().month().day()
-        _selectedInstallDate = State(initialValue: installString.flatMap { try? Date($0, strategy: formatter) })
-        _selectedUninstallDate = State(initialValue: uninstallString.flatMap { try? Date($0, strategy: formatter) })
+        _selectedInstallDate = State(initialValue: initialFilters[PullListV2.CodingKeys.installDate.stringValue] as? Date)
+        _selectedUninstallDate = State(initialValue: initialFilters[PullListV2.CodingKeys.uninstallDate.stringValue] as? Date)
         _selectedState = State(initialValue: (initialFilters[Address.firestoreKey(.state)] as? String).flatMap(NewEnglandState.init(rawValue:)))
         _selectedTown = State(initialValue: initialFilters[Address.firestoreKey(.town)] as? String ?? "")
     }
@@ -174,12 +170,13 @@ private extension PullListV2DocumentFilterSheet {
 
     func buildFilterDictionary() -> [String: AnyHashable] {
         var filters: [String: AnyHashable] = [:]
-        let formatter = Date.FormatStyle().year().month().day()
+        // Match how the field is stored: `@DayGranular` pins list dates to the
+        // start of their day, so the filter value has to be pinned the same way.
         if let install = selectedInstallDate {
-            filters[PullListV2.CodingKeys.installDate.stringValue] = install.formatted(formatter)
+            filters[PullListV2.CodingKeys.installDate.stringValue] = Calendar.current.startOfDay(for: install)
         }
         if let uninstall = selectedUninstallDate {
-            filters[PullListV2.CodingKeys.uninstallDate.stringValue] = uninstall.formatted(formatter)
+            filters[PullListV2.CodingKeys.uninstallDate.stringValue] = Calendar.current.startOfDay(for: uninstall)
         }
         if let state = selectedState {
             filters[Address.firestoreKey(.state)] = state.rawValue

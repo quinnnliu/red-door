@@ -24,4 +24,24 @@ struct PullListViewFactory {
         )
         return PullListDetailsViewV2(viewModel: vm)
     }
+
+    /// Rooms come from the installed list's own subcollection, so the repo is
+    /// built against `installed_list_v2` rather than the pull list default.
+    func makeCopyFromInstalledView(
+        installedList: InstalledListV2,
+        onFinished: @escaping () -> Void
+    ) -> CopyFromInstalledListView {
+        let vm = CopyFromInstalledListViewModel(
+            installedList: installedList,
+            installedRoomRepo: RoomRepository(
+                parentCollectionName: InstalledListV2.collectionName,
+                listId: installedList.id
+            ),
+            itemRepo: itemRepo,
+            pullListRepo: pullListRepo,
+            essentialsRepo: essentialsRepo,
+            accessoriesRepo: accessoriesRepo
+        )
+        return CopyFromInstalledListView(viewModel: vm, onFinished: onFinished)
+    }
 }

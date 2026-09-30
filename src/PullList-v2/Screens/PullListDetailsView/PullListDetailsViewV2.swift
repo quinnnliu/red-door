@@ -201,7 +201,7 @@ private extension PullListDetailsViewV2 {
                     .foregroundColor(.red)
                     .bold()
                 +
-                Text(list.installDate)
+                Text(list.installDate.displayDate)
                     .foregroundColor(.primary)
             )
 
@@ -210,7 +210,7 @@ private extension PullListDetailsViewV2 {
                     .foregroundColor(.red)
                     .bold()
                 +
-                Text(list.uninstallDate)
+                Text(list.uninstallDate.displayDate)
                     .foregroundColor(.primary)
             )
 

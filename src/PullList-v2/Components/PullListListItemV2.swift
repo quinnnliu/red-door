@@ -49,7 +49,7 @@ struct PullListListItemV2: View {
                     Text("Install Date: ")
                         .foregroundColor(.red)
                     +
-                    Text(list.installDate)
+                    Text(list.installDate.displayDate)
                         .foregroundColor(.secondary)
                 )
 

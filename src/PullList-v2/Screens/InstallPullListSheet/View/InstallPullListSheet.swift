@@ -32,7 +32,13 @@ struct InstallPullListSheet: View {
             Spacer()
 
             if viewModel.isOwner {
-                RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.plus, label: "Create Installed List", fullWidth: true) {
+                RDButton(
+                    variant: .red,
+                    size: .default,
+                    leadingIcon: SFSymbols.plus,
+                    label: "Create Installed List",
+                    fullWidth: true
+                ) {
                     viewModel.showConfirmSheet = true
                 }
             }

@@ -10,7 +10,7 @@ import SwiftUI
 
 struct PullListV2: RDDocument {
     static let collectionName: String = "pull_list_v2"
-    static let orderByField: String = "created_date"
+    static let orderByField: String = "install_date"
     static let searchField: String = "address_id"
 
     static func normalizeSearchText(_ text: String) -> String {
@@ -25,9 +25,9 @@ struct PullListV2: RDDocument {
         self.address.getStreetAddress() ?? self.address.formattedAddress
     }
 
-    var createdDate: String
-    var installDate: String
-    var uninstallDate: String
+    @DayGranular var createdDate: Date
+    @DayGranular var installDate: Date
+    @DayGranular var uninstallDate: Date
     var clientId: String // TODO: make a "job" object?
 
     var roomIds: [String]
@@ -46,9 +46,9 @@ struct PullListV2: RDDocument {
 
         address: Address,
 
-        createdDate: String,
-        installDate: String,
-        uninstallDate: String,
+        createdDate: Date,
+        installDate: Date,
+        uninstallDate: Date,
         clientId: String,
 
         roomIds: [String] = [],
@@ -98,7 +98,7 @@ struct PullListV2: RDDocument {
         self.address = address
         self.addressId = address.id
 
-        self.createdDate = installedList.createdDate
+        self.createdDate = .now
         self.installDate = installedList.installDate
         self.uninstallDate = installedList.uninstallDate
 

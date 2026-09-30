@@ -39,7 +39,7 @@ struct PullListDocumentListViewV2: View {
                 await viewModel.refresh()
             }
             .fullScreenCover(isPresented: $showFromInstalledCover) {
-                // TODO: add from installed list functionality
+                SelectInstalledListToCopyView()
             }
             .fullScreenCover(isPresented: $showCreatePullListSheet) {
                 CreatePullListViewV2()

@@ -16,8 +16,6 @@ struct CreatePullListViewV2: View {
     @State private var showAddressSheet: Bool = false
     @State private var selectedAddressMode: String = "Search"
     @State private var address: String = ""
-    @State private var installDate: Date = .init()
-    @State private var uninstallDate: Date = .init()
     
     @State private var showCreateRoomSheet: Bool = false
     private var rooms: [Room]?
@@ -34,7 +32,7 @@ struct CreatePullListViewV2: View {
                 }
 
                 DatePicker(
-                    selection: $installDate,
+                    selection: $viewModel.pullListState.installDate,
                     displayedComponents: [.date]
                 ) {
                     Text("Install Date:")
@@ -43,7 +41,7 @@ struct CreatePullListViewV2: View {
                 }
                 
                 DatePicker(
-                    selection: $uninstallDate,
+                    selection: $viewModel.pullListState.uninstallDate,
                     displayedComponents: [.date]
                 ) {
                     Text("Uninstall Date:")
@@ -86,8 +84,6 @@ struct CreatePullListViewV2: View {
                     label: "Create Pull List",
                     fullWidth: true
                 ) {
-                    viewModel.pullListState.installDate = installDate.formatted(.dateTime.year().month().day())
-                    viewModel.pullListState.uninstallDate = uninstallDate.formatted(.dateTime.year().month().day())
                     Task {
                         await viewModel.createPullList()
                         dismiss()

@@ -47,7 +47,7 @@ struct InstalledListV2ListItem: View {
                     Text("Install Date: ")
                         .foregroundColor(.red)
                     +
-                    Text(list.installDate)
+                    Text(list.installDate.displayDate)
                         .foregroundColor(.secondary)
                 )
 

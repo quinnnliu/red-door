@@ -60,9 +60,9 @@ struct PLGeneratedPDFViewV2: View {
                 .padding(.bottom, 6)
             Text("Client: \(pullList.clientId)")
                 .font(.system(size: 12))
-            Text("Install Date: \(pullList.installDate)")
+            Text("Install Date: \(pullList.installDate.displayDate)")
                 .font(.system(size: 12))
-            Text("Uninstall Date: \(pullList.uninstallDate)")
+            Text("Uninstall Date: \(pullList.uninstallDate.displayDate)")
                 .font(.system(size: 12))
         }
         .padding(.top, 40)
