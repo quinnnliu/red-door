@@ -13,7 +13,7 @@ struct InstalledListViewFactory {
     private let essentialsRepo: EssentialsRepository = EssentialsRepository()
     private let accessoriesRepo: AccessoriesRepository = AccessoriesRepository()
     private let uninstallSessionRepo: UninstallSessionRepository = UninstallSessionRepository()
-    private let warehouseRepo: WarehouseRepository = WarehouseRepository()
+    private let storageLocationRepo: StorageLocationRepository = StorageLocationRepository()
     private let pullListRepo: PullListRepository = PullListRepository()
     
     func makeItemDetailsView(item: ItemV2, room: RoomV2, uninstalled: Bool) -> InstalledListItemDetailsView {
@@ -49,7 +49,7 @@ struct InstalledListViewFactory {
             pullListRepo: pullListRepo,
             essentialsRepo: essentialsRepo,
             accessoriesRepo: accessoriesRepo,
-            warehouseRepo: warehouseRepo
+            storageLocationRepo: storageLocationRepo
         )
         return UninstallInstalledListSheet(viewModel: vm)
     }
@@ -66,7 +66,7 @@ struct InstalledListViewFactory {
             pullListRepo: pullListRepo,
             essentialsRepo: essentialsRepo,
             accessoriesRepo: accessoriesRepo,
-            warehouseRepo: warehouseRepo
+            storageLocationRepo: storageLocationRepo
         )
         return UninstallRecordSheet(viewModel: vm)
     }

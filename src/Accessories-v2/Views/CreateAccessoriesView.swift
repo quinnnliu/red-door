@@ -29,7 +29,9 @@ struct CreateAccessoriesView: View {
                 ImageSection
 
                 DescriptionSection
-                
+
+                StorageLocationRow
+
                 Spacer()
 
                 RDButton(
@@ -44,7 +46,7 @@ struct CreateAccessoriesView: View {
                         if success { dismiss() }
                     }
                 }
-                .disabled(viewModel.selectedType == nil)
+                .disabled(viewModel.selectedType == nil || viewModel.selectedStorageLocation == nil)
             }
             .toolbar(.hidden)
             .frameTop()
@@ -63,6 +65,7 @@ struct CreateAccessoriesView: View {
         }
         .task {
             await viewModel.loadTypes()
+            await viewModel.loadStorageLocations()
         }
     }
 
@@ -198,6 +201,18 @@ private extension CreateAccessoriesView {
         PrimaryImageEditor(image: viewModel.primaryImage) { result in
             handleAction(result)
         }
+    }
+}
+
+// MARK: - Storage Location Row
+
+private extension CreateAccessoriesView {
+    var StorageLocationRow: some View {
+        StorageLocationPicker(
+            locations: viewModel.storageLocations,
+            selected: $viewModel.selectedStorageLocation,
+            refreshAction: { Task { await viewModel.refreshStorageLocations() } }
+        )
     }
 }
 

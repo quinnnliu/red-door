@@ -11,7 +11,7 @@ protocol UninstallDestinationSectioning {
     var uninstallSession: UninstallSession? { get }
     var rooms: [RoomV2] { get }
     var itemsByRoom: [String: [ItemV2]] { get }
-    var warehouses: [WarehouseV2] { get }
+    var storageLocations: [StorageLocation] { get }
     var essentialsItemIds: Set<String> { get }
     var existingPullList: PullListV2? { get }
 
@@ -49,23 +49,23 @@ extension UninstallDestinationSectioning {
             .sorted { $0.item.displayName < $1.item.displayName }
     }
 
-    /// Storage is the only destination that can fan out — every warehouse is
+    /// Storage is the only destination that can fan out — every storage location is
     /// offered — so it keeps a grouping level the other two don't need.
-    var storageGroups: [(warehouseId: String, warehouse: String, items: [(item: ItemV2, room: RoomV2)])] {
+    var storageGroups: [(storageLocationId: String, storageLocation: String, items: [(item: ItemV2, room: RoomV2)])] {
         var order: [String] = []
         var groups: [String: [(item: ItemV2, room: RoomV2)]] = [:]
 
-        for entry in items(for: .warehouse) {
-            guard let warehouseId = destination(for: entry.item.id)?.locationId else { continue }
-            if groups[warehouseId] == nil {
-                order.append(warehouseId)
-                groups[warehouseId] = []
+        for entry in items(for: .storage) {
+            guard let storageLocationId = destination(for: entry.item.id)?.locationId else { continue }
+            if groups[storageLocationId] == nil {
+                order.append(storageLocationId)
+                groups[storageLocationId] = []
             }
-            groups[warehouseId]?.append(entry)
+            groups[storageLocationId]?.append(entry)
         }
 
         return order.map { id in
-            (warehouseId: id, warehouse: warehouseName(id), items: groups[id]!)
+            (storageLocationId: id, storageLocation: storageLocationName(id), items: groups[id]!)
         }
     }
 
@@ -80,8 +80,8 @@ extension UninstallDestinationSectioning {
 
 extension UninstallDestinationSectioning {
 
-    func warehouseName(_ id: String) -> String {
-        warehouses.first(where: { $0.id == id })?.displayName ?? "Warehouse"
+    func storageLocationName(_ id: String) -> String {
+        storageLocations.first(where: { $0.id == id })?.displayName ?? "Storage"
     }
 
     var copySectionTitle: String { "Copy of \(copyOriginDisplayName)" }
@@ -98,8 +98,8 @@ extension UninstallDestinationSectioning {
 
     func label(for destination: UninstallDestination) -> (title: String, subtitle: String?) {
         switch destination.type {
-        case .warehouse:
-            return (warehouseName(destination.locationId), nil)
+        case .storage:
+            return (storageLocationName(destination.locationId), nil)
         case .copy:
             return (copySectionTitle, copySectionSubtitle)
         case .existingList:

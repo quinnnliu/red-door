@@ -66,12 +66,12 @@ extension InstallPullListSheetViewModel {
         }
     }
 
-    // MARK: getWarehouses
+    // MARK: getStorageLocations
 
     @MainActor
-    func getWarehouses() async {
+    func getStorageLocations() async {
         do {
-            warehouses = try await configService.getAll(using: warehouseRepo)
+            storageLocations = try await configService.getAll(using: storageLocationRepo)
         } catch {
             present(error)
         }

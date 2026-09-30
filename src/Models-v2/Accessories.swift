@@ -51,7 +51,7 @@ struct Accessories: RDDocument {
         accessoriesTypeId: String,
         primaryImage: RDImage,
         secondaryImages: [RDImage]? = nil,
-        location: DocumentLocation = DocumentLocation(status: .inStorage, locationId: Warehouse.warehouse1.id), // TODO: non-default warehouse (select where they should be stored)
+        location: DocumentLocation,
         description: String,
         accessoriesNumber: Int = 0,
         nickname: String? = nil

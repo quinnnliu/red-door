@@ -9,9 +9,6 @@ import Foundation
 
 extension InstallPullListSheetViewModel {
 
-    /// What the pickers render. The session stores only diversions to storage,
-    /// so the install default is filled in here — otherwise an untouched item
-    /// would show no segment selected.
     var resolvedItemDestinations: [String: DocumentLocation] {
         let installed = DocumentLocation(status: .inInstalledList, locationId: pullListState.id)
         var resolved: [String: DocumentLocation] = [:]
@@ -22,13 +19,13 @@ extension InstallPullListSheetViewModel {
     }
 
     @MainActor
-    func storeItem(itemId: String, warehouseId: String) async {
+    func storeItem(itemId: String, storageLocationId: String) async {
         guard isOwner, let session = sessionState else { return }
         do {
             try await sessionRepo.assign(
                 sessionId: session.id,
                 itemIds: [itemId],
-                destination: DocumentLocation(status: .inStorage, locationId: warehouseId)
+                destination: DocumentLocation(status: .inStorage, locationId: storageLocationId)
             )
         } catch {
             present(error)

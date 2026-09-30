@@ -10,11 +10,13 @@ import SwiftUI
 struct AccessoriesViewFactory {
     private let accessoriesRepo = AccessoriesRepository()
     private let accessoriesTypeRepo = AccessoriesTypeRepository()
+    private let storageLocationRepo = StorageLocationRepository()
 
     func makeCreateAccessoriesView() -> CreateAccessoriesView {
         let vm = CreateAccessoriesViewModel(
             accessoriesRepo: accessoriesRepo,
-            accessoriesTypeRepo: accessoriesTypeRepo
+            accessoriesTypeRepo: accessoriesTypeRepo,
+            storageLocationRepo: storageLocationRepo
         )
         return CreateAccessoriesView(viewModel: vm)
     }

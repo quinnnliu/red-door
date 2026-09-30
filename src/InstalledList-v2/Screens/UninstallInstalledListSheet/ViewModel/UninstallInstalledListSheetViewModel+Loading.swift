@@ -7,7 +7,7 @@
 
 import Foundation
 
-// MARK: - Rooms, items, and warehouses
+// MARK: - Rooms, items, and storageLocations
 
 extension UninstallInstalledListSheetViewModel {
 
@@ -46,12 +46,12 @@ extension UninstallInstalledListSheetViewModel {
         }
     }
 
-    // MARK: loadWarehouses
+    // MARK: loadStorageLocations
 
     @MainActor
-    func loadWarehouses() async {
+    func loadStorageLocations() async {
         do {
-            warehouses = try await configService.getAll(using: warehouseRepo)
+            storageLocations = try await configService.getAll(using: storageLocationRepo)
         } catch {
             present(error)
         }

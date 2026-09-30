@@ -16,7 +16,7 @@ struct OptionsViewV2: View {
         VStack(spacing: 16) {
             TopBar()
 
-            WarehouseOptionView()
+            StorageLocationOptionsView()
 
             Spacer()
 

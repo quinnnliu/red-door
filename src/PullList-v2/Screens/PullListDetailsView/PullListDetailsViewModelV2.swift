@@ -20,7 +20,7 @@ final class PullListDetailsViewModelV2 {
 
     var essentialsGroupState: EssentialsGroup? = nil
     var essentialsAccessories: Accessories? = nil
-    var availableWarehouses: [WarehouseV2] = []
+    var availableStorageLocations: [StorageLocation] = []
 
     private var roomsListener: ListenerRegistration? = nil
 
@@ -208,11 +208,11 @@ final class PullListDetailsViewModelV2 {
         }
     }
 
-    // MARK: fetchAvailableWarehouses
+    // MARK: fetchAvailableStorageLocations
 
-    func fetchAvailableWarehouses() async {
+    func fetchAvailableStorageLocations() async {
         do {
-            availableWarehouses = try await ConfigurationService.shared.getAll(using: WarehouseRepository())
+            availableStorageLocations = try await ConfigurationService.shared.getAll(using: StorageLocationRepository())
         } catch {
             alertMessage = "Failed to load storage locations: \(error.localizedDescription)"
             showAlert = true
@@ -222,14 +222,14 @@ final class PullListDetailsViewModelV2 {
     // MARK: removeEssentialsGroup
 
     @MainActor
-    func removeEssentialsGroup(to warehouse: WarehouseV2) async {
+    func removeEssentialsGroup(to storageLocation: StorageLocation) async {
         guard let group = essentialsGroupState else { return }
 
         let batch = essentialsRepo.db.batch()
 
         let storageFields: [String: Any] = DocumentLocation(
             status: .inStorage,
-            locationId: warehouse.id
+            locationId: storageLocation.id
         ).firebaseUpdateFields
 
         for itemId in group.itemIds {
@@ -271,7 +271,7 @@ final class PullListDetailsViewModelV2 {
             selectedUnassignedItems = selectedUnassignedItems.filter { !essentialItemSet.contains($0.id) }
             essentialsGroupState = nil
             essentialsAccessories = nil
-            availableWarehouses = []
+            availableStorageLocations = []
         } catch {
             alertMessage = "Failed to remove essentials group: \(error.localizedDescription)"
             showAlert = true
@@ -280,20 +280,38 @@ final class PullListDetailsViewModelV2 {
 
     // MARK: deletePullList
 
+    /// A list holds items in three places — its rooms, its unassigned pool, and
+    /// an attached essentials group. All three must be clear before deleting,
+    /// because deletion doesn't relocate anything.
+    ///
+    /// Reads `essentialGroupId` off the list document rather than the fetched
+    /// `essentialsGroupState`, which is still nil while loading.
+    var isEmptyOfItems: Bool {
+        rooms.allSatisfy { $0.itemIds.isEmpty }
+            && pullListState.unassignedItemIds.isEmpty
+            && pullListState.essentialGroupId == nil
+    }
+
     @MainActor
-    func deletePullList() async {
+    func deletePullList() async -> Bool {
+        guard isEmptyOfItems else {
+            alertMessage = "Remove all items and any essentials group before deleting this pull list."
+            showAlert = true
+            return false
+        }
+
         do {
             try await pullListRepo.delete(
                 pullListState.id,
                 rooms: rooms,
-                sendingItemsTo: Warehouse.warehouse1.id,
-                itemRepo: itemRepo,
                 roomRepo: roomRepo
             )
+            return true
         } catch {
             alertMessage = "Failed to delete pull list: \(error.localizedDescription)"
             showAlert = true
             print("[ERROR]: Failed to delete pull list: \(error.localizedDescription)")
+            return false
         }
     }
 
@@ -381,7 +399,7 @@ extension PullListDetailsViewModelV2 {
 
     /// Essentials items leave the list with their group, never on their own.
     @MainActor
-    func storeUnassignedItem(_ item: ItemV2, in warehouse: WarehouseV2) async {
+    func storeUnassignedItem(_ item: ItemV2, in storageLocation: StorageLocation) async {
         guard item.essentialGroupId == nil else {
             alertMessage = "\(item.displayName) belongs to an essentials group and must be removed with the group"
             showAlert = true
@@ -392,7 +410,7 @@ extension PullListDetailsViewModelV2 {
             try await pullListRepo.storeUnassignedItems(
                 [item.id],
                 fromListId: pullListState.id,
-                toWarehouseId: warehouse.id,
+                toStorageId: storageLocation.id,
                 itemRepo: itemRepo
             )
 

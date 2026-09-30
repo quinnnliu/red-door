@@ -14,14 +14,14 @@ struct Address: Codable, Hashable {
     var formattedAddress: String
     var state: String
     var town: String
-    var isWarehouse: Bool?
+    var isStorageLocation: Bool?
 
     enum CodingKeys: String, CodingKey {
         case id
-        case formattedAddress
+        case formattedAddress = "formatted_address"
         case state
         case town
-        case isWarehouse
+        case isStorageLocation = "is_storage_location"
     }
 
     static func firestoreKey(_ key: CodingKeys) -> String {
@@ -38,7 +38,7 @@ struct Address: Codable, Hashable {
         zipcode: String = "",
         country: String = "",
         unit: String? = nil,
-        isWarehouse: Bool? = nil,
+        isStorageLocation: Bool? = nil,
         //        coordinates: GeoPoint? = nil
     ) {
         // ID: concatenated, lowercased, trimmed, no punctuation or spaces
@@ -48,11 +48,11 @@ struct Address: Codable, Hashable {
 
         self.state = state
         self.town = city
-        self.isWarehouse = isWarehouse
+        self.isStorageLocation = isStorageLocation
     }
 
     @available(iOS 26.0, *)
-    init(address: MKAddress, unit: String? = nil, isWarehouse: Bool? = nil) {
+    init(address: MKAddress, unit: String? = nil, isStorageLocation: Bool? = nil) {
         id = Address.normalize(address.fullAddress)
         formattedAddress = address.fullAddress
         if let unit = unit {
@@ -60,10 +60,10 @@ struct Address: Codable, Hashable {
         }
         self.state = ""
         self.town = ""
-        self.isWarehouse = isWarehouse
+        self.isStorageLocation = isStorageLocation
     }
 
-    init(placemark: MKPlacemark, unit: String? = nil, isWarehouse: Bool? = nil) {
+    init(placemark: MKPlacemark, unit: String? = nil, isStorageLocation: Bool? = nil) {
         let street = [
             placemark.subThoroughfare,
             placemark.thoroughfare,
@@ -81,7 +81,7 @@ struct Address: Codable, Hashable {
         formattedAddress = Address.formattedAddress(street: street, city: city, state: state, zipcode: zipcode, country: country, unit: unit)
         self.state = state
         self.town = city
-        self.isWarehouse = isWarehouse
+        self.isStorageLocation = isStorageLocation
     }
 
     // MARK: isInitialized

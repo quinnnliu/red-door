@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum UninstallDestinationSheetAction {
-    case chooseWarehouse(warehouseId: String)
+    case chooseStorage(storageLocationId: String)
     case selectCopyAddress(Address)
     case chooseCopy
     case chooseExistingList(PullListV2)
@@ -16,7 +16,7 @@ enum UninstallDestinationSheetAction {
 
 struct UninstallDestinationSheet: View {
     let selectedItems: [ItemV2]
-    let warehouses: [WarehouseV2]
+    let storageLocations: [StorageLocation]
     let copyLabel: String
     /// Server truth from the session, so a user who takes the session over
     /// inherits the address instead of being asked to pick again.
@@ -32,14 +32,14 @@ struct UninstallDestinationSheet: View {
 
     init(
         selectedItems: [ItemV2],
-        warehouses: [WarehouseV2],
+        storageLocations: [StorageLocation],
         copyLabel: String,
         selectedCopyAddress: Address?,
         roomNames: [String],
         action: @escaping (Any?) -> Void
     ) {
         self.selectedItems = selectedItems
-        self.warehouses = warehouses
+        self.storageLocations = storageLocations
         self.copyLabel = copyLabel
         self.selectedCopyAddress = selectedCopyAddress
         self.roomNames = roomNames
@@ -48,13 +48,13 @@ struct UninstallDestinationSheet: View {
     }
 
     private enum Segment: Int, CaseIterable, Identifiable {
-        case warehouse
+        case storage
         case newList
         case existing
 
         var title: String {
             switch self {
-            case .warehouse: "Warehouse"
+            case .storage: "Storage"
             case .newList: "New list"
             case .existing: "Existing"
             }
@@ -63,7 +63,7 @@ struct UninstallDestinationSheet: View {
         var id: String { "\(self)" }
     }
 
-    @State private var segment: Segment = .warehouse
+    @State private var segment: Segment = .storage
 
     @State private var pullLists = DocumentListViewModelV2<PullListV2>()
     @State private var didLoadPullLists: Bool = false
@@ -80,7 +80,7 @@ struct UninstallDestinationSheet: View {
 
             ScrollView {
                 switch segment {
-                case .warehouse: WarehouseOptions
+                case .storage: StorageLocationOptions
                 case .newList: NewListOption
                 case .existing: ExistingListOptions
                 }
@@ -158,24 +158,24 @@ private extension UninstallDestinationSheet {
         .pickerStyle(.segmented)
     }
 
-    // MARK: WarehouseOptions
+    // MARK: StorageLocationOptions
 
-    var WarehouseOptions: some View {
+    var StorageLocationOptions: some View {
         LazyVStack(spacing: 8) {
-            ForEach(warehouses, id: \.id) { warehouse in
+            ForEach(storageLocations, id: \.id) { storageLocation in
                 Button {
-                    action(UninstallDestinationSheetAction.chooseWarehouse(warehouseId: warehouse.id))
+                    action(UninstallDestinationSheetAction.chooseStorage(storageLocationId: storageLocation.id))
                 } label: {
                     HStack(spacing: 12) {
                         Image(systemName: SFSymbols.shippingbox)
                             .foregroundStyle(.secondary)
 
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(warehouse.displayName)
+                            Text(storageLocation.displayName)
                                 .font(.headline)
                                 .foregroundStyle(.primary)
 
-                            Text(warehouse.address.getStreetAddress() ?? warehouse.address.formattedAddress)
+                            Text(storageLocation.address.getStreetAddress() ?? storageLocation.address.formattedAddress)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }

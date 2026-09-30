@@ -14,7 +14,7 @@ struct PullListItemDetailsView: View {
 
 	@State private var showInformation: Bool = false
     @State private var showQRCodeSheet: Bool = false
-    @State private var showSelectWarehouseSheet: Bool = false
+    @State private var showSelectStorageSheet: Bool = false
 
 	init(
 		item: ItemV2,
@@ -62,14 +62,14 @@ struct PullListItemDetailsView: View {
 					dismiss()
 				}
 			}
-            .sheet(isPresented: $showSelectWarehouseSheet) {
+            .sheet(isPresented: $showSelectStorageSheet) {
                 SelectDocumentSheet(
                     title: "Select Storage Location",
-                    documents: viewModel.availableWarehouses,
-                    refreshAction: { Task { await viewModel.fetchAvailableWarehouses() } },
+                    documents: viewModel.availableStorageLocations,
+                    refreshAction: { Task { await viewModel.fetchAvailableStorageLocations() } },
                     action: handleAction(_:)
                 )
-                .task { await viewModel.fetchAvailableWarehouses() }
+                .task { await viewModel.fetchAvailableStorageLocations() }
             }
 			.frameTop()
 			.frameBottomPadding()
@@ -92,11 +92,11 @@ struct PullListItemDetailsView: View {
             default:
                 break
             }
-        case let warehouseAction as SelectDocumentSheetAction<WarehouseV2>:
-            switch warehouseAction {
-            case .selected(let warehouse):
+        case let storageLocationAction as SelectDocumentSheetAction<StorageLocation>:
+            switch storageLocationAction {
+            case .selected(let storageLocation):
                 Task {
-                    let success = await viewModel.removeItemToWarehouse(warehouse: warehouse)
+                    let success = await viewModel.removeItemToStorage(storageLocation: storageLocation)
                     if success { dismiss() }
                 }
             default:
@@ -234,7 +234,7 @@ struct PullListItemDetailsView: View {
                         if success { dismiss() }
                     }
                 } else {
-                    showSelectWarehouseSheet = true
+                    showSelectStorageSheet = true
                 }
 			}
 		}

@@ -49,7 +49,7 @@ struct ItemV2: RDDocument {
         brand: String? = nil,
         purchaseLocation: String? = nil,
         datePurchased: String? = nil,
-        location: DocumentLocation = DocumentLocation(status: .inStorage, locationId: Warehouse.warehouse1.id), // TODO: non-default warehouse (select where they should be stored)
+        location: DocumentLocation,
         attention: Bool,
         attentionDescription: String? = nil,
         description: String,

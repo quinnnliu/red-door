@@ -10,7 +10,7 @@ import Foundation
 struct ConfirmInstallSummary {
     let address: String
     let installedCount: Int
-    let storageBreakdown: [(warehouseName: String, count: Int)]
+    let storageBreakdown: [(storageLocationName: String, count: Int)]
 }
 
 extension InstallPullListSheetViewModel {
@@ -22,10 +22,10 @@ extension InstallPullListSheetViewModel {
         for destination in destinations where destination.status == .inStorage {
             storageCounts[destination.locationId, default: 0] += 1
         }
-        let breakdown = storageCounts.compactMap { warehouseId, count -> (warehouseName: String, count: Int)? in
-            guard let name = warehouses.first(where: { $0.id == warehouseId })?.displayName else { return nil }
-            return (warehouseName: name, count: count)
-        }.sorted { $0.warehouseName < $1.warehouseName }
+        let breakdown = storageCounts.compactMap { storageLocationId, count -> (storageLocationName: String, count: Int)? in
+            guard let name = storageLocations.first(where: { $0.id == storageLocationId })?.displayName else { return nil }
+            return (storageLocationName: name, count: count)
+        }.sorted { $0.storageLocationName < $1.storageLocationName }
 
         return ConfirmInstallSummary(
             address: pullListState.address.getStreetAddress() ?? pullListState.address.formattedAddress,

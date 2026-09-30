@@ -11,7 +11,7 @@ struct InstallItemListItemView: View {
     let item: ItemV2
     let room: RoomV2
     let installStates: [String: DocumentLocation]
-    let warehouses: [WarehouseV2]
+    let storageLocations: [StorageLocation]
     let action: (Any?) -> Void
 
     var body: some View {
@@ -23,7 +23,7 @@ struct InstallItemListItemView: View {
                 InstallPullListStoragePicker(
                     item: item,
                     installStates: installStates,
-                    warehouses: warehouses,
+                    storageLocations: storageLocations,
                     action: action
                 )
 
@@ -42,6 +42,6 @@ struct InstallItemListItemView: View {
 
     private var storageLabel: String? {
         guard let state = installStates[item.id], state.status == .inStorage else { return nil }
-        return warehouses.first(where: { $0.id == state.locationId })?.displayName
+        return storageLocations.first(where: { $0.id == state.locationId })?.displayName
     }
 }

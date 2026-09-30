@@ -18,7 +18,7 @@ final class PullListItemDetailsViewModel {
 
 	var pullList: PullListV2?
 	var rooms: [RoomV2] = []
-	var availableWarehouses: [WarehouseV2] = []
+	var availableStorageLocations: [StorageLocation] = []
 	var isLoadingMoveData = false
 
 	// MARK: - Properties
@@ -44,24 +44,24 @@ final class PullListItemDetailsViewModel {
 
 	// MARK: - Actions
 
-    func fetchAvailableWarehouses() async {
+    func fetchAvailableStorageLocations() async {
         do {
-            availableWarehouses = try await ConfigurationService.shared.getAll(using: WarehouseRepository())
+            availableStorageLocations = try await ConfigurationService.shared.getAll(using: StorageLocationRepository())
         } catch {
             alertMessage = "Failed to load storage locations: \(error.localizedDescription)"
             showAlert = true
         }
     }
 
-    // MARK: - removeItemToWarehouse
+    // MARK: - removeItemToStorage
 
     @MainActor
-    func removeItemToWarehouse(warehouse: WarehouseV2) async -> Bool {
+    func removeItemToStorage(storageLocation: StorageLocation) async -> Bool {
         do {
             try await roomRepo.removeItem(
                 itemState.id,
                 fromRoomId: room.id,
-                toWarehouseId: warehouse.id,
+                toStorageLocationId: storageLocation.id,
                 itemRepo: itemRepo
             )
             return true

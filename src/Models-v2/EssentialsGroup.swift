@@ -64,7 +64,7 @@ struct EssentialsGroup: ItemsListableDocument {
     init(
         id: String = UUID().uuidString,
         baseName: String,
-        location: DocumentLocation = DocumentLocation(status: .inStorage, locationId: Warehouse.warehouse1.id),
+        location: DocumentLocation,
         essentialsTypeId: String,
         emoji: String = "⭐️",
         itemIds: Set<String> = [],

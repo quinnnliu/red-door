@@ -18,6 +18,12 @@ struct DocumentLocation: Codable, Hashable {
 }
 
 extension DocumentLocation {
+    /// Draft placeholder for a create flow whose destination hasn't been picked
+    /// yet. Screens must overwrite it before writing.
+    static let unselectedStorage = DocumentLocation(status: .inStorage, locationId: "")
+}
+
+extension DocumentLocation {
       /// Firestore dot-notation fields for updating a nested `location` field in place.
       var firebaseUpdateFields: [String: Any] {
           [

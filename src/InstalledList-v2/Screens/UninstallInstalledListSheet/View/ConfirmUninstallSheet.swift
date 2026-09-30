@@ -53,7 +53,7 @@ private extension ConfirmUninstallSheet {
             )
             .font(.headline)
 
-            // Indexed rather than keyed on the title: two warehouses can share
+            // Indexed rather than keyed on the title: two storageLocations can share
             // a display name, and duplicate ids break the rows.
             ForEach(Array(summary.groups.enumerated()), id: \.offset) { _, group in
                 HStack(alignment: .firstTextBaseline, spacing: 8) {

@@ -13,7 +13,7 @@ struct InstalledListItemDetailsView: View {
     @State var viewModel: InstalledListItemDetailsViewModel
 
     @State private var showQRCodeSheet: Bool = false
-    @State private var showSelectWarehouseSheet: Bool = false
+    @State private var showSelectStorageSheet: Bool = false
 
     init(viewModel: InstalledListItemDetailsViewModel) {
         self.viewModel = viewModel
@@ -61,14 +61,14 @@ struct InstalledListItemDetailsView: View {
                     dismiss()
                 }
             }
-            .sheet(isPresented: $showSelectWarehouseSheet) {
+            .sheet(isPresented: $showSelectStorageSheet) {
                 SelectDocumentSheet(
                     title: "Select Storage Location",
-                    documents: viewModel.availableWarehouses,
-                    refreshAction: { Task { await viewModel.fetchAvailableWarehouses() } },
+                    documents: viewModel.availableStorageLocations,
+                    refreshAction: { Task { await viewModel.fetchAvailableStorageLocations() } },
                     action: handleAction(_:)
                 )
-                .task { await viewModel.fetchAvailableWarehouses() }
+                .task { await viewModel.fetchAvailableStorageLocations() }
             }
             .frameTop()
             .frameBottomPadding()
@@ -91,11 +91,11 @@ struct InstalledListItemDetailsView: View {
             default:
                 break
             }
-        case let warehouseAction as SelectDocumentSheetAction<WarehouseV2>:
-            switch warehouseAction {
-            case .selected(let warehouse):
+        case let storageAction as SelectDocumentSheetAction<StorageLocation>:
+            switch storageAction {
+            case .selected(let storageLocation):
                 Task {
-                    let success = await viewModel.removeItemToWarehouse(warehouse: warehouse)
+                    let success = await viewModel.removeItemToStorage(storageLocation: storageLocation)
                     if success { dismiss() }
                 }
             default:
@@ -192,7 +192,7 @@ struct InstalledListItemDetailsView: View {
             }
 
             RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.trash, label: "Remove from \(viewModel.room.displayName)", fullWidth: true, font: .caption2) {
-                showSelectWarehouseSheet = true
+                showSelectStorageSheet = true
             }
         }
     }

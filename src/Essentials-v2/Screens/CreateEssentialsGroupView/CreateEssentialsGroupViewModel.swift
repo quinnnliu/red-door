@@ -11,15 +11,18 @@ import SwiftUI
 final class CreateEssentialsGroupViewModel {
     private let essentialsRepo: EssentialsRepository
     private let essentialsGroupTypeRepo: EssentialsGroupTypeRepository
+    private let storageLocationRepo: StorageLocationRepository
     private let configService: ConfigurationService
 
     init(
         essentialsRepo: EssentialsRepository,
         essentialsGroupTypeRepo: EssentialsGroupTypeRepository,
+        storageLocationRepo: StorageLocationRepository,
         configService: ConfigurationService = .shared
     ) {
         self.essentialsRepo = essentialsRepo
         self.essentialsGroupTypeRepo = essentialsGroupTypeRepo
+        self.storageLocationRepo = storageLocationRepo
         self.configService = configService
     }
 
@@ -35,6 +38,10 @@ final class CreateEssentialsGroupViewModel {
         let name = newGroupTypeName.trimmingCharacters(in: .whitespacesAndNewlines)
         return !name.isEmpty && (newGroupTypeEmoji.isEmpty || newGroupTypeEmoji.isSingleEmoji)
     }
+
+    // MARK: - Storage Location
+    var storageLocations: [StorageLocation] = []
+    var selectedStorageLocation: StorageLocation?
 
     // MARK: - Accessories
     var selectedAccessory: Accessories? = nil
@@ -63,6 +70,24 @@ final class CreateEssentialsGroupViewModel {
         await loadGroupTypes()
     }
 
+    // MARK: - Load Storage Locations
+
+    func loadStorageLocations() async {
+        do {
+            storageLocations = try await configService.getAll(using: storageLocationRepo)
+            if selectedStorageLocation == nil, storageLocations.count == 1 {
+                selectedStorageLocation = storageLocations.first
+            }
+        } catch {
+            print("Error loading storage locations: \(error)")
+        }
+    }
+
+    func refreshStorageLocations() async {
+        configService.invalidate(StorageLocation.self)
+        await loadStorageLocations()
+    }
+
     // MARK: - Create Group Type
 
     func createAndSelectNewGroupType() {
@@ -88,7 +113,8 @@ final class CreateEssentialsGroupViewModel {
     // MARK: - Create Essentials Group
 
     func createEssentialsGroup() async -> Bool {
-        guard let groupType = selectedGroupType else { return false }
+        guard let groupType = selectedGroupType,
+              let storageLocation = selectedStorageLocation else { return false }
 
         isLoading = true
         defer { isLoading = false }
@@ -97,6 +123,7 @@ final class CreateEssentialsGroupViewModel {
             let maxNumber =  await essentialsRepo.maxGroupNumber(forTypeId: groupType.id)
             let group = EssentialsGroup(
                 baseName: groupType.displayName,
+                location: DocumentLocation(status: .inStorage, locationId: storageLocation.id),
                 essentialsTypeId: groupType.id,
                 emoji: groupType.emoji,
                 accessoriesId: selectedAccessory?.id,

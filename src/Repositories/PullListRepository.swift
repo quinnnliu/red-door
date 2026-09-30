@@ -22,24 +22,20 @@ final class PullListRepository: GenericRepository<PullListV2> {
 
 extension PullListRepository {
 
-    /// Deletes a pull list and its rooms, sending every item they held back to
-    /// storage.
+    /// Deletes a pull list and its rooms.
+    ///
+    /// Deleting is not a relocation: callers must empty the list first, since
+    /// there is nowhere for leftover items to go. See
+    /// `PullListDetailsViewModelV2.isEmptyOfItems`.
     ///
     /// `rooms` is passed in because the write can't discover them itself:
     /// neither a batch nor a transaction can run a subcollection query.
     func delete(
         _ listId: String,
         rooms: [RoomV2],
-        sendingItemsTo warehouseId: String,
-        itemRepo: ItemRepository,
         roomRepo: RoomRepository
     ) async throws {
         let batch = newBatch()
-
-        let location = DocumentLocation(status: .inStorage, locationId: warehouseId).firebaseUpdateFields
-        for itemId in rooms.flatMap(\.itemIds) {
-            itemRepo.update(id: itemId, fields: location, inBatch: batch)
-        }
 
         for room in rooms {
             roomRepo.delete(id: room.id, inBatch: batch)
@@ -61,14 +57,14 @@ extension PullListRepository {
     func storeUnassignedItems(
         _ itemIds: [String],
         fromListId listId: String,
-        toWarehouseId warehouseId: String,
+        toStorageId storageLocationId: String,
         itemRepo: ItemRepository
     ) async throws {
         guard !itemIds.isEmpty else { return }
 
         let batch = newBatch()
 
-        let location = DocumentLocation(status: .inStorage, locationId: warehouseId).firebaseUpdateFields
+        let location = DocumentLocation(status: .inStorage, locationId: storageLocationId).firebaseUpdateFields
         for itemId in itemIds {
             itemRepo.update(id: itemId, fields: location, inBatch: batch)
         }

@@ -26,6 +26,7 @@ struct CreateEssentialsGroupView: View {
                     VStack(spacing: 16) {
                         GroupTypeSection
                         SelectedAccessoriesSection
+                        StorageLocationRow
                     }
                     .padding(.horizontal, 8)
                 }
@@ -45,7 +46,7 @@ struct CreateEssentialsGroupView: View {
                         if success { dismiss() }
                     }
                 }
-                .disabled(viewModel.selectedGroupType == nil)
+                .disabled(viewModel.selectedGroupType == nil || viewModel.selectedStorageLocation == nil)
             }
             .toolbar(.hidden)
             .frameTop()
@@ -72,6 +73,7 @@ struct CreateEssentialsGroupView: View {
         }
         .task {
             await viewModel.loadGroupTypes()
+            await viewModel.loadStorageLocations()
         }
     }
 
@@ -199,6 +201,18 @@ private extension CreateEssentialsGroupView {
             .font(.caption)
             .multilineTextAlignment(.center)
             .foregroundStyle(.secondary)
+    }
+}
+
+// MARK: - Storage Location Row
+
+private extension CreateEssentialsGroupView {
+    var StorageLocationRow: some View {
+        StorageLocationPicker(
+            locations: viewModel.storageLocations,
+            selected: $viewModel.selectedStorageLocation,
+            refreshAction: { Task { await viewModel.refreshStorageLocations() } }
+        )
     }
 }
 

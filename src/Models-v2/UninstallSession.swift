@@ -107,7 +107,7 @@ struct UninstallDestination: Codable, Hashable {
 }
 
 enum UninstallDestinationType: String, Codable {
-    case warehouse
+    case storage
     case copy
     case existingList = "existing_list"
 }
@@ -133,7 +133,7 @@ extension UninstallDestination {
     /// `DocumentLocation.firebaseUpdateFields` dot-notation.
     var documentLocation: DocumentLocation {
         switch type {
-        case .warehouse:
+        case .storage:
             DocumentLocation(status: .inStorage, locationId: locationId)
         case .copy, .existingList:
             DocumentLocation(status: .inPullList, locationId: locationId)

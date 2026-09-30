@@ -21,6 +21,6 @@ struct Warehouse: Codable, Identifiable, Hashable {
 }
 
 extension Warehouse {
-    static let warehouse1 = Warehouse(name: "Warehouse 1", address: Address(street: "123 Main St", city: "Anytown", state: "CA", zipcode: "12345", isWarehouse: true))
-    static let warehouse2 = Warehouse(name: "Warehouse 2", address: Address(street: "456 Main St", city: "Anytown", state: "CA", zipcode: "12345", isWarehouse: true))
+    static let warehouse1 = Warehouse(name: "Warehouse 1", address: Address(street: "123 Main St", city: "Anytown", state: "CA", zipcode: "12345", isStorageLocation: true))
+    static let warehouse2 = Warehouse(name: "Warehouse 2", address: Address(street: "456 Main St", city: "Anytown", state: "CA", zipcode: "12345", isStorageLocation: true))
 }

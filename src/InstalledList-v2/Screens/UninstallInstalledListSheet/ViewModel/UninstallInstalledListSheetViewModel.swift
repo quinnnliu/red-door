@@ -20,7 +20,7 @@ final class UninstallInstalledListSheetViewModel {
     var installedListState: InstalledListV2
     var rooms: [RoomV2] = []
     var itemsByRoom: [String: [ItemV2]] = [:] // key: roomId
-    var warehouses: [WarehouseV2] = []
+    var storageLocations: [StorageLocation] = []
 
     var essentialsGroupState: EssentialsGroup? = nil
     var essentialsAccessories: Accessories? = nil
@@ -29,17 +29,12 @@ final class UninstallInstalledListSheetViewModel {
     /// is assigned with a single action.
     var essentialsItems: [ItemV2] = []
 
-    /// Server truth for the uninstall plan, replaced wholesale by the listener.
     var sessionState: UninstallSession? = nil
 
-    /// Resolved for display only. Fetched by ID when the session names a target
-    /// list, rather than loading every pull list up front.
     var existingPullList: PullListV2? = nil
 
     // MARK: - Local UI state
 
-    /// Ephemeral per-user state. Deliberately NOT stored on the session:
-    /// selection is not shared between users, only assignments are.
     var selectedItemIds: Set<String> = []
     var essentialsSelected: Bool = false
 
@@ -51,23 +46,13 @@ final class UninstallInstalledListSheetViewModel {
 
     // MARK: - Session bookkeeping
 
-    /// The lock generation this client claimed. In-memory only: if the app is
-    /// killed the owner forgets it holds the lock and reopens as a viewer,
-    /// which costs one tap to reclaim. Persisting it would reintroduce
-    /// per-device state for no real gain.
+    /// The lock generation this client claimed.
     var myGeneration: Int? = nil
 
-    /// True once a real session document has been seen. The listener fires
-    /// `.success(nil)` at startup because it is attached before the session is
-    /// created, so "vanished" can only be inferred after observing one.
     var didObserveSession: Bool = false
 
-    /// Set when this client's own commit succeeded, so consuming the session
-    /// ourselves isn't mistaken for another user finishing it.
     var didCommit: Bool = false
 
-    /// The session disappeared out from under us. The view reads this to send
-    /// the user back once they acknowledge the alert.
     var sessionEndedByOtherUser: Bool = false
 
     // MARK: - Collaborators
@@ -79,7 +64,7 @@ final class UninstallInstalledListSheetViewModel {
     let pullListRepo: PullListRepository
     let essentialsRepo: EssentialsRepository
     let accessoriesRepo: AccessoriesRepository
-    let warehouseRepo: WarehouseRepository
+    let storageLocationRepo: StorageLocationRepository
     let configService: ConfigurationService
 
     private let installedRoomRepo: RoomRepository
@@ -97,7 +82,7 @@ final class UninstallInstalledListSheetViewModel {
         pullListRepo: PullListRepository,
         essentialsRepo: EssentialsRepository,
         accessoriesRepo: AccessoriesRepository,
-        warehouseRepo: WarehouseRepository,
+        storageLocationRepo: StorageLocationRepository,
         configService: ConfigurationService = .shared
     ) {
         self.installedListState = list
@@ -108,7 +93,7 @@ final class UninstallInstalledListSheetViewModel {
         self.pullListRepo = pullListRepo
         self.essentialsRepo = essentialsRepo
         self.accessoriesRepo = accessoriesRepo
-        self.warehouseRepo = warehouseRepo
+        self.storageLocationRepo = storageLocationRepo
         self.configService = configService
         self.loader = ItemsListLoader(itemRepo: itemRepo)
     }
@@ -146,7 +131,7 @@ final class UninstallInstalledListSheetViewModel {
         }
 
         await joinOrCreateSession()
-        await loadWarehouses()
+        await loadStorageLocations()
         await loadEssentialsGroup()
     }
 

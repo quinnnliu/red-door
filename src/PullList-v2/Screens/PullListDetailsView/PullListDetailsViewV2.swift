@@ -17,7 +17,7 @@ struct PullListDetailsViewV2: View {
     @State private var showInstallListSheet: Bool = false
     @State private var showDetails: Bool = false
     @State private var showUnassignedItems: Bool = false
-    @State private var showSelectWarehouseSheet: Bool = false
+    @State private var showSelectStorageSheet: Bool = false
     @State private var showSelectRoomForUnassignedSheet: Bool = false
     @State private var showStoreUnassignedItemSheet: Bool = false
     @State private var itemToStore: ItemV2? = nil
@@ -69,14 +69,14 @@ struct PullListDetailsViewV2: View {
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("Ok", role: .cancel) {}
         }
-        .sheet(isPresented: $showSelectWarehouseSheet) {
+        .sheet(isPresented: $showSelectStorageSheet) {
             SelectDocumentSheet(
                 title: "Select Storage Location",
-                documents: viewModel.availableWarehouses,
-                refreshAction: { Task { await viewModel.fetchAvailableWarehouses() } },
+                documents: viewModel.availableStorageLocations,
+                refreshAction: { Task { await viewModel.fetchAvailableStorageLocations() } },
                 action: handleAction(_:)
             )
-            .task { await viewModel.fetchAvailableWarehouses() }
+            .task { await viewModel.fetchAvailableStorageLocations() }
         }
         .sheet(isPresented: $showAddRoomsSheet) {
             EditRoomV2Sheet { newRoomName in
@@ -163,10 +163,10 @@ private extension PullListDetailsViewV2 {
 
                 Button("Delete", systemImage: SFSymbols.trash, role: .destructive) {
                     Task {
-                        await viewModel.deletePullList()
-                        dismiss()
+                        if await viewModel.deletePullList() { dismiss() }
                     }
                 }
+                .disabled(!viewModel.isEmptyOfItems)
             }
             .tint(.red)
         } label: {
@@ -237,7 +237,7 @@ private extension PullListDetailsViewV2 {
             Spacer()
 
             Button {
-                showSelectWarehouseSheet = true
+                showSelectStorageSheet = true
             } label: {
                 Image(systemName: SFSymbols.xmarkCircleFill)
                     .foregroundStyle(.gray)
@@ -369,11 +369,11 @@ private extension PullListDetailsViewV2 {
         .sheet(isPresented: $showStoreUnassignedItemSheet, onDismiss: { itemToStore = nil }) {
             SelectDocumentSheet(
                 title: "Select Storage Location",
-                documents: viewModel.availableWarehouses,
-                refreshAction: { Task { await viewModel.fetchAvailableWarehouses() } },
+                documents: viewModel.availableStorageLocations,
+                refreshAction: { Task { await viewModel.fetchAvailableStorageLocations() } },
                 action: handleAction(_:)
             )
-            .task { await viewModel.fetchAvailableWarehouses() }
+            .task { await viewModel.fetchAvailableStorageLocations() }
         }
     }
 
@@ -503,16 +503,16 @@ private extension PullListDetailsViewV2 {
             }
         }
 
-        if let warehouseAction = actionArgument as? SelectDocumentSheetAction<WarehouseV2> {
-            switch warehouseAction {
-            case .selected(let warehouse):
+        if let storageAction = actionArgument as? SelectDocumentSheetAction<StorageLocation> {
+            switch storageAction {
+            case .selected(let storageLocation):
                 if let item = itemToStore {
                     Task {
-                        await viewModel.storeUnassignedItem(item, in: warehouse)
+                        await viewModel.storeUnassignedItem(item, in: storageLocation)
                         itemToStore = nil
                     }
                 } else {
-                    Task { await viewModel.removeEssentialsGroup(to: warehouse) }
+                    Task { await viewModel.removeEssentialsGroup(to: storageLocation) }
                 }
             default:
                 break

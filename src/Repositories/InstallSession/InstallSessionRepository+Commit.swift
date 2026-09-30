@@ -55,7 +55,7 @@ extension InstallSessionRepository {
                 // 2. Create the installed list and copy every room across,
                 //    dropping items that were diverted to storage — otherwise a
                 //    stored item stays in its old room's membership while its
-                //    own location says it's in a warehouse.
+                //    own location says it's in storage.
                 //
                 //    Room IDs and `listId` carry over unchanged because the
                 //    installed list reuses the pull list's ID.

@@ -1,17 +1,15 @@
 //
-//  WarehouseV2.swift
+//  StorageLocation.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 6/7/26.
 //
 
-// TODO: Rename WarehouseV2 to StorageLocation (and update all references)
-
 import Foundation
 
-struct WarehouseV2: ConfigurationOption {
-    static let configurationType: String = "warehouses"
-    static let collectionName: String = "warehouse_types"
+struct StorageLocation: ConfigurationOption {
+    static let configurationType: String = "storage_locations"
+    static let collectionName: String = "storage_locations"
     static let orderByField: String = CodingKeys.baseName.stringValue
     static let searchField: String = CodingKeys.baseName.stringValue
 

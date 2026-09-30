@@ -20,7 +20,7 @@ struct PullListRoomDetailsView: View {
     // MARK: State Variables
     @State private var showAddItemsSheet: Bool = false
     @State private var showEditRoomSheet: Bool = false
-    @State private var showSelectWarehouseSheet: Bool = false
+    @State private var showSelectStorageSheet: Bool = false
     
     // MARK: Body
     
@@ -60,11 +60,11 @@ struct PullListRoomDetailsView: View {
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("OK", role: .cancel) { }
         }
-        .sheet(isPresented: $showSelectWarehouseSheet, onDismiss: { itemToRemove = nil }) {
+        .sheet(isPresented: $showSelectStorageSheet, onDismiss: { itemToRemove = nil }) {
             SelectDocumentSheet(
                 title: "Select Storage Location",
-                documents: viewModel.availableWarehouses,
-                refreshAction: { Task { await viewModel.fetchAvailableWarehouses() } },
+                documents: viewModel.storageLocations,
+                refreshAction: { Task { await viewModel.fetchAvailableStorageLocations() } },
                 action: handleAction(_:),
                 footer: {
                     RDButton(
@@ -75,7 +75,7 @@ struct PullListRoomDetailsView: View {
                     )
                 }
             )
-            .task { await viewModel.fetchAvailableWarehouses() }
+            .task { await viewModel.fetchAvailableStorageLocations() }
         }
         .onAppear {
             viewModel.startListening()
@@ -195,7 +195,7 @@ struct PullListRoomDetailsView: View {
                         itemToRemove = nil
                     }
                 } else {
-                    showSelectWarehouseSheet = true
+                    showSelectStorageSheet = true
                 }
             }
         }
@@ -255,12 +255,12 @@ private extension PullListRoomDetailsView {
 private extension PullListRoomDetailsView {
     func handleAction(_ action: Any?) {
         switch action {
-        case let warehouseAction as SelectDocumentSheetAction<WarehouseV2>:
+        case let storageAction as SelectDocumentSheetAction<StorageLocation>:
             guard let item = itemToRemove else { return }
-            switch warehouseAction {
-            case .selected(let warehouse):
+            switch storageAction {
+            case .selected(let storageLocation):
                 Task {
-                    await viewModel.removeItemToWarehouse(item: item, warehouse: warehouse)
+                    await viewModel.removeItemToStorage(item: item, storageLocation: storageLocation)
                     itemToRemove = nil
                 }
             case .footerAction:

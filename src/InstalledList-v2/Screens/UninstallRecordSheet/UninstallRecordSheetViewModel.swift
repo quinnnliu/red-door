@@ -16,7 +16,7 @@ final class UninstallRecordSheetViewModel {
     var record: UninstallSession? = nil
     var rooms: [RoomV2] = []
     var itemsByRoom: [String: [ItemV2]] = [:] // key: roomId
-    var warehouses: [WarehouseV2] = []
+    var storageLocations: [StorageLocation] = []
 
     var essentialsGroupState: EssentialsGroup? = nil
     var essentialsAccessories: Accessories? = nil
@@ -43,7 +43,7 @@ final class UninstallRecordSheetViewModel {
     private let pullListRepo: PullListRepository
     private let essentialsRepo: EssentialsRepository
     private let accessoriesRepo: AccessoriesRepository
-    private let warehouseRepo: WarehouseRepository
+    private let storageLocationRepo: StorageLocationRepository
     private let configService: ConfigurationService
 
     // MARK: - init
@@ -56,7 +56,7 @@ final class UninstallRecordSheetViewModel {
         pullListRepo: PullListRepository,
         essentialsRepo: EssentialsRepository,
         accessoriesRepo: AccessoriesRepository,
-        warehouseRepo: WarehouseRepository,
+        storageLocationRepo: StorageLocationRepository,
         configService: ConfigurationService = .shared
     ) {
         self.installedList = list
@@ -66,7 +66,7 @@ final class UninstallRecordSheetViewModel {
         self.pullListRepo = pullListRepo
         self.essentialsRepo = essentialsRepo
         self.accessoriesRepo = accessoriesRepo
-        self.warehouseRepo = warehouseRepo
+        self.storageLocationRepo = storageLocationRepo
         self.configService = configService
         self.loader = ItemsListLoader(itemRepo: itemRepo)
     }
@@ -100,7 +100,7 @@ extension UninstallRecordSheetViewModel {
             for room in rooms {
                 itemsByRoom[room.id] = try await loader.items(for: room)
             }
-            warehouses = try await configService.getAll(using: warehouseRepo)
+            storageLocations = try await configService.getAll(using: storageLocationRepo)
             try await loadEssentials()
             await resolveTargetLists()
         } catch {

@@ -117,16 +117,13 @@ private extension UninstallRecordSheet {
     }
 
     // MARK: Destination sections
-
-    /// Mirrors the live flow's sections, minus anything empty: a record only
-    /// names destinations something actually went to.
     var StorageSection: some View {
         Section {
             LazyVStack(alignment: .leading, spacing: 12) {
-                ForEach(viewModel.storageGroups, id: \.warehouseId) { group in
+                ForEach(viewModel.storageGroups, id: \.storageLocationId) { group in
                     VStack(alignment: .leading, spacing: 8) {
                         if viewModel.storageGroups.count > 1 {
-                            Text(group.warehouse)
+                            Text(group.storageLocation)
                                 .font(.subheadline)
                                 .bold()
                                 .frame(maxWidth: .infinity, alignment: .leading)

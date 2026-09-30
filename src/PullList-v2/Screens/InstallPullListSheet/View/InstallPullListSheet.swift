@@ -126,7 +126,7 @@ extension InstallPullListSheet {
                                     item: item,
                                     room: room,
                                     installStates: viewModel.resolvedItemDestinations,
-                                    warehouses: viewModel.warehouses,
+                                    storageLocations: viewModel.storageLocations,
                                     action: handleAction
                                 )
                                 .allowsHitTesting(viewModel.isOwner)
@@ -143,7 +143,7 @@ extension InstallPullListSheet {
 // MARK: InstallPullListRoomAction
 
 enum InstallPullListRoomAction {
-    case storeItem(itemId: String, warehouseId: String)
+    case storeItem(itemId: String, storageLocationId: String)
     case installItem(itemId: String)
 }
 
@@ -165,14 +165,14 @@ extension InstallPullListSheet {
             switch roomAction {
             case .installItem(let itemId):
                 Task { await viewModel.installItem(itemId: itemId) }
-            case .storeItem(let itemId, let warehouseId):
-                Task { await viewModel.storeItem(itemId: itemId, warehouseId: warehouseId) }
+            case .storeItem(let itemId, let storageLocationId):
+                Task { await viewModel.storeItem(itemId: itemId, storageLocationId: storageLocationId) }
             }
         case let confirmAction as ConfirmInstallSheetAction:
             switch confirmAction {
             case .confirm:
                 Task { @MainActor in
-                    if let installedList = await viewModel.createInstalledList(), !viewModel.showAlert {
+                    if let _ = await viewModel.createInstalledList(), !viewModel.showAlert {
                         try? await Task.sleep(for: .milliseconds(500))
                         coordinator.resetSelectedPath()
                         try? await Task.sleep(for: .milliseconds(500))

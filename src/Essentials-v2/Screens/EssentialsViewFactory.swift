@@ -10,11 +10,13 @@ import SwiftUI
 struct EssentialsViewFactory {
     private let essentialsRepo = EssentialsRepository()
     private let essentialsGroupTypeRepo = EssentialsGroupTypeRepository()
+    private let storageLocationRepo = StorageLocationRepository()
 
     func makeCreateEssentialsGroupView() -> CreateEssentialsGroupView {
         let vm = CreateEssentialsGroupViewModel(
             essentialsRepo: essentialsRepo,
-            essentialsGroupTypeRepo: essentialsGroupTypeRepo
+            essentialsGroupTypeRepo: essentialsGroupTypeRepo,
+            storageLocationRepo: storageLocationRepo
         )
         return CreateEssentialsGroupView(viewModel: vm)
     }

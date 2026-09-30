@@ -17,7 +17,7 @@ final class InstallPullListSheetViewModel {
     var pullListState: PullListV2
     var rooms: [RoomV2] = []
     var itemsByRoom: [String: [ItemV2]] = [:] // key: roomId
-    var warehouses: [WarehouseV2] = []
+    var storageLocations: [StorageLocation] = []
 
     var essentialsGroupState: EssentialsGroup? = nil
     var essentialsAccessories: Accessories? = nil
@@ -50,7 +50,7 @@ final class InstallPullListSheetViewModel {
     let installedRoomRepo: RoomRepository
     let essentialsRepo: EssentialsRepository
     let accessoriesRepo: AccessoriesRepository
-    let warehouseRepo: WarehouseRepository
+    let storageLocationRepo: StorageLocationRepository
     let configService: ConfigurationService
 
     private var roomsListener: ListenerRegistration? = nil
@@ -73,7 +73,7 @@ final class InstallPullListSheetViewModel {
         self.installedRoomRepo = RoomRepository(parentCollectionName: InstalledListV2.collectionName, listId: list.id)
         self.essentialsRepo = EssentialsRepository()
         self.accessoriesRepo = AccessoriesRepository()
-        self.warehouseRepo = WarehouseRepository()
+        self.storageLocationRepo = StorageLocationRepository()
         self.configService = configService
         self.rooms = rooms
         self.itemsByRoom = itemsByRoom
@@ -113,7 +113,7 @@ final class InstallPullListSheetViewModel {
         }
 
         await joinOrCreateSession()
-        await getWarehouses()
+        await getStorageLocations()
     }
 
     func stopListening() {

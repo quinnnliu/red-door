@@ -15,7 +15,7 @@ final class InstalledListRoomDetailsViewModel {
 
     var roomState: RoomV2
     var items: [ItemV2]
-    var availableWarehouses: [WarehouseV2] = []
+    var availableStorageLocations: [StorageLocation] = []
     var isLoading: Bool = false
     var showAlert: Bool = false
     var alertMessage: String = ""
@@ -102,26 +102,26 @@ final class InstalledListRoomDetailsViewModel {
         }
     }
 
-    // MARK: - fetchAvailableWarehouses
+    // MARK: - fetchAvailableStorageLocations
 
-    func fetchAvailableWarehouses() async {
+    func fetchAvailableStorageLocations() async {
         do {
-            availableWarehouses = try await ConfigurationService.shared.getAll(using: WarehouseRepository())
+            availableStorageLocations = try await ConfigurationService.shared.getAll(using: StorageLocationRepository())
         } catch {
             alertMessage = "Failed to load storage locations: \(error.localizedDescription)"
             showAlert = true
         }
     }
 
-    // MARK: - removeItemToWarehouse
+    // MARK: - removeItemToStorage
 
     @MainActor
-    func removeItemToWarehouse(item: ItemV2, warehouse: WarehouseV2) async {
+    func removeItemToStorage(item: ItemV2, storageLocation: StorageLocation) async {
         do {
             try await roomRepo.removeItem(
                 item.id,
                 fromRoomId: roomState.id,
-                toWarehouseId: warehouse.id,
+                toStorageLocationId: storageLocation.id,
                 itemRepo: itemRepo
             )
             loader.invalidate([item.id])

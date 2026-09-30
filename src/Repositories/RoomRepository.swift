@@ -204,22 +204,17 @@ extension RoomRepository {
 extension RoomRepository {
 
     /// Moves an item out of a room and into storage.
-    ///
-    /// A batch with `arrayRemove` rather than a transaction: nothing here is
-    /// conditional, so reading the room back to rewrite its whole `itemIds`
-    /// array would only add a round trip and a window to erase whatever
-    /// someone else added in the meantime.
     func removeItem(
         _ itemId: String,
         fromRoomId roomId: String,
-        toWarehouseId warehouseId: String,
+        toStorageLocationId storageLocationId: String,
         itemRepo: ItemRepository
     ) async throws {
         let batch = newBatch()
 
         itemRepo.update(
             id: itemId,
-            fields: DocumentLocation(status: .inStorage, locationId: warehouseId).firebaseUpdateFields,
+            fields: DocumentLocation(status: .inStorage, locationId: storageLocationId).firebaseUpdateFields,
             inBatch: batch
         )
         update(

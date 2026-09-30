@@ -11,10 +11,16 @@ import SwiftUI
 final class CreateItemsViewModel {
     private let itemRepo: ItemRepository = .init()
     private let essentialsRepo: EssentialsRepository = .init()
+    private let storageLocationRepo: StorageLocationRepository
+    private let configService: ConfigurationService
 
     // MARK: Essentials
     var availableGroups: [EssentialsGroup] = []
     var selectedGroup: EssentialsGroup? = nil
+
+    // MARK: Storage Location
+    var storageLocations: [StorageLocation] = []
+    var selectedStorageLocation: StorageLocation? = nil
 
     // MARK: itemState
     var itemState: ItemV2
@@ -45,7 +51,13 @@ final class CreateItemsViewModel {
     var selectedRDImage: RDImage?
     var isImageSelected: Bool
     
-    init(template: ItemV2? = nil) {
+    init(
+        template: ItemV2? = nil,
+        storageLocationRepo: StorageLocationRepository = StorageLocationRepository(),
+        configService: ConfigurationService = .shared
+    ) {
+        self.storageLocationRepo = storageLocationRepo
+        self.configService = configService
         self.modelUUID = UUID().uuidString
         self.templateState = template
         self.itemState = template.map { ItemV2(item: $0) } ?? ItemV2(
@@ -56,6 +68,7 @@ final class CreateItemsViewModel {
             type: .misc,
             color: .black,
             material: .none,
+            location: .unselectedStorage,
             attention: false,
             description: ""
         )
@@ -64,7 +77,7 @@ final class CreateItemsViewModel {
         self.isImageSelected = false
         self.isLoading = false
     }
-    
+
     func loadGroups() async {
         do {
             availableGroups = try await essentialsRepo.getAll()
@@ -74,8 +87,25 @@ final class CreateItemsViewModel {
         } catch { print("error loading groups: \(error)") }
     }
 
-    func createItems() async {
-        guard !isLoading else { return }
+    // MARK: Storage Location
+
+    func loadStorageLocations() async {
+        do {
+            storageLocations = try await configService.getAll(using: storageLocationRepo)
+            if selectedStorageLocation == nil, storageLocations.count == 1 {
+                selectedStorageLocation = storageLocations.first
+            }
+        } catch { print("error loading storage locations: \(error)") }
+    }
+
+    func refreshStorageLocations() async {
+        configService.invalidate(StorageLocation.self)
+        await loadStorageLocations()
+    }
+
+    func createItems() async -> Bool {
+        guard !isLoading else { return false }
+        guard let storageLocation = selectedStorageLocation else { return false }
         isLoading = true
         defer { isLoading = false }
 
@@ -84,6 +114,7 @@ final class CreateItemsViewModel {
         itemState.baseNameLowercased = itemState.baseName.lowercased()
 
         itemState.essentialGroupId = selectedGroup?.id
+        itemState.location = DocumentLocation(status: .inStorage, locationId: storageLocation.id)
 
         do {
             let startingNumber = try await itemRepo.maxItemNumber(forModelId: resolvedModelId)
@@ -96,7 +127,7 @@ final class CreateItemsViewModel {
             }
         } catch {
             print("error fetching max item number for modelId \(resolvedModelId): \(error.localizedDescription)")
-            return
+            return false
         }
 
         do {
@@ -130,8 +161,10 @@ final class CreateItemsViewModel {
                 }
             }
 
+            return true
         } catch {
             print("error creating items for: \(itemState.displayName)")
+            return false
         }
     }
 }

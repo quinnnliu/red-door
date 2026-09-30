@@ -75,7 +75,7 @@ struct UninstallInstalledListSheet: View {
         .sheet(isPresented: $viewModel.showDestinationSheet) {
             UninstallDestinationSheet(
                 selectedItems: viewModel.selectedItems,
-                warehouses: viewModel.warehouses,
+                storageLocations: viewModel.storageLocations,
                 copyLabel: viewModel.copySectionTitle,
                 selectedCopyAddress: viewModel.copyListAddress,
                 roomNames: viewModel.rooms.map(\.displayName),
@@ -206,18 +206,14 @@ private extension UninstallInstalledListSheet {
     }
 
     // MARK: Destination sections
-
-    /// Storage is always offered; the other two only exist once the user has
-    /// set them up, so an empty screen shows one destination rather than three.
+    
     var StorageSection: some View {
         Section {
             LazyVStack(alignment: .leading, spacing: 12) {
-                ForEach(viewModel.storageGroups, id: \.warehouseId) { group in
+                ForEach(viewModel.storageGroups, id: \.storageLocationId) { group in
                     VStack(alignment: .leading, spacing: 8) {
-                        // Only worth naming the warehouse when items have been
-                        // split across more than one.
                         if viewModel.storageGroups.count > 1 {
-                            Text(group.warehouse)
+                            Text(group.storageLocation)
                                 .font(.subheadline)
                                 .bold()
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -385,10 +381,10 @@ private extension UninstallInstalledListSheet {
 
         case let action as UninstallDestinationSheetAction:
             switch action {
-            case .chooseWarehouse(let warehouseId):
+            case .chooseStorage(let storageLocationId):
                 Task { @MainActor in
                     await viewModel.assignSelection(
-                        to: UninstallDestination(type: .warehouse, locationId: warehouseId)
+                        to: UninstallDestination(type: .storage, locationId: storageLocationId)
                     )
                     viewModel.showDestinationSheet = false
                 }

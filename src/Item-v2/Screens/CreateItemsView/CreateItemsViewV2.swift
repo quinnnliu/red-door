@@ -47,11 +47,13 @@ struct CreateItemsViewV2: View {
                     .disabled(viewModel.templateState != nil)
 
                     ItemCountPicker
+
+                    StorageLocationRow
                 }
                 .ignoresSafeArea(.keyboard)
-                
+
                 Spacer()
-                
+
                 RDButton(
                     variant: .default,
                     size: .default,
@@ -59,10 +61,10 @@ struct CreateItemsViewV2: View {
                     label: "Add Items to Inventory"
                 ) {
                     Task {
-                        await viewModel.createItems()
-                        dismiss()
+                        if await viewModel.createItems() { dismiss() }
                     }
                 }
+                .disabled(viewModel.selectedStorageLocation == nil)
             }
             .toolbar(.hidden)
             .frameTop()
@@ -76,7 +78,10 @@ struct CreateItemsViewV2: View {
                     .shadow(radius: 10)
             }
         }
-        .task { await viewModel.loadGroups() }
+        .task {
+            await viewModel.loadGroups()
+            await viewModel.loadStorageLocations()
+        }
         .overlay(
             ModelRDImageOverlay(selectedRDImage: viewModel.selectedRDImage, isImageSelected: $viewModel.isImageSelected)
                 .animation(Constants.Animation.snappy, value: viewModel.isImageSelected)
@@ -115,11 +120,21 @@ struct CreateItemsViewV2: View {
     }
     
     // MARK: Item Count Picker
-    
+
     private var ItemCountPicker: some View {
         Stepper("Number of Items: \(viewModel.itemCount)",
             value: $viewModel.itemCount,
             in: 1...1000
+        )
+    }
+
+    // MARK: Storage Location Row
+
+    private var StorageLocationRow: some View {
+        StorageLocationPicker(
+            locations: viewModel.storageLocations,
+            selected: $viewModel.selectedStorageLocation,
+            refreshAction: { Task { await viewModel.refreshStorageLocations() } }
         )
     }
 }

@@ -52,9 +52,9 @@ extension UninstallInstalledListSheetViewModel {
 
         for group in storageGroups {
             groups.append((
-                title: group.warehouse,
+                title: group.storageLocation,
                 subtitle: nil,
-                count: count(group.items.count, addingEssentialsFor: .warehouse, locationId: group.warehouseId)
+                count: count(group.items.count, addingEssentialsFor: .storage, locationId: group.storageLocationId)
             ))
         }
 
@@ -68,7 +68,7 @@ extension UninstallInstalledListSheetViewModel {
             groups.append((title: existingSectionTitle, subtitle: nil, count: existingCount))
         }
 
-        // Essentials can be the only thing sent to a given warehouse, which has
+        // Essentials can be the only thing sent to a given storage location, which has
         // no storage group of its own to fold into.
         if let essentials, !essentialsCounted, essentialsCount > 0 {
             let essentialsLabel = label(for: essentials)

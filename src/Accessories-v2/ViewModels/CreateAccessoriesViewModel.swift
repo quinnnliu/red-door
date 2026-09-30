@@ -11,15 +11,18 @@ import SwiftUI
 final class CreateAccessoriesViewModel {
     private let accessoriesRepo: AccessoriesRepository
     private let accessoriesTypeRepo: AccessoriesTypeRepository
+    private let storageLocationRepo: StorageLocationRepository
     private let configService: ConfigurationService
 
     init(
         accessoriesRepo: AccessoriesRepository,
         accessoriesTypeRepo: AccessoriesTypeRepository,
+        storageLocationRepo: StorageLocationRepository,
         configService: ConfigurationService = .shared
     ) {
         self.accessoriesRepo = accessoriesRepo
         self.accessoriesTypeRepo = accessoriesTypeRepo
+        self.storageLocationRepo = storageLocationRepo
         self.configService = configService
     }
 
@@ -32,7 +35,12 @@ final class CreateAccessoriesViewModel {
     var showExistingTypePicker: Bool = false
     var showSelectTypeSheet: Bool = false
 
-    
+    // MARK: - Storage Location
+
+    var storageLocations: [StorageLocation] = []
+    var selectedStorageLocation: StorageLocation?
+
+
     // MARK: - Fields
 
     var nickname: String = ""
@@ -58,6 +66,24 @@ final class CreateAccessoriesViewModel {
         await loadTypes()
     }
 
+    // MARK: - Load Storage Locations
+
+    func loadStorageLocations() async {
+        do {
+            storageLocations = try await configService.getAll(using: storageLocationRepo)
+            if selectedStorageLocation == nil, storageLocations.count == 1 {
+                selectedStorageLocation = storageLocations.first
+            }
+        } catch {
+            print("Error loading storage locations: \(error)")
+        }
+    }
+
+    func refreshStorageLocations() async {
+        configService.invalidate(StorageLocation.self)
+        await loadStorageLocations()
+    }
+
     // MARK: - Create Type
 
     func createAndSelectNewType() {
@@ -80,7 +106,9 @@ final class CreateAccessoriesViewModel {
     // MARK: - Create Accessories
 
     func createAccessories() async -> Bool {
-        guard let type = selectedType, let image = primaryImage else { return false }
+        guard let type = selectedType,
+              let image = primaryImage,
+              let storageLocation = selectedStorageLocation else { return false }
 
         isLoading = true
         defer { isLoading = false }
@@ -91,6 +119,7 @@ final class CreateAccessoriesViewModel {
                 baseName: type.displayName,
                 accessoriesTypeId: type.id,
                 primaryImage: image,
+                location: DocumentLocation(status: .inStorage, locationId: storageLocation.id),
                 description: description,
                 accessoriesNumber: maxNumber + 1,
                 nickname: nickname.isEmpty ? nil : nickname

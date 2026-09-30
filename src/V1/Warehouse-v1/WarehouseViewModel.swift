@@ -16,7 +16,7 @@ class WarehouseViewModel {
     let warehousesCollectionRef: CollectionReference
 
     init() {
-        warehousesCollectionRef = db.collection("warehouses")
+        warehousesCollectionRef = db.collection("storageLocations")
     }
 
     func fetchWarehouses() async {
@@ -26,7 +26,7 @@ class WarehouseViewModel {
                 try? document.data(as: Warehouse.self)
             }
         } catch {
-            print("Error fetching warehouses: \(error.localizedDescription)")
+            print("Error fetching storageLocations: \(error.localizedDescription)")
         }
     }
 

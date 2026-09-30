@@ -37,11 +37,11 @@ struct ConfirmInstallSheet: View {
                         Text("\(summary.storageBreakdown.map(\.count).reduce(0, +)) \(summary.storageBreakdown.map(\.count).reduce(0, +) == 1 ? "item" : "items") go to storage:")
                             .font(.headline)
                         
-                        ForEach(summary.storageBreakdown, id: \.warehouseName) { entry in
+                        ForEach(summary.storageBreakdown, id: \.storageLocationName) { entry in
                             HStack(spacing: 8) {
                                 Image(systemName: "shippingbox")
                                     .foregroundStyle(.secondary)
-                                Text("\(entry.warehouseName) — \(entry.count) \(entry.count == 1 ? "item" : "items")")
+                                Text("\(entry.storageLocationName) — \(entry.count) \(entry.count == 1 ? "item" : "items")")
                             }
                         }
                     }

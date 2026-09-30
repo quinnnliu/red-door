@@ -17,7 +17,7 @@ struct InstalledListRoomDetailsView: View {
 
     // MARK: State Variables
     @State private var showAddItemsSheet: Bool = false
-    @State private var showSelectWarehouseSheet: Bool = false
+    @State private var showSelectStorageSheet: Bool = false
 
     // MARK: Body
 
@@ -55,23 +55,23 @@ struct InstalledListRoomDetailsView: View {
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("OK", role: .cancel) { }
         }
-        .sheet(isPresented: $showSelectWarehouseSheet) {
+        .sheet(isPresented: $showSelectStorageSheet) {
             SelectDocumentSheet(
                 title: "Select Storage Location",
-                documents: viewModel.availableWarehouses,
-                refreshAction: { Task { await viewModel.fetchAvailableWarehouses() } },
+                documents: viewModel.availableStorageLocations,
+                refreshAction: { Task { await viewModel.fetchAvailableStorageLocations() } },
                 action: { action in
-                    if let warehouseAction = action as? SelectDocumentSheetAction<WarehouseV2>,
-                       case .selected(let warehouse) = warehouseAction,
+                    if let storageAction = action as? SelectDocumentSheetAction<StorageLocation>,
+                       case .selected(let storageLocation) = storageAction,
                        let item = itemToRemove {
                         Task {
-                            await viewModel.removeItemToWarehouse(item: item, warehouse: warehouse)
+                            await viewModel.removeItemToStorage(item: item, storageLocation: storageLocation)
                             itemToRemove = nil
                         }
                     }
                 }
             )
-            .task { await viewModel.fetchAvailableWarehouses() }
+            .task { await viewModel.fetchAvailableStorageLocations() }
         }
         .onAppear {
             viewModel.startListening()
@@ -170,7 +170,7 @@ struct InstalledListRoomDetailsView: View {
             if !viewModel.uninstalled {
                 RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.trash, fullWidth: false) {
                     itemToRemove = item
-                    showSelectWarehouseSheet = true
+                    showSelectStorageSheet = true
                 }
             }
         }
