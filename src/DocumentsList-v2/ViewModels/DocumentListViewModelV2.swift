@@ -26,7 +26,7 @@ final class DocumentListViewModelV2<T: RDDocument> {
     private(set) var activeFilters: [String: AnyHashable] = [:]
     private(set) var defaultFilters: [String: AnyHashable]?
     var activeFiltersApplied: Bool {
-        !activeFilters.isEmpty
+        activeFilters.keys.contains { $0 != T.searchField }
     }
     var defaultFilterKeys: Set<String> {
         defaultFilters.map { Set($0.keys) } ?? []
@@ -56,18 +56,17 @@ final class DocumentListViewModelV2<T: RDDocument> {
         await startReload(filters: updatedFilters)
     }
     
-    /// Remove  a filter and reloads
+    /// Remove a filter and reloads
     func removeFilter(key: String) async {
         var updatedFilters = activeFilters
         updatedFilters.removeValue(forKey: key)
         await startReload(filters: updatedFilters)
     }
 
-    /// Search by text and reload from page 1.
+    /// Search by text and reload from page 1. Ignored while filters are applied.
     func search(text: String) async {
-        if !text.isEmpty {
-            await updateFilter(key: T.searchField, value: T.normalizeSearchText(text))
-        }
+        guard !text.isEmpty, !activeFiltersApplied else { return }
+        await updateFilter(key: T.searchField, value: T.normalizeSearchText(text))
     }
 
     /// Handle a SearchBarAction by dispatching to search or refresh.
