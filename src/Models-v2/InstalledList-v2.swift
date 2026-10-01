@@ -26,6 +26,7 @@ struct InstalledListV2: RDDocument {
     @DayGranular var installDate: Date
     @DayGranular var uninstallDate: Date
     var clientId: String
+    var squareFootage: String?
     var roomIds: [String]
     var essentialGroupId: String?
     var uninstalled: Bool
@@ -39,6 +40,7 @@ struct InstalledListV2: RDDocument {
         self.installDate = pullList.installDate
         self.uninstallDate = pullList.uninstallDate
         self.clientId = pullList.clientId
+        self.squareFootage = pullList.squareFootage
         self.roomIds = pullList.roomIds
         self.essentialGroupId = pullList.essentialGroupId
         self.uninstalled = false
@@ -52,6 +54,7 @@ struct InstalledListV2: RDDocument {
         case installDate = "install_date"
         case uninstallDate = "uninstall_date"
         case clientId = "client_id"
+        case squareFootage = "square_footage"
         case roomIds = "room_ids"
         case essentialGroupId = "essential_group_id"
         case uninstalled

@@ -19,6 +19,10 @@ final class CreatePullListViewModelV2 {
     var showAlert: Bool = false
     var alertText: String = ""
     
+    var createButtonDisabled: Bool {
+        return pullListState.uninstallDate < .now || pullListState.roomIds.isEmpty || pullListState.clientId.isEmpty || pullListState.installDate < pullListState.uninstallDate
+    }
+    
     init() {
         self.pullListState = PullListV2(
             id: UUID().uuidString,
@@ -45,6 +49,7 @@ final class CreatePullListViewModelV2 {
 
             var updatedPullList = pullListState
             updatedPullList.address.town = pullListState.address.town.lowercased()
+            updatedPullList.squareFootage = pullListState.squareFootage?.trimmedOrNil
             try pullListRepo.set(document: updatedPullList)
             
             let roomRepo = RoomRepository<PullListV2>(list: pullListState)
@@ -73,7 +78,7 @@ extension CreatePullListViewModelV2 {
     // MARK: createEmptyRoom
     
     // TODO: use a toast to display error (instead of sending bool)
-    func createEmptyRoom(_ roomName: String) {
+    func createEmptyRoom(_ roomName: String, squareFootage: String? = nil) {
         guard !RoomV2.roomExists(newRoomName: roomName, rooms: rooms) else {
             alertText = "Room with same name already exists for this list" // room not added
             showAlert = true
@@ -82,7 +87,8 @@ extension CreatePullListViewModelV2 {
         
         let newRoom = RoomV2(
             baseName: roomName,
-            listId: pullListState.id
+            listId: pullListState.id,
+            squareFootage: squareFootage
         )
         pullListState.roomIds.append(newRoom.id)
         rooms.append(newRoom)

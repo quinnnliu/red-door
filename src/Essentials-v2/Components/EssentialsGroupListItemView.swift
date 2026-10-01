@@ -41,27 +41,38 @@ struct EssentialsGroupListItemView: View {
 
     private var cellContent: some View {
         HStack(spacing: 12) {
+            LeadingContent
+
+            Spacer(minLength: .zero)
+            
+            TrailingContent
+        }
+        .padding(8)
+        .background(Color(.systemGray5))
+        .cornerRadius(Constants.CornerRadius.large)
+        .overlay(
+            RoundedRectangle(cornerRadius: Constants.CornerRadius.large)
+                .stroke(Color(.systemGray5), lineWidth: 2)
+        )
+    }
+    
+    // MARK: LeadingContent
+    @ViewBuilder
+    private var LeadingContent: some View {
+        HStack(spacing: 4) {
             if let emoji = emoji {
                 Text(emoji)
                     .font(.title2)
             }
-
+            
             VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 4) {
-                    Text(group.displayName)
-                        .font(.headline)
-                        .foregroundStyle(.primary)
-
-                    if group.location.status != .inStorage {
-                        Text("• \(group.location.status.displayTitle)")
-                            .font(.footnote)
-                            .foregroundStyle(.red)
-                    }
-                }
-
-                HStack(spacing: 4) {
+                Text(group.displayName)
+                    .font(.headline)
+                    .foregroundStyle(.primary)
+                
+                HStack(spacing: 2) {
                     Text("\(group.itemIds.count) items")
-
+                    
                     if group.accessoriesId != nil {
                         Text("•")
                         Image(systemName: SFSymbols.booksVerticalFill)
@@ -69,7 +80,7 @@ struct EssentialsGroupListItemView: View {
                     }
                 }
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.primary)
             }
         }
     }
@@ -78,7 +89,7 @@ struct EssentialsGroupListItemView: View {
     private var TrailingContent: some View {
         SmallCTA(
             isButton: false,
-            type: group.location.status.isAvailable ? .secondary: .red,
+            type: group.location.status.isAvailable ? .outline: .red,
             size: .small,
             leadingIcon: group.location.status.icon,
             text: group.location.status.displayTitle,

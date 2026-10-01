@@ -25,6 +25,7 @@ extension PullListRepository {
         installDate: Date,
         uninstallDate: Date,
         clientId: String,
+        squareFootage: String?,
         sourceRooms: [RoomV2],
         candidateItemIds: Set<String>,
         essentialsGroup: EssentialsGroup?,
@@ -90,6 +91,7 @@ extension PullListRepository {
                 copyList.installDate = installDate
                 copyList.uninstallDate = uninstallDate
                 copyList.clientId = clientId
+                copyList.squareFootage = squareFootage
 
                 try self.set(document: copyList, id: newListId, transaction: transaction)
 

@@ -36,6 +36,7 @@ struct CopyFromInstalledListView: View {
                     AddressSection
                     DatesSection
                     ClientSection
+                    SquareFootageSection
                     RoomsSection
                     EssentialsSection
                 }
@@ -131,6 +132,16 @@ struct CopyFromInstalledListView: View {
         HStack {
             Text("Client:")
             TextField("", text: $viewModel.clientId)
+        }
+    }
+
+    // MARK: - Square Footage
+
+    private var SquareFootageSection: some View {
+        HStack {
+            Text("Sq Ft:")
+            TextField("Optional", text: $viewModel.squareFootage)
+                .keyboardType(.decimalPad)
         }
     }
 

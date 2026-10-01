@@ -283,7 +283,7 @@ extension ItemDocumentListViewV2 {
             action: handleAccessoriesAction(_:),
             rowContent: { accessories in
                 AccessoriesListItemView(
-                    accessories: accessories,
+                    accessories,
                     action: handleAccessoriesAction(_:)
                 )
             }

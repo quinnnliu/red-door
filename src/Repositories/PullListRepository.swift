@@ -22,28 +22,25 @@ final class PullListRepository: GenericRepository<PullListV2> {
 
 extension PullListRepository {
 
-    /// Deletes a pull list and its rooms.
+    /// Deletes an empty pull list and its image.
     ///
     /// Deleting is not a relocation: callers must empty the list first, since
-    /// there is nowhere for leftover items to go. See
-    /// `PullListDetailsViewModelV2.isEmptyOfItems`.
-    ///
-    /// `rooms` is passed in because the write can't discover them itself:
-    /// neither a batch nor a transaction can run a subcollection query.
-    func delete(
-        _ listId: String,
-        rooms: [RoomV2],
-        roomRepo: RoomRepository<PullListV2>
-    ) async throws {
-        let batch = newBatch()
+    /// there is nowhere for leftover rooms or items to go. See
+    /// `PullListDetailsViewModelV2.canDelete`.
+    func delete(_ listId: String) async throws {
+        let list = try await get(id: listId)
+        try await delete(id: listId)
 
-        for room in rooms {
-            roomRepo.delete(id: room.id, inBatch: batch)
+        // Cleans by folder rather than by the stored image reference: a list
+        // copied from an installed list inherits that list's reference, whose
+        // files live in another folder and must survive this delete. The
+        // document is already gone, so a failure here only orphans files and
+        // isn't worth reporting as a failed delete.
+        do {
+            try await FirebaseImageManager.shared.deleteDocumentImages(document: list, imageType: .listV2)
+        } catch {
+            print("[WARN]: Deleted pull list \(listId) but failed to clean up its images: \(error.localizedDescription)")
         }
-
-        delete(id: listId, inBatch: batch)
-
-        try await batch.commit()
     }
 }
 

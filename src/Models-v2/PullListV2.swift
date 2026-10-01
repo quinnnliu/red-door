@@ -29,6 +29,7 @@ struct PullListV2: RDDocument {
     @DayGranular var installDate: Date
     @DayGranular var uninstallDate: Date
     var clientId: String // TODO: make a "job" object?
+    var squareFootage: String?
 
     var roomIds: [String]
     var unassignedItemIds: [String]
@@ -50,6 +51,7 @@ struct PullListV2: RDDocument {
         installDate: Date,
         uninstallDate: Date,
         clientId: String,
+        squareFootage: String? = nil,
 
         roomIds: [String] = [],
         unassignedItemIds: [String] = [],
@@ -68,6 +70,7 @@ struct PullListV2: RDDocument {
         self.uninstallDate = uninstallDate
 
         self.clientId = clientId
+        self.squareFootage = squareFootage
         self.roomIds = roomIds
         self.unassignedItemIds = unassignedItemIds
         self.essentialGroupId = essentialGroupId
@@ -103,6 +106,7 @@ struct PullListV2: RDDocument {
         self.uninstallDate = installedList.uninstallDate
 
         self.clientId = installedList.clientId
+        self.squareFootage = installedList.squareFootage
         self.roomIds = roomIds
         self.unassignedItemIds = unassignedItemIds
         self.essentialGroupId = essentialGroupId
@@ -118,6 +122,7 @@ struct PullListV2: RDDocument {
         case installDate = "install_date"
         case uninstallDate = "uninstall_date"
         case clientId = "client_id"
+        case squareFootage = "square_footage"
         case roomIds = "room_ids"
         case unassignedItemIds = "unassigned_item_ids"
         case essentialGroupId = "essential_group_id"

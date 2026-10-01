@@ -110,7 +110,7 @@ enum RDButtonSize {
         case .lg:
             return .body
         case .icon:
-            return .body
+            return .caption2
         }
     }
     
@@ -190,7 +190,7 @@ struct RDButton: View {
                     .fontWeight(.bold)
             }
             
-            if let label, size != .icon {
+            if let label {
                 Text(label)
                     .font(font ?? size.fontSize)
                     .fontWeight(.medium)

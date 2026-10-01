@@ -103,7 +103,7 @@ private extension SelectAccessoriesSheet {
             action: handleAction(_:),
             rowContent: { accessories in
                 AccessoriesListItemView(
-                    accessories: accessories,
+                    accessories,
                     action: handleAction(_:),
                     actionType: .select(accessories)
                 )

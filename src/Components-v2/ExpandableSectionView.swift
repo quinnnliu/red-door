@@ -65,8 +65,16 @@ private extension ExpandableSectionView {
 
             TrailingContent
         }
-        // A tap gesture rather than a wrapping Button so the controls inside the
-        // header keep receiving their own taps.
+        .padding(8)
+        .background {
+            switch style {
+            case .installingRoom:
+                Color.red.opacity(0.4)
+            default:
+                Color.clear
+            }
+        }
+        .cornerRadius(12)
         .contentShape(Rectangle())
         .onTapGesture {
             action(ExpandableSectionAction.headerAction(style: style))
@@ -78,8 +86,11 @@ private extension ExpandableSectionView {
         switch style {
         case .essentialsItemTypeGroup(let type, _):
             Image(systemName: type.icon ?? SFSymbols.ellipsis)
-        case .pullListRoom:
-            ExpandToggle
+        case .pullListRoom(let room, _):
+            HStack(spacing: 6) {
+                ExpandToggle
+                PrimaryImageView(image: room.afterImage ?? room.beforeImage, size: Constants.Image.listItemDefault, isExpandable: false)
+            }
         case .installingRoom:
             EmptyView()
         }
@@ -120,7 +131,7 @@ private extension ExpandableSectionView {
                     .foregroundStyle(.gray)
             }
         case .installingRoom(let room, let itemCount):
-            HStack(spacing: Constants.Padding(0.5)) {
+            HStack(spacing: Constants.Padding(0.25)) {
                 ItemCountLabel(itemCount)
 
                 RefreshButton(roomId: room.id)
@@ -159,10 +170,7 @@ private extension ExpandableSectionView {
     }
 
     func ItemCountLabel(_ itemCount: Int) -> Text {
-        Text("Items: ")
-            .font(.caption)
-            .foregroundColor(.secondary)
-            + Text("\(itemCount)")
+        Text("(\(itemCount))")
             .font(.caption)
             .foregroundColor(.red)
     }

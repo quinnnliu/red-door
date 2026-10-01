@@ -36,7 +36,7 @@ struct CreateItemViewV2: View {
                     
                     ItemCountPicker
                         .padding(8)
-                        .background(.gray)
+                        .background(.gray.opacity(0.2))
                         .cornerRadius(8)
 
                     EssentialsGroupRow

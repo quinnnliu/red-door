@@ -17,6 +17,7 @@ struct RoomV2: ItemsListableDocument {
     var baseName: String
     var listId: String
     var itemIds: Set<String>
+    var squareFootage: String?
     var beforeImage: RDImage?
     var afterImage: RDImage?
     
@@ -24,6 +25,7 @@ struct RoomV2: ItemsListableDocument {
         baseName: String,
         listId: String,
         itemIds: Set<String> = [],
+        squareFootage: String? = nil,
         beforeImage: RDImage? = nil,
         afterimage: RDImage? = nil
     ) {
@@ -32,6 +34,7 @@ struct RoomV2: ItemsListableDocument {
         self.baseName = baseName
         self.listId = listId
         self.itemIds = itemIds
+        self.squareFootage = squareFootage
         self.beforeImage = beforeImage
         self.afterImage = afterimage
     }
@@ -39,6 +42,7 @@ struct RoomV2: ItemsListableDocument {
     enum CodingKeys: String, CodingKey {
         case id
         case itemIds = "item_ids"
+        case squareFootage = "square_footage"
         case listId = "list_id"
         case baseName = "base_name"
         case nameId = "name_id"
@@ -66,6 +70,16 @@ extension RoomV2 {
         let normalizedNewRoomName = normalizeRoomName(newRoomName)
 
         return rooms.contains { normalizeRoomName($0.displayName) == normalizedNewRoomName }
+    }
+}
+
+// MARK: - Square footage helpers
+
+extension String {
+    /// trimmed form of a free-text field, or nil when nothing was entered
+    var trimmedOrNil: String? {
+        let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 }
 

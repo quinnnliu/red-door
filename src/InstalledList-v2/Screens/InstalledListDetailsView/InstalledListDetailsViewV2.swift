@@ -175,6 +175,17 @@ private extension InstalledListDetailsViewV2 {
                 Text(list.clientId)
                     .foregroundColor(.primary)
             )
+
+            if let squareFootage = list.squareFootage {
+                (
+                    Text("Square Footage: ")
+                        .foregroundColor(.red)
+                        .bold()
+                    +
+                    Text(squareFootage)
+                        .foregroundColor(.primary)
+                )
+            }
         }
         .font(.footnote)
         .frame(maxWidth: .infinity, alignment: .leading)

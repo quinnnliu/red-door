@@ -96,6 +96,9 @@ struct InstalledListRoomDetailsView: View {
                     +
                     Text(viewModel.roomState.displayName)
                         .bold()
+                    +
+                    Text(viewModel.roomState.squareFootage.map { " · \($0) sq ft" } ?? "")
+                        .foregroundColor(.secondary)
                 )
             }, trailingView: {
                 EmptyView()

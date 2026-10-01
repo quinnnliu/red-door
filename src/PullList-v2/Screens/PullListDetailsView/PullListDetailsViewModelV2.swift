@@ -324,32 +324,30 @@ final class PullListDetailsViewModelV2 {
 
     // MARK: deletePullList
 
-    /// A list holds items in three places — its rooms, its unassigned pool, and
-    /// an attached essentials group. All three must be clear before deleting,
-    /// because deletion doesn't relocate anything.
+    /// A list can only be deleted once it holds nothing. Rooms are checked
+    /// first (deleting a list never deletes its rooms), then the other two
+    /// places a list holds items: its unassigned pool and an attached
+    /// essentials group. Deletion doesn't relocate anything.
     ///
     /// Reads `essentialGroupId` off the list document rather than the fetched
     /// `essentialsGroupState`, which is still nil while loading.
-    var isEmptyOfItems: Bool {
-        rooms.allSatisfy { $0.itemIds.isEmpty }
+    var canDelete: Bool {
+        rooms.isEmpty
+            && pullListState.roomIds.isEmpty
             && pullListState.unassignedItemIds.isEmpty
             && pullListState.essentialGroupId == nil
     }
 
     @MainActor
     func deletePullList() async -> Bool {
-        guard isEmptyOfItems else {
-            alertMessage = "Remove all items and any essentials group before deleting this pull list."
+        guard canDelete else {
+            alertMessage = "Remove all rooms, items and any essentials group before deleting this pull list."
             showAlert = true
             return false
         }
 
         do {
-            try await pullListRepo.delete(
-                pullListState.id,
-                rooms: rooms,
-                roomRepo: roomRepo
-            )
+            try await pullListRepo.delete(pullListState.id)
             return true
         } catch {
             alertMessage = "Failed to delete pull list: \(error.localizedDescription)"
@@ -367,7 +365,7 @@ extension PullListDetailsViewModelV2 {
     // MARK: createEmptyRoom
 
     // TODO: remove this duplicate (copy of CreatePullListViewModelV2
-    func createEmptyRoom(_ roomName: String) async {
+    func createEmptyRoom(_ roomName: String, squareFootage: String? = nil) async {
         guard !RoomV2.roomExists(newRoomName: roomName, rooms: rooms) else {
             alertMessage = "Room with same name already exists for this list"
             showAlert = true
@@ -376,7 +374,8 @@ extension PullListDetailsViewModelV2 {
 
         let newRoom = RoomV2(
             baseName: roomName,
-            listId: pullListState.id
+            listId: pullListState.id,
+            squareFootage: squareFootage
         )
         do {
             try roomRepo.set(document: newRoom)
