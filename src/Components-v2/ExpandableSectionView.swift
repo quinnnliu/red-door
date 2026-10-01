@@ -10,6 +10,7 @@ import SwiftUI
 enum ExpandableSectionStyle {
     case essentialsItemTypeGroup(type: ItemType, count: Int)
     case pullListRoom(room: RoomV2, itemCount: Int)
+    case copyRoom(room: RoomV2, copyableCount: Int, itemCount: Int)
     case installingRoom(room: RoomV2, itemCount: Int)
     case uninstallingRoom(room: RoomV2, itemCount: Int)
     case uninstallEssentials(
@@ -87,6 +88,7 @@ private extension ExpandableSectionView {
 
             TrailingContent
         }
+        .padding(8)
         .background {
             switch style {
             case .installingRoom, .uninstallingRoom:
@@ -107,7 +109,7 @@ private extension ExpandableSectionView {
         switch style {
         case .essentialsItemTypeGroup(let type, _):
             Image(systemName: type.icon ?? SFSymbols.ellipsis)
-        case .pullListRoom(let room, _):
+        case .pullListRoom(let room, _), .copyRoom(let room, _, _):
             HStack(spacing: 6) {
                 ExpandToggle
                 PrimaryImageView(image: room.afterImage ?? room.beforeImage, size: Constants.Image.listItemDefault, isExpandable: false)
@@ -134,6 +136,16 @@ private extension ExpandableSectionView {
             Text(room.displayName)
                 .font(.headline)
                 .foregroundColor(.primary)
+        case .copyRoom(let room, let copyableCount, let itemCount):
+            VStack(alignment: .leading, spacing: 4) {
+                Text(room.displayName)
+                    .font(.headline)
+                    .foregroundColor(.primary)
+
+                Text("\(copyableCount) of \(itemCount) available")
+                    .font(.footnote)
+                    .foregroundStyle(copyableCount == itemCount ? Color.secondary : Color.red)
+            }
         case .uninstallEssentials(let group, let accessories, let itemCount, _, _):
             VStack(alignment: .leading, spacing: 6) {
                 Text(group.displayName)
@@ -176,19 +188,13 @@ private extension ExpandableSectionView {
                     .frame(24)
                     .foregroundStyle(.gray)
             }
-        case .uninstallingRoom(let room, let itemCount):
-            HStack(spacing: Constants.Padding(0.25)) {
-                ItemCountLabel(itemCount)
-                
-                RefreshButton(roomId: room.id)
-            }
-        case .installingRoom(let room, let itemCount):
+        case .copyRoom(_, _, let itemCount):
+            ItemCountLabel(itemCount)
+        case .installingRoom(let room, let itemCount), .uninstallingRoom(let room, let itemCount):
             HStack(spacing: Constants.Padding(0.25)) {
                 ItemCountLabel(itemCount)
 
                 RefreshButton(roomId: room.id)
-
-                ExpandToggle
             }
         case .uninstallEssentials(_, _, _, let destinationLabel, let destinationSubtitle):
             HStack(spacing: Constants.Padding(0.5)) {
@@ -255,6 +261,7 @@ private extension ExpandableSectionView {
         switch style {
         case .essentialsItemTypeGroup(_, let count): count
         case .pullListRoom(_, let itemCount): itemCount
+        case .copyRoom(_, _, let itemCount): itemCount
         case .installingRoom(_, let itemCount), .uninstallingRoom(_, let itemCount): itemCount
         case .uninstallEssentials(_, _, let itemCount, _, _): itemCount
         }
@@ -262,11 +269,9 @@ private extension ExpandableSectionView {
 
     var canExpand: Bool { count > 0 }
 
-    /// Installing rows sit inside an already-padded list, so they supply no
-    /// chrome of their own.
     var hasCardChrome: Bool {
         switch style {
-        case .essentialsItemTypeGroup, .pullListRoom, .uninstallEssentials: true
+        case .essentialsItemTypeGroup, .pullListRoom, .copyRoom, .uninstallEssentials: true
         case .installingRoom, .uninstallingRoom: false
         }
     }
