@@ -46,6 +46,7 @@ struct AccessoriesListItemView: View {
                 } label: {
                     cellContent
                 }
+                .buttonStyle(PlainButtonStyle())
             } else {
                 cellContent
             }
@@ -54,23 +55,44 @@ struct AccessoriesListItemView: View {
 
     private var cellContent: some View {
         HStack(spacing: 12) {
+            LeadingContent
+
+            Spacer(minLength: .zero)
+
+            TrailingContent
+        }
+        .padding(8)
+        .background(Color(.systemGray5))
+        .cornerRadius(Constants.CornerRadius.large)
+        .overlay(
+            RoundedRectangle(cornerRadius: Constants.CornerRadius.large)
+                .stroke(Color(.systemGray5), lineWidth: 2)
+        )
+    }
+
+    // MARK: LeadingContent
+    @ViewBuilder
+    private var LeadingContent: some View {
+        HStack(spacing: 8) {
             PrimaryImageView(image: accessories.primaryImage, size: Constants.Image.listItemDefault, isExpandable: false)
 
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 4) {
-                    Text(accessories.displayName)
-                        .font(.headline)
-                        .foregroundStyle(.primary)
+            Text(accessories.displayName)
+                .font(.headline)
+                .foregroundStyle(.primary)
+        }
+    }
 
-                    if accessories.location.status != .inStorage {
-                        Text("• \(accessories.location.status.displayTitle)")
-                            .font(.footnote)
-                            .foregroundStyle(.red)
-                    }
-                }
-            }
-
-            Spacer()
+    // MARK: TrailingContent
+    private var TrailingContent: some View {
+        HStack(spacing: 8) {
+            SmallCTA(
+                isButton: false,
+                type: accessories.location.status.isAvailable ? .outline : .red,
+                size: .small,
+                leadingIcon: accessories.location.status.icon,
+                text: accessories.location.status.displayTitle,
+                semibold: false
+            )
 
             if let onRemove, style == .essentialsGroup {
                 Button(action: onRemove) {
@@ -81,8 +103,5 @@ struct AccessoriesListItemView: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(8)
-        .background(Color(.systemGray5))
-        .cornerRadius(Constants.CornerRadius.large)
     }
 }

@@ -358,7 +358,8 @@ private extension UninstallInstalledListSheet {
             }
         }
         .padding(12)
-        .background(.primary.opacity(0.5))
+        .background(.primary.opacity(0.25))
+        .cornerRadius(12)
     }
 }
 

@@ -9,8 +9,6 @@ import SwiftUI
 
 /// Step two of copying: choose where the copy is headed, then claim whichever of
 /// the source list's items are still in storage.
-///
-/// Intentionally unstyled — structure only.
 struct CopyFromInstalledListView: View {
     @State var viewModel: CopyFromInstalledListViewModel
 
@@ -28,25 +26,31 @@ struct CopyFromInstalledListView: View {
     @State private var droppedMessage: String? = nil
 
     var body: some View {
-        VStack(spacing: 12) {
-            TopBar
+        ZStack {
+            VStack(spacing: 12) {
+                TopBar
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    AddressSection
-                    DatesSection
-                    ClientSection
-                    SquareFootageSection
-                    RoomsSection
-                    EssentialsSection
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        DatesSection
+                        ClientSection
+                        SquareFootageSection
+                        RoomsSection
+                        EssentialsSection
+                    }
                 }
-            }
+                .scrollIndicators(.hidden)
 
-            Footer
+                Footer
+            }
+            .frameTop()
+            .frameHorizontalPadding()
+            .toolbar(.hidden)
+
+            if viewModel.isCreating {
+                FullScreenProgressView(label: "Creating Pull List...")
+            }
         }
-        .frameTop()
-        .frameHorizontalPadding()
-        .toolbar(.hidden)
         .task { await viewModel.load() }
         .sheet(isPresented: $showAddressSheet) {
             AddressSheet(selectedAddress: $draftAddress, addressId: $draftAddressId)
@@ -79,42 +83,36 @@ struct CopyFromInstalledListView: View {
 
     // MARK: - TopBar
 
+    /// The copy needs a destination before anything can be claimed, so the address
+    /// lives in the header and the create button stays disabled until it's set.
     private var TopBar: some View {
         TopAppBar(
             leadingView: { BackButton() },
-            header: { Text("Copy of \(viewModel.installedList.displayName)") },
+            header: {
+                RDButton(
+                    variant: .outline,
+                    size: .default,
+                    leadingIcon: SFSymbols.mapPinAndEllipse,
+                    label: viewModel.address.map { $0.getStreetAddress() ?? $0.formattedAddress } ?? "Enter Address"
+                ) {
+                    showAddressSheet = true
+                }
+            },
             trailingView: { Spacer().frame(width: 32) }
         )
-    }
-
-    // MARK: - Address
-
-    /// The copy needs a destination before anything can be claimed, so this gate
-    /// comes first and the create button stays disabled until it's satisfied.
-    @ViewBuilder
-    private var AddressSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Address")
-                .font(.headline)
-
-            if let address = viewModel.address {
-                Text(address.getStreetAddress() ?? address.formattedAddress)
-                Button("Change") { showAddressSheet = true }
-            } else {
-                Button("Select Address") { showAddressSheet = true }
-            }
-        }
     }
 
     // MARK: - Dates
 
     private var DatesSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(spacing: 12) {
             DatePicker(
                 selection: $viewModel.installDate,
                 displayedComponents: [.date]
             ) {
                 Text("Install Date:")
+                    .foregroundColor(.secondary)
+                    .bold()
             }
 
             DatePicker(
@@ -122,6 +120,8 @@ struct CopyFromInstalledListView: View {
                 displayedComponents: [.date]
             ) {
                 Text("Uninstall Date:")
+                    .foregroundColor(.red)
+                    .bold()
             }
         }
     }
@@ -132,6 +132,9 @@ struct CopyFromInstalledListView: View {
         HStack {
             Text("Client:")
             TextField("", text: $viewModel.clientId)
+                .padding(6)
+                .background(Color(.systemGray5))
+                .cornerRadius(Constants.CornerRadius.medium)
         }
     }
 
@@ -139,9 +142,12 @@ struct CopyFromInstalledListView: View {
 
     private var SquareFootageSection: some View {
         HStack {
-            Text("Sq Ft:")
+            Text("Square Feet:")
             TextField("Optional", text: $viewModel.squareFootage)
                 .keyboardType(.decimalPad)
+                .padding(6)
+                .background(Color(.systemGray5))
+                .cornerRadius(Constants.CornerRadius.medium)
         }
     }
 
@@ -149,15 +155,19 @@ struct CopyFromInstalledListView: View {
 
     @ViewBuilder
     private var RoomsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Rooms")
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Rooms:")
                 .font(.headline)
+                .foregroundColor(.red)
 
             if viewModel.isLoading {
                 ProgressView()
+                    .frame(maxWidth: .infinity)
             } else {
-                ForEach(viewModel.rooms) { room in
-                    RoomRow(room)
+                LazyVStack(spacing: 12) {
+                    ForEach(viewModel.rooms) { room in
+                        RoomRow(room)
+                    }
                 }
             }
         }
@@ -166,24 +176,37 @@ struct CopyFromInstalledListView: View {
     @ViewBuilder
     private func RoomRow(_ room: RoomV2) -> some View {
         let items = viewModel.itemsByRoom[room.id] ?? []
-        let copyable = items.filter { viewModel.isCopyable($0) }.count
+
+        ExpandableSectionView(
+            style: .copyRoom(
+                room: room,
+                copyableCount: items.filter { viewModel.isCopyable($0) }.count,
+                itemCount: items.count
+            ),
+            isExpanded: false
+        ) {
+            VStack(spacing: 8) {
+                ForEach(items) { item in
+                    SourceItemRow(item)
+                }
+            }
+        }
+    }
+
+    /// Items that can't be copied stay visible so it's clear what the new list is missing and why.
+    @ViewBuilder
+    private func SourceItemRow(_ item: ItemV2) -> some View {
+        let reason = viewModel.unavailableReason(for: item)
 
         VStack(alignment: .leading, spacing: 2) {
-            HStack {
-                Text(room.displayName)
-                Spacer()
-                Text("\(copyable) / \(items.count)")
-            }
+            ItemListItemView(item: item, style: .display)
+                .opacity(reason == nil ? 1 : 0.5)
 
-            ForEach(items) { item in
-                HStack {
-                    Text(item.displayName)
-                    Spacer()
-                    if let reason = viewModel.unavailableReason(for: item) {
-                        Text(reason)
-                    }
-                }
-                .font(.caption)
+            if let reason {
+                Text(reason)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                    .padding(.leading, 8)
             }
         }
     }
@@ -193,21 +216,23 @@ struct CopyFromInstalledListView: View {
     @ViewBuilder
     private var EssentialsSection: some View {
         if let group = viewModel.essentialsGroup {
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Essentials")
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Essentials:")
                     .font(.headline)
+                    .foregroundColor(.red)
 
-                HStack {
-                    Text("\(group.emoji) \(group.displayName)")
-                    Spacer()
-                    Text(viewModel.isEssentialsGroupCopyable ? "Available" : "Unavailable")
-                }
+                UninstallEssentialsSummaryView(
+                    group: group,
+                    items: viewModel.essentialsItems,
+                    accessories: viewModel.essentialsAccessories,
+                    destinationLabel: viewModel.isEssentialsGroupCopyable ? "Available" : "Unavailable"
+                )
 
-                // The group moves as one unit, so it's worth saying that a single
-                // unavailable member is what blocks the whole set.
+                // The group moves as one unit, so a single unavailable member blocks the whole set.
                 if !viewModel.isEssentialsGroupCopyable {
                     Text("The group, its items, and its accessories must all be in storage.")
                         .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
         }
@@ -218,9 +243,12 @@ struct CopyFromInstalledListView: View {
     private var Footer: some View {
         VStack(spacing: 8) {
             Text("\(viewModel.copyableItemCount) of \(viewModel.totalItemCount) items available")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
 
             RDButton(
                 variant: .red,
+                size: .default,
                 leadingIcon: SFSymbols.plus,
                 label: "Create Pull List",
                 fullWidth: true,
@@ -229,6 +257,7 @@ struct CopyFromInstalledListView: View {
                 showConfirmation = true
             }
         }
+        .padding(.bottom, 16)
     }
 
     // MARK: - Create
