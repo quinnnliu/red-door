@@ -22,8 +22,7 @@ struct CreateItemViewV2: View {
     // MARK: - Body
     var body: some View {
         ZStack {
-            VStack(spacing: 12) {
-
+            VStack(spacing: 8) {
                 TopBar()
                 
                 ScrollView {
@@ -34,6 +33,11 @@ struct CreateItemViewV2: View {
                             handleImageAction(action)
                         }
                     }
+                    
+                    ItemCountPicker
+                        .padding(8)
+                        .background(.gray)
+                        .cornerRadius(8)
 
                     EssentialsGroupRow
 
@@ -43,9 +47,7 @@ struct CreateItemViewV2: View {
                     )
 
                     StorageLocationRow
-                    
-                    ItemCountPicker
-                    
+                                        
                     ItemDetailsSection
                 }
                 .scrollIndicators(.hidden)

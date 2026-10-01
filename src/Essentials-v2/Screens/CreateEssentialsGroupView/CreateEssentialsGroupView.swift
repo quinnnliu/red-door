@@ -35,7 +35,7 @@ struct CreateEssentialsGroupView: View {
                 Spacer()
                 
                 RDButton(
-                    variant: .default,
+                    variant: .red,
                     size: .default,
                     leadingIcon: "plus",
                     label: "Create Essentials Group",
@@ -156,18 +156,26 @@ private extension CreateEssentialsGroupView {
 
             if viewModel.showNewTypeField {
                 HStack(spacing: 8) {
-                    TextField("Emoji (default ⭐️)", text: $viewModel.newGroupTypeEmoji)
-                        .multilineTextAlignment(.center)
-                        .padding(8)
-                        .background(Color(.systemGray5))
-                        .cornerRadius(Constants.CornerRadius.medium)
-                        .font(.caption)
-
-                    TextField("New type name", text: $viewModel.newGroupTypeName)
-                        .padding(8)
-                        .background(Color(.systemGray5))
-                        .cornerRadius(Constants.CornerRadius.medium)
-                        .font(.caption)
+                    VStack(spacing: 4) {
+                        Text("Emoji (default ⭐️)")
+                            .font(.caption)
+                        TextField("", text: $viewModel.newGroupTypeEmoji)
+                            .multilineTextAlignment(.center)
+                            .padding(8)
+                            .background(Color(.systemGray5))
+                            .cornerRadius(Constants.CornerRadius.medium)
+                            .font(.caption2)
+                    }
+                    
+                    VStack(spacing: 4) {
+                        Text("New Type Name")
+                            .font(.caption)
+                        TextField("Enter Name", text: $viewModel.newGroupTypeName)
+                            .padding(8)
+                            .background(Color(.systemGray5))
+                            .cornerRadius(Constants.CornerRadius.medium)
+                            .font(.caption)
+                    }
 
                     RDButton(variant: .default, size: .sm, label: "Create", fullWidth: false) {
                         withAnimation(Constants.Animation.snappy) {
@@ -178,7 +186,7 @@ private extension CreateEssentialsGroupView {
                 }
             }
 
-            if let selected = viewModel.selectedGroupType {
+            if let selected = viewModel.selectedGroupType, viewModel.showNewTypeField {
                 HStack {
                     Text("\(selected.emoji) \(selected.displayName)")
                         .font(.body)

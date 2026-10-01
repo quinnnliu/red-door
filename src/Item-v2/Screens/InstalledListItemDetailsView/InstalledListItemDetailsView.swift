@@ -151,15 +151,6 @@ struct InstalledListItemDetailsView: View {
                     }
                 }
             }
-
-            HStack(alignment: .center, spacing: 0) {
-                Text("ID: ")
-                    .foregroundColor(.red)
-                    .bold()
-
-                Text(viewModel.itemState.id)
-                    .font(.caption)
-            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(8)

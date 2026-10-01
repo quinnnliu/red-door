@@ -15,6 +15,8 @@ struct SelectAccessoriesSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel: DocumentListViewModelV2<Accessories>
     @State private var searchFocused: Bool = false
+    @State private var showFilterSheet: Bool = false
+    @State private var accessoriesTypes: [AccessoriesType] = []
 
     private let title: String
     private let action: (Any?) -> Void
@@ -50,6 +52,18 @@ struct SelectAccessoriesSheet: View {
         .task {
             await viewModel.refresh()
         }
+        .task {
+            accessoriesTypes = (try? await ConfigurationService.shared.getAll(using: AccessoriesTypeRepository())) ?? []
+        }
+        .sheet(isPresented: $showFilterSheet) {
+            // Status is pinned by the default filters, so only the type filter is offered.
+            AccessoriesDocumentFilterSheet(
+                action: handleAction(_:),
+                initialFilters: viewModel.activeFilters,
+                availableTypes: accessoriesTypes,
+                showsStatus: false
+            )
+        }
     }
 }
 
@@ -68,9 +82,14 @@ private extension SelectAccessoriesSheet {
                 EmptyView()
             },
             trailingView: {
-                RDButton(variant: .outline, size: .icon, leadingIcon: SFSymbols.magnifyingglass, fullWidth: false) {
-                    withAnimation(Constants.Animation.snappy) {
-                        searchFocused = true
+                HStack(spacing: 8) {
+                    RDButton(variant: viewModel.activeFiltersApplied ? .red : .outline, size: .icon, leadingIcon: SFSymbols.sliderHorizontal3, fullWidth: false) {
+                        showFilterSheet = true
+                    }
+                    RDButton(variant: .outline, size: .icon, leadingIcon: SFSymbols.magnifyingglass, fullWidth: false) {
+                        withAnimation(Constants.Animation.snappy) {
+                            searchFocused = true
+                        }
                     }
                 }
             }
@@ -100,6 +119,11 @@ private extension SelectAccessoriesSheet {
         switch emittedAction {
         case let searchAction as SearchBarAction:
             Task { await viewModel.handleSearchAction(searchAction) }
+        case let filterAction as DocumentFilterSheetAction:
+            switch filterAction {
+            case .applyFilters(let filters):
+                Task { await viewModel.setFilters(filters) }
+            }
         case let sectionAction as DocumentListSectionAction:
             switch sectionAction {
             case .loadMore:

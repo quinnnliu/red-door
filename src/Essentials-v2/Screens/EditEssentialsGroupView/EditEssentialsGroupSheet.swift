@@ -13,14 +13,19 @@ struct EditEssentialsGroupSheet: View {
 
     private let essentialsRepo: EssentialsRepository
     private let originalTypeId: String
+    private let onDelete: () -> Void
 
     @State private var editingGroup: EssentialsGroup
+    private var originalGroup: EssentialsGroup
 
     init(
         group: EssentialsGroup,
         viewModel: EditEssentialsGroupViewModel,
-        essentialsRepo: EssentialsRepository
+        essentialsRepo: EssentialsRepository,
+        onDelete: @escaping () -> Void = {}
     ) {
+        self.onDelete = onDelete
+        self.originalGroup = group
         self.originalTypeId = group.essentialsTypeId
         self._editingGroup = State(initialValue: group)
         self._viewModel = State(initialValue: viewModel)
@@ -34,20 +39,36 @@ struct EditEssentialsGroupSheet: View {
             VStack(spacing: 12) {
                 DragIndicator()
                 
-                TopBar
-
+                VStack(alignment: .center, spacing: 6) {
+                    TopBar
+                    NicknameEntry
+                }
+                
                 GroupTypeSection
 
                 Spacer()
                 
-                RDButton(
-                    variant: .red,
-                    size: .default,
-                    leadingIcon: "checkmark",
-                    label: "Save",
-                    fullWidth: false
-                ) {
-                    saveGroup()
+                HStack(spacing: 12) {
+                    RDButton(
+                        variant: .default,
+                        size: .default,
+                        leadingIcon: "trash",
+                        label: "Delete",
+                        fullWidth: false
+                    ) {
+                        deleteGroup()
+                    }
+                    .disabled(!originalGroup.itemIds.isEmpty)
+
+                    RDButton(
+                        variant: .red,
+                        size: .default,
+                        leadingIcon: "checkmark",
+                        label: "Save",
+                        fullWidth: false
+                    ) {
+                        saveGroup()
+                    }
                 }
             }
             .toolbar(.hidden)
@@ -96,6 +117,7 @@ struct EditEssentialsGroupSheet: View {
         editingGroup.essentialsTypeId = type.id
         editingGroup.baseName = type.displayName
         editingGroup.baseNameLowercased = type.displayName.lowercased()
+        editingGroup.emoji = type.emoji
     }
 
     // MARK: - Top Bar
@@ -105,11 +127,9 @@ struct EditEssentialsGroupSheet: View {
                 Spacer().frame(24)
             },
             header: {
-                VStack(alignment: .center, spacing: 6) {
-                    Text(editingGroup.displayName)
-                        .font(.headline)
-                    NicknameEntry
-                }
+                Text("Editing Essentials Group")
+                    .bold()
+                    .foregroundStyle(.red)
             },
             trailingView: {
                 Spacer().frame(24)
@@ -127,6 +147,24 @@ struct EditEssentialsGroupSheet: View {
         .font(.caption)
         .foregroundStyle(.secondary)
         .multilineTextAlignment(.center)
+    }
+
+    // MARK: - Delete
+
+    private func deleteGroup() {
+        guard originalGroup.itemIds.isEmpty else { return }
+        Task {
+            viewModel.isLoading = true
+            do {
+                try await essentialsRepo.delete(id: editingGroup.id)
+                viewModel.isLoading = false
+                dismiss()
+                onDelete()
+            } catch {
+                viewModel.isLoading = false
+                print("Error deleting essentials group: \(error)")
+            }
+        }
     }
 
     // MARK: - Save
@@ -209,7 +247,7 @@ private extension EditEssentialsGroupSheet {
             }
 
             HStack {
-                Text("\(viewModel.groupTypes.first(where: { $0.id == editingGroup.essentialsTypeId })?.emoji ?? "⭐️") \(editingGroup.displayName)")
+                Text("\(viewModel.groupTypes.first(where: { $0.id == editingGroup.essentialsTypeId })?.emoji ?? "⭐️") \(editingGroup.baseName)")
                     .font(.body)
                     .bold()
                 Spacer()

@@ -171,14 +171,16 @@ private extension ItemListItemView {
                     }
                     .buttonStyle(.plain)
                 case .essentialsGroup:
-                    Button {
-                        action(ItemListItemAction.removeItem(item))
-                    } label: {
-                        Image(systemName: SFSymbols.xmark)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                    if item.location.status.isAvailable {
+                        Button {
+                            action(ItemListItemAction.removeItem(item))
+                        } label: {
+                            Image(systemName: SFSymbols.xmark)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 case .addToDocument, .installation:
                     Button {
                         action(
