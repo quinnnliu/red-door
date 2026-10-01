@@ -12,6 +12,7 @@ struct EnumGridPicker<T: Hashable>: View {
     let items: [T]
     let label: (T) -> String
     let color: (T) -> Color?
+    let icon: (T) -> String?
     
     private let columns = Array(repeating: GridItem(.flexible()), count: 5)
     
@@ -34,6 +35,9 @@ struct EnumGridPicker<T: Hashable>: View {
                                         .stroke(Color.gray.opacity(0.5), lineWidth: 1)
                                         .padding(2)
                                 )
+                        } else if let itemIcon = icon(item)  {
+                            Image(systemName: itemIcon)
+                                .font(.system(size: 16))
                         }
                         
                         Text(label(item))

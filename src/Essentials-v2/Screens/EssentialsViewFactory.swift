@@ -23,10 +23,10 @@ struct EssentialsViewFactory {
         return CreateEssentialsGroupView(viewModel: vm)
     }
 
-    func makeEditEssentialsGroupSheet(group: EssentialsGroup) -> EditEssentialsGroupSheet {
+    func makeEditEssentialsGroupSheet(group: EssentialsGroup, onDelete: @escaping () -> Void = {}) -> EditEssentialsGroupSheet {
         let vm = EditEssentialsGroupViewModel(
             essentialsGroupTypeRepo: essentialsGroupTypeRepo
         )
-        return EditEssentialsGroupSheet(group: group, viewModel: vm, essentialsRepo: essentialsRepo)
+        return EditEssentialsGroupSheet(group: group, viewModel: vm, essentialsRepo: essentialsRepo, onDelete: onDelete)
     }
 }

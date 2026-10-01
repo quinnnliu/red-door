@@ -19,6 +19,7 @@ struct AccessoriesDocumentFilterSheet: View {
     // MARK: - Data
 
     let availableTypes: [AccessoriesType]
+    let showsStatus: Bool
 
     // MARK: - Filter Keys
 
@@ -30,9 +31,11 @@ struct AccessoriesDocumentFilterSheet: View {
     init(
         action: @escaping (Any?) -> Void,
         initialFilters: [String: AnyHashable] = [:],
-        availableTypes: [AccessoriesType] = []
+        availableTypes: [AccessoriesType] = [],
+        showsStatus: Bool = true
     ) {
         self.action = action
+        self.showsStatus = showsStatus
         self.availableTypes = availableTypes
         _selectedStatus = State(initialValue: (initialFilters[Self.statusKey] as? String).flatMap(LocationStatus.init(rawValue:)))
         let typeId = initialFilters[Self.typeKey] as? String
@@ -50,7 +53,9 @@ struct AccessoriesDocumentFilterSheet: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
-                    FilterPickerRow(selectedItem: $selectedStatus, items: LocationStatus.allCases, title: "Status")
+                    if showsStatus {
+                        FilterPickerRow(selectedItem: $selectedStatus, items: LocationStatus.allCases, title: "Status")
+                    }
                     FilterDocumentPickerRow(title: "Type", selection: $selectedType, options: availableTypes)
                 }
             }

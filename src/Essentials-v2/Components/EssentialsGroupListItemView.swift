@@ -71,11 +71,18 @@ struct EssentialsGroupListItemView: View {
                 .font(.footnote)
                 .foregroundStyle(.secondary)
             }
-
-            Spacer()
         }
-        .padding(8)
-        .background(Color(.systemGray5))
-        .cornerRadius(Constants.CornerRadius.large)
+    }
+    
+    // MARK: TrailingContent
+    private var TrailingContent: some View {
+        SmallCTA(
+            isButton: false,
+            type: group.location.status.isAvailable ? .secondary: .red,
+            size: .small,
+            leadingIcon: group.location.status.icon,
+            text: group.location.status.displayTitle,
+            semibold: false
+        )
     }
 }

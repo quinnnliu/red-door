@@ -94,7 +94,7 @@ struct ItemDetailSection: View {
                 .foregroundColor(.red)
                 .bold()
             
-            Text(viewModel.itemState.id)
+            Text(item.id)
                 .font(.caption)
         }
     }

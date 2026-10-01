@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct EssentialsGroupDetailView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var viewModel: EssentialsGroupDetailViewModel
     @State private var showAddItemsSheet: Bool = false
     @State private var showEditSheet: Bool = false
@@ -26,28 +27,29 @@ struct EssentialsGroupDetailView: View {
     var body: some View {
         VStack(spacing: 16) {
             TopBar
-                .frameHorizontalPadding()
 
-            ScrollView {
-                VStack(spacing: 16) {
-                    DetailsSection
-
-                    ItemList
-                }
-                .frameHorizontalPadding()
-            }
-
+            LocationRow
+            
             AccessoriesSection
-                .frameHorizontalPadding()
-
-            SmallCTA(type: .red, leadingIcon: SFSymbols.pencilAndListClipboard, text: "Assign to Pull List") {
-                showAssignToPullListSheet = true
+            
+            ItemList
+                
+            RDButton(
+                variant: .red,
+                size: .default,
+                leadingIcon: SFSymbols.pencilAndListClipboard,
+                label: "Assign to Pull List",
+                fullWidth: true
+            ) {
+                    showAssignToPullListSheet = true
             }
             .disabled(!viewModel.groupState.location.status.isAvailable)
-            .frameHorizontalPadding()
         }
+        .frameTop()
+        .frameHorizontalPadding()
+        .frameBottomPadding()
         .sheet(isPresented: $showEditSheet) {
-            EssentialsViewFactory().makeEditEssentialsGroupSheet(group: viewModel.groupState)
+            EssentialsViewFactory().makeEditEssentialsGroupSheet(group: viewModel.groupState, onDelete: { dismiss() })
         }
         .sheet(isPresented: $showAddItemsSheet) {
             AddItemToDocumentSheetV2(
@@ -93,7 +95,6 @@ struct EssentialsGroupDetailView: View {
             viewModel.startListening()
         }
         .toolbar(.hidden)
-        .frameTop()
     }
 }
 
@@ -106,9 +107,14 @@ private extension EssentialsGroupDetailView {
                 BackButton()
             },
             header: {
-                Text("Essentials Group")
-                    .bold()
-                    .foregroundStyle(.red)
+                (
+                    Text("Essentials: ")
+                        .bold()
+                        .foregroundStyle(.red)
+                    +
+                    Text("\(viewModel.groupState.emoji) \(viewModel.groupState.displayName)")
+                        .bold()
+                )
             },
             trailingView: {
                 RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.pencil) {
@@ -121,38 +127,25 @@ private extension EssentialsGroupDetailView {
     }
 }
 
-// MARK: - Information
+// MARK - LocationRow
 private extension EssentialsGroupDetailView {
-    var DetailsSection: some View {
-        VStack {
-            Text("\(viewModel.groupState.emoji) \(viewModel.groupState.displayName)")
-                .font(.headline)
-                .bold()
-                .frame(maxWidth: .infinity, alignment: .leading)
-            
-            DetailsText(label: "Location", text: viewModel.groupState.location.status.displayTitle)
-            
-            ForEach(Array(getCategoryCounts()), id: \.key) { key, value in
-                DetailsText(label: key, text: String(value))
-            }
-        }
-    }
-    
-    func DetailsText(label: String, text: String) -> some View {
+    var LocationRow: some View {
         HStack {
-            Text("\(label):")
+            Text("Location")
+                .bold()
+                .foregroundStyle(.red)
             
-            Text(text)
+            Spacer()
+            
+            SmallCTA(
+                isButton: false,
+                type: viewModel.groupState.location.status.isAvailable ? .secondary: .red,
+                size: .small,
+                leadingIcon: viewModel.groupState.location.status.icon,
+                text: viewModel.groupState.location.status.displayTitle,
+                semibold: false
+            )
         }
-    }
-    
-    func getCategoryCounts() -> [String: Int] {
-        var categoryCounts: [String: Int] = [:]
-        viewModel.items.forEach {
-            let key = $0.type.rawValue
-            categoryCounts[key, default: 0] += 1
-        }
-        return categoryCounts
     }
 }
 
@@ -160,31 +153,37 @@ private extension EssentialsGroupDetailView {
 
 private extension EssentialsGroupDetailView {
     var ItemList: some View {
-        VStack {
-            HStack {
-                Text("Items")
-                    .foregroundStyle(.red)
-                    .font(.headline)
-                
-                Spacer()
-                
-                SmallCTA(type: .red, leadingIcon: SFSymbols.plus, text: "Add Items") {
-                    showAddItemsSheet = true
+        ScrollView {
+            VStack(spacing: 16) {
+                HStack {
+                    Text("Items")
+                        .foregroundStyle(.red)
+                        .font(.headline)
+                    
+                    Spacer()
+                    
+                    SmallCTA(type: .red, leadingIcon: SFSymbols.plus, text: "Add Items") {
+                        showAddItemsSheet = true
+                    }
+                    .disabled(!viewModel.groupState.location.status.isAvailable)
                 }
-                .disabled(!viewModel.groupState.location.status.isAvailable)
-            }
-            
-            LazyVStack(spacing: 8) {
-                ForEach(groupedItems, id: \.type) { group in
-                    ExpandableSectionView(style: .essentialsItemTypeGroup(type: group.type, count: group.items.count)) {
-                        VStack(spacing: 8) {
-                            ForEach(group.items, id: \.id) { item in
-                                ItemListItemView(item: item, style: .essentialsGroup, action: handleAction(_:))
+                
+                LazyVStack(spacing: 8) {
+                    ForEach(groupedItems, id: \.type) { group in
+                        ExpandableSectionView(
+                            style: .essentialsItemTypeGroup(type: group.type, count: group.items.count),
+                            isExpanded: false
+                        ) {
+                            VStack(spacing: 8) {
+                                ForEach(group.items, id: \.id) { item in
+                                    ItemListItemView(item: item, style: .essentialsGroup, action: handleAction(_:))
+                                }
                             }
                         }
                     }
                 }
             }
+
         }
     }
 
