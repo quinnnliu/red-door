@@ -20,7 +20,7 @@ final class CreatePullListViewModelV2 {
     var alertText: String = ""
     
     var createButtonDisabled: Bool {
-        return pullListState.uninstallDate < .now || pullListState.roomIds.isEmpty || pullListState.clientId.isEmpty || pullListState.installDate < pullListState.uninstallDate
+        return pullListState.uninstallDate < .now || pullListState.roomIds.isEmpty || pullListState.clientId.isEmpty || pullListState.installDate > pullListState.uninstallDate
     }
     
     init() {

@@ -186,7 +186,7 @@ private extension CreateEssentialsGroupView {
                 }
             }
 
-            if let selected = viewModel.selectedGroupType, viewModel.showNewTypeField {
+            if let selected = viewModel.selectedGroupType, !viewModel.showNewTypeField {
                 HStack {
                     Text("\(selected.emoji) \(selected.displayName)")
                         .font(.body)
