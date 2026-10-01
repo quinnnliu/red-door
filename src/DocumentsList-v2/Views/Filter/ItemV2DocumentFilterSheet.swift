@@ -30,7 +30,7 @@ struct ItemV2DocumentFilterSheet: View {
     private static let typeKey      = ItemV2.CodingKeys.type.stringValue
     private static let colorKey     = ItemV2.CodingKeys.color.stringValue
     private static let materialKey  = ItemV2.CodingKeys.material.stringValue
-    private static let statusKey    = "\(ItemV2.CodingKeys.location.stringValue).\(DocumentLocation.CodingKeys.status.stringValue)"
+    private static let statusKey    = DocumentLocation.statusFilterKey
     private static let attentionKey = ItemV2.CodingKeys.attention.stringValue
     private static let groupKey     = ItemV2.CodingKeys.essentialGroupId.stringValue
 
@@ -99,7 +99,7 @@ struct ItemV2DocumentFilterSheet: View {
                         if lockedFilterKeys.contains(Self.groupKey) {
                             LockedFilterRow(title: "Essentials Group", value: selectedGroup?.displayName ?? "Any")
                         } else {
-                            EssentialsGroupRow
+                            FilterDocumentPickerRow(title: "Essentials Group", selection: $selectedGroup, options: availableGroups)
                         }
                     }
                 }
@@ -165,28 +165,6 @@ private extension ItemV2DocumentFilterSheet {
                     )
             }
             .buttonStyle(.plain)
-        }
-        .padding(.vertical, 12)
-        .overlay(alignment: .bottom) {
-            Divider()
-        }
-    }
-
-    var EssentialsGroupRow: some View {
-        HStack {
-            Text("Essentials Group")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundStyle(.primary)
-            Spacer()
-            Picker("", selection: $selectedGroup) {
-                Text("Any").tag(Optional<EssentialsGroup>.none)
-                ForEach(availableGroups) { group in
-                    Text(group.displayName).tag(Optional(group))
-                }
-            }
-            .pickerStyle(.menu)
-            .tint(selectedGroup != nil ? .red : .secondary)
         }
         .padding(.vertical, 12)
         .overlay(alignment: .bottom) {

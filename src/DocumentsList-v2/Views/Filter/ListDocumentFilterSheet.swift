@@ -1,5 +1,5 @@
 //
-//  PullListV2DocumentFilterSheet.swift
+//  ListDocumentFilterSheet.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 6/23/26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct PullListV2DocumentFilterSheet: View {
+struct ListDocumentFilterSheet: View {
     @Environment(\.dismiss) private var dismiss
     var action: (Any?) -> Void
 
@@ -18,15 +18,28 @@ struct PullListV2DocumentFilterSheet: View {
     @State private var selectedState: NewEnglandState?
     @State private var selectedTown: String
 
+    // MARK: - Data
+
+    private let title: String
+
+    // MARK: - Filter Keys
+
+    // `PullListV2` and `InstalledListV2` share these Firestore field names.
+    private static let installDateKey   = PullListV2.CodingKeys.installDate.stringValue
+    private static let uninstallDateKey = PullListV2.CodingKeys.uninstallDate.stringValue
+    private static let stateKey         = Address.firestoreKey(.state)
+    private static let townKey          = Address.firestoreKey(.town)
+
     // MARK: - Init
 
-    init(initialFilters: [String: AnyHashable] = [:], action: @escaping (Any?) -> Void) {
+    init(title: String, initialFilters: [String: AnyHashable] = [:], action: @escaping (Any?) -> Void) {
+        self.title = title
         self.action = action
 
-        _selectedInstallDate = State(initialValue: initialFilters[PullListV2.CodingKeys.installDate.stringValue] as? Date)
-        _selectedUninstallDate = State(initialValue: initialFilters[PullListV2.CodingKeys.uninstallDate.stringValue] as? Date)
-        _selectedState = State(initialValue: (initialFilters[Address.firestoreKey(.state)] as? String).flatMap(NewEnglandState.init(rawValue:)))
-        _selectedTown = State(initialValue: initialFilters[Address.firestoreKey(.town)] as? String ?? "")
+        _selectedInstallDate = State(initialValue: initialFilters[Self.installDateKey] as? Date)
+        _selectedUninstallDate = State(initialValue: initialFilters[Self.uninstallDateKey] as? Date)
+        _selectedState = State(initialValue: (initialFilters[Self.stateKey] as? String).flatMap(NewEnglandState.init(rawValue:)))
+        _selectedTown = State(initialValue: initialFilters[Self.townKey] as? String ?? "")
     }
 
     // MARK: - Body
@@ -57,14 +70,14 @@ struct PullListV2DocumentFilterSheet: View {
 
 // MARK: - Subviews
 
-private extension PullListV2DocumentFilterSheet {
+private extension ListDocumentFilterSheet {
     var TopBar: some View {
         TopAppBar(
             leadingView: {
                 BackButton(icon: SFSymbols.xmark)
             },
             header: {
-                Text("Filter Pull Lists")
+                Text(title)
                     .font(.headline)
                     .foregroundStyle(.red)
             },
@@ -159,7 +172,7 @@ private struct DateFilterRow: View {
 
 // MARK: - Actions
 
-private extension PullListV2DocumentFilterSheet {
+private extension ListDocumentFilterSheet {
 
     var hasActiveFilters: Bool {
         selectedInstallDate != nil
@@ -173,16 +186,16 @@ private extension PullListV2DocumentFilterSheet {
         // Match how the field is stored: `@DayGranular` pins list dates to the
         // start of their day, so the filter value has to be pinned the same way.
         if let install = selectedInstallDate {
-            filters[PullListV2.CodingKeys.installDate.stringValue] = Calendar.current.startOfDay(for: install)
+            filters[Self.installDateKey] = Calendar.current.startOfDay(for: install)
         }
         if let uninstall = selectedUninstallDate {
-            filters[PullListV2.CodingKeys.uninstallDate.stringValue] = Calendar.current.startOfDay(for: uninstall)
+            filters[Self.uninstallDateKey] = Calendar.current.startOfDay(for: uninstall)
         }
         if let state = selectedState {
-            filters[Address.firestoreKey(.state)] = state.rawValue
+            filters[Self.stateKey] = state.rawValue
         }
         if !selectedTown.isEmpty {
-            filters[Address.firestoreKey(.town)] = selectedTown.lowercased()
+            filters[Self.townKey] = selectedTown.lowercased()
         }
         return filters
     }

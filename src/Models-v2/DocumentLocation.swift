@@ -24,6 +24,11 @@ extension DocumentLocation {
 }
 
 extension DocumentLocation {
+    /// Firestore dot-notation key for filtering documents by `location.status`.
+    static let statusFilterKey = "location.\(CodingKeys.status.stringValue)"
+}
+
+extension DocumentLocation {
       /// Firestore dot-notation fields for updating a nested `location` field in place.
       var firebaseUpdateFields: [String: Any] {
           [
