@@ -14,7 +14,9 @@ final class AddItemToRoomDetailViewModel {
     let itemRepo: ItemRepository = .init()
     var room: RoomV2
     let item: ItemV2
-    
+    private let essentialsRepo: EssentialsRepository = .init()
+    var essentialsGroup: EssentialsGroup?
+
     var isLoading: Bool = false
     
     var selectedRDImage: RDImage?
@@ -33,6 +35,12 @@ final class AddItemToRoomDetailViewModel {
 }
 
 extension AddItemToRoomDetailViewModel {
+    func loadEssentialsGroup() async {
+        guard let groupId = item.essentialGroupId else { return }
+        do { essentialsGroup = try await essentialsRepo.get(id: groupId) }
+        catch { print("error loading essentials group: \(error)") }
+    }
+
     @MainActor
     func addItemToRoom() async -> Bool {
         do {

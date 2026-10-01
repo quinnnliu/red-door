@@ -21,6 +21,7 @@ final class InstalledListItemDetailsViewModel {
     var availableStorageLocations: [StorageLocation] = []
     
     var uninstalled: Bool
+    var essentialsGroup: EssentialsGroup?
 
     // MARK: - Properties
 
@@ -30,6 +31,7 @@ final class InstalledListItemDetailsViewModel {
     private let installedListRepo: InstalledListRepository = InstalledListRepository()
     private let roomRepo: RoomRepository<InstalledListV2>
     private let itemRepo: ItemRepository = ItemRepository()
+    private let essentialsRepo: EssentialsRepository = .init()
 
     // MARK: - Initialization
 
@@ -43,6 +45,14 @@ final class InstalledListItemDetailsViewModel {
         self.room = room
         self.uninstalled = uninstalled
         self.roomRepo = roomRepo
+    }
+
+    // MARK: - loadEssentialsGroup
+
+    func loadEssentialsGroup() async {
+        guard let groupId = itemState.essentialGroupId else { return }
+        do { essentialsGroup = try await essentialsRepo.get(id: groupId) }
+        catch { print("error loading essentials group: \(error)") }
     }
 
     // MARK: - fetchAvailableStorageLocations

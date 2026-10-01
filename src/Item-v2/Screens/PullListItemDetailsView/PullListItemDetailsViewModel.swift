@@ -20,6 +20,7 @@ final class PullListItemDetailsViewModel {
 	var rooms: [RoomV2] = []
 	var availableStorageLocations: [StorageLocation] = []
 	var isLoadingMoveData = false
+    var essentialsGroup: EssentialsGroup?
 
 	// MARK: - Properties
 
@@ -29,6 +30,7 @@ final class PullListItemDetailsViewModel {
     private let listRepo: PullListRepository = PullListRepository()
 	private let roomRepo: RoomRepository<PullListV2>
     private let itemRepo: ItemRepository = ItemRepository()
+    private let essentialsRepo: EssentialsRepository = .init()
 
 	// MARK: - Initialization
 
@@ -43,6 +45,12 @@ final class PullListItemDetailsViewModel {
 
 
 	// MARK: - Actions
+
+    func loadEssentialsGroup() async {
+        guard let groupId = itemState.essentialGroupId else { return }
+        do { essentialsGroup = try await essentialsRepo.get(id: groupId) }
+        catch { print("error loading essentials group: \(error)") }
+    }
 
     func fetchAvailableStorageLocations() async {
         do {

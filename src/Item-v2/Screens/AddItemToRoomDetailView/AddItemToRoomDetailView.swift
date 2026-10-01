@@ -12,7 +12,6 @@ struct AddItemToRoomDetailView: View {
     @Environment(\.dismiss) private var dismiss
     
     @State private var viewModel: AddItemToRoomDetailViewModel
-    @State private var showInformation: Bool = false
     
     init(
         item: ItemV2,
@@ -39,34 +38,11 @@ struct AddItemToRoomDetailView: View {
                             isImageSelected: $viewModel.isImageSelected
                         )
                         
-                        VStack(spacing: 12) {
-                            Button {
-                                withAnimation(Constants.Animation.snappy) {
-                                    showInformation.toggle()
-                                }
-                            } label: {
-                                HStack(spacing: 0) {
-                                    Text("Information")
-                                        .foregroundColor(.white)
-                                        .bold()
-                                    
-                                    Spacer()
-                                    
-                                    Image(systemName: showInformation ? SFSymbols.chevronUp : SFSymbols.chevronDown)
-                                        .foregroundColor(.white)
-                                }
-                                .padding(8)
-                                .background(.red)
-                                .cornerRadius(Constants.CornerRadius.small)
-                            }
-                            
-                            if showInformation {
-                                ItemDetailSection(item: viewModel.item)
-                                    .transition(.opacity.combined(with: .move(edge: .top)))
-                            }
-                            
-                            
-                        }
+                        ItemDetailSection(
+                            item: viewModel.item,
+                            essentialsGroup: viewModel.essentialsGroup
+                        )
+                        .task { await viewModel.loadEssentialsGroup() }
                     }
                     .padding(.top, 4)
                     .frameHorizontalPadding()

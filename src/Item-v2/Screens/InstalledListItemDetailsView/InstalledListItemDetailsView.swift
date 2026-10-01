@@ -33,7 +33,11 @@ struct InstalledListItemDetailsView: View {
 
                         ItemDetails
 
-                        ItemDetailSection(item: viewModel.itemState)
+                        ItemDetailSection(
+                            item: viewModel.itemState,
+                            essentialsGroup: viewModel.essentialsGroup
+                        )
+                        .task { await viewModel.loadEssentialsGroup() }
                     }
                     .padding(.top, 4)
                     .frameHorizontalPadding()
@@ -155,25 +159,6 @@ struct InstalledListItemDetailsView: View {
 
                 Text(viewModel.itemState.id)
                     .font(.caption)
-            }
-
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(alignment: .center, spacing: 4) {
-                    Text("Needs Attention: ")
-                        .foregroundColor(.red)
-                        .bold()
-
-                    Image(systemName: SFSymbols.exclamationmarkTriangleFill)
-                        .foregroundColor(viewModel.itemState.attention ? .yellow : .gray)
-                }
-
-                if let attentionDescription = viewModel.itemState.attentionDescription, viewModel.itemState.attention {
-                    Text(attentionDescription)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(8)
-                        .background(Color(.systemGray5))
-                        .cornerRadius(Constants.CornerRadius.small)
-                }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -18,6 +18,7 @@ final class ItemDetailViewModel {
 
     // MARK: Essentials
     var availableGroups: [EssentialsGroup] = []
+    var essentialsGroup: EssentialsGroup? = nil
 
     // MARK: View State
     var isLoading: Bool = false
@@ -61,6 +62,17 @@ final class ItemDetailViewModel {
     func loadGroups() async {
         do { availableGroups = try await essentialsRepo.getAll() }
         catch { print("error loading groups: \(error)") }
+    }
+
+    // MARK: - loadEssentialsGroup
+
+    func loadEssentialsGroup() async {
+        guard let groupId = itemState.essentialGroupId else {
+            essentialsGroup = nil
+            return
+        }
+        do { essentialsGroup = try await essentialsRepo.get(id: groupId) }
+        catch { print("error loading essentials group: \(error)") }
     }
 
     // MARK: - updateItem

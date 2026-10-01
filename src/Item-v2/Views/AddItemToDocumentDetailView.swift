@@ -11,8 +11,8 @@ struct AddItemToDocumentDetailView: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var viewModel: AddItemToDocumentDetailViewModel
-    @State private var showInformation: Bool = false
     @State private var showMoveRoomSheet: Bool = false
+    @State private var showQRCodeSheet: Bool = false
 
     init(item: ItemV2, destination: AddItemsToListableDestination) {
         viewModel = AddItemToDocumentDetailViewModel(item: item, destination: destination)
@@ -31,35 +31,13 @@ struct AddItemToDocumentDetailView: View {
                     VStack(spacing: 12) {
                         PrimaryImageView(image: viewModel.item.primaryImage)
 
-                        VStack(spacing: 12) {
-                            Button {
-                                withAnimation(Constants.Animation.snappy) {
-                                    showInformation.toggle()
-                                }
-                            } label: {
-                                HStack(spacing: 0) {
-                                    Text("Information")
-                                        .foregroundColor(.white)
-                                        .bold()
-
-                                    Spacer()
-
-                                    Image(systemName: showInformation ? SFSymbols.chevronUp : SFSymbols.chevronDown)
-                                        .foregroundColor(.white)
-                                }
-                                .padding(8)
-                                .background(.red)
-                                .cornerRadius(Constants.CornerRadius.small)
-                            }
-
-                            if showInformation {
-                                ItemDetailSection(item: viewModel.item)
-                                    .transition(.opacity.combined(with: .move(edge: .top)))
-                            }
-                        }
+                        ItemDetailSection(
+                            item: viewModel.item,
+                            essentialsGroup: viewModel.essentialsGroup
+                        )
+                        .task { await viewModel.loadEssentialsGroup() }
                     }
                     .padding(.top, 4)
-                    .frameHorizontalPadding()
                 }
 
                 Spacer(minLength: .zero)
@@ -82,6 +60,9 @@ struct AddItemToDocumentDetailView: View {
             .toolbar(.hidden)
             .alert(viewModel.alertText, isPresented: $viewModel.showAlert) {
                 Button("OK") { }
+            }
+            .fullScreenCover(isPresented: $showQRCodeSheet) {
+                ItemV2LabelView(item: viewModel.item)
             }
             .sheet(isPresented: $showMoveRoomSheet) {
                 if case .room(let room, let listKind) = viewModel.destination {
@@ -114,7 +95,10 @@ struct AddItemToDocumentDetailView: View {
                 }
             },
             trailingView: {
-                EmptyView()
+                RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.qrcode) {
+                    showQRCodeSheet = true
+                }
+                .clipShape(.circle)
             }
         )
     }

@@ -431,50 +431,11 @@ private extension PullListDetailsViewV2 {
                 ) {
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                         ForEach(items, id: \.self) { item in
-                            RoomItemPreview(item, room: room)
+                            RoomItemPreview(item, action: handleAction)
                         }
                     }
                 }
             }
-        }
-    }
-}
-
-private extension PullListDetailsViewV2 {
-    func RoomItemPreview(_ item: ItemV2, room: RoomV2) -> some View {
-        Button {
-            coordinator.appendToSelectedPath(NavigationDestination.pullListItemDetailView(item: item, room: room))
-        } label: {
-            HStack(alignment: .center, spacing: 12) {
-                PrimaryImageView(image: item.primaryImage, size: Constants.Image.listItemDefault, isExpandable: false)
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(item.displayName)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-
-                    HStack(spacing: 4) {
-                        Image(systemName: item.type.icon ?? SFSymbols.ellipsis)
-                            .foregroundColor(.secondary)
-
-                        if let color = item.color.color {
-                            Image(systemName: SFSymbols.circleFill)
-                                .foregroundColor(color)
-                        }
-                    }
-                    .font(.caption)
-                }
-
-                Spacer(minLength: 0)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 6)
-                    .stroke(item.attention ? Color.yellow.opacity(0.75) : item.location.status == .inStorage ? Color(.systemGray3) : Color.red, lineWidth: 2)
-            )
         }
     }
 }
@@ -516,6 +477,15 @@ private extension PullListDetailsViewV2 {
                 viewModel.refreshRoom(roomId)
             default:
                 break
+            }
+        }
+
+        if let previewAction = actionArgument as? RoomItemPreviewAction {
+            switch previewAction {
+            case .navigate(let item):
+                if let room = viewModel.rooms.first(where: { viewModel.itemsByRoom[$0.id]?.contains(item) == true }) {
+                    coordinator.appendToSelectedPath(NavigationDestination.pullListItemDetailView(item: item, room: room))
+                }
             }
         }
 

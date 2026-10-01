@@ -34,6 +34,7 @@ struct ItemV2: RDDocument {
     @NullEncodable var essentialGroupId: String?
     var itemNumber: Int
     var nickname: String?
+    var dimensions: ItemDimensions?
 
     init(
         id: String,
@@ -55,7 +56,8 @@ struct ItemV2: RDDocument {
         description: String,
         essentialGroupId: String? = nil,
         itemNumber: Int = 0,
-        nickname: String? = nil
+        nickname: String? = nil,
+        dimensions: ItemDimensions? = nil
     ) {
         self.id = id
         self.modelId = modelId
@@ -78,6 +80,7 @@ struct ItemV2: RDDocument {
         self.essentialGroupId = essentialGroupId
         self.itemNumber = itemNumber
         self.nickname = nickname
+        self.dimensions = dimensions
     }
 
     init(item: ItemV2) {
@@ -102,6 +105,7 @@ struct ItemV2: RDDocument {
         self.essentialGroupId = item.essentialGroupId
         self.itemNumber = item.itemNumber
         self.nickname = item.nickname
+        self.dimensions = item.dimensions
     }
 
     enum CodingKeys: String, CodingKey {
