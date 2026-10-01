@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct CreatePullListViewV2: View {
-
+    
     @Environment(\.dismiss) private var dismiss
-
+    
     @State private var viewModel: CreatePullListViewModelV2 = .init()
     
     @State private var showAddressSheet: Bool = false
@@ -19,6 +19,8 @@ struct CreatePullListViewV2: View {
     
     @State private var showCreateRoomSheet: Bool = false
     private var rooms: [Room]?
+    
+    
     
     // MARK: Body
     
@@ -57,6 +59,17 @@ struct CreatePullListViewV2: View {
                         .cornerRadius(Constants.CornerRadius.medium)
                 }
                 
+                HStack {
+                    Text("Square Feet:")
+                    TextField("Optional", text: Binding(
+                        get: { viewModel.pullListState.squareFootage ?? "" },
+                        set: { viewModel.pullListState.squareFootage = $0.isEmpty ? nil : $0 }
+                    ))
+                    .padding(6)
+                    .background(Color(.systemGray5))
+                    .cornerRadius(Constants.CornerRadius.medium)
+                }
+                
                 HStack(spacing: 0) {
                     Text("Rooms:")
                         .font(.headline)
@@ -72,7 +85,7 @@ struct CreatePullListViewV2: View {
                 ScrollView {
                     LazyVStack(spacing: 12) {
                         ForEach(viewModel.rooms, id: \.self) { room in
-                            EmptyRoomListItem(room.displayName)
+                            EmptyRoomListItem(room.displayName, squareFootage: room.squareFootage)
                         }
                     }
                 }
@@ -89,6 +102,7 @@ struct CreatePullListViewV2: View {
                         dismiss()
                     }
                 }
+                .disabled(viewModel.createButtonDisabled)
                 .padding(.bottom, 16)
                 
             }
@@ -98,8 +112,8 @@ struct CreatePullListViewV2: View {
                 Button("Ok", role: .cancel) {}
             }
             .sheet(isPresented: $showCreateRoomSheet) {
-                EditRoomV2Sheet { roomName in
-                    viewModel.createEmptyRoom(roomName)
+                EditRoomV2Sheet { roomName, squareFootage in
+                    viewModel.createEmptyRoom(roomName, squareFootage: squareFootage)
                 }
             }
             .sheet(isPresented: $showAddressSheet) {
@@ -126,6 +140,7 @@ struct CreatePullListViewV2: View {
                 RDButton(
                     variant: .outline,
                     size: .default,
+                    leadingIcon: SFSymbols.mapPinAndEllipse,
                     label: viewModel.pullListState.address.isInitialized() ? viewModel.pullListState.address.getStreetAddress() ?? "" : "Enter Address") {
                     showAddressSheet = true
                 }
@@ -177,13 +192,18 @@ struct CreatePullListViewV2: View {
     // MARK: Empty Room List Item
     
     @ViewBuilder
-    private func EmptyRoomListItem(_ roomName: String) -> some View {
-        HStack(spacing: 0) {
+    private func EmptyRoomListItem(_ roomName: String, squareFootage: String?) -> some View {
+        VStack(spacing: 4) {
             Text(roomName)
                 .foregroundStyle(Color(.label))
-            Spacer()
+            if let squareFootage {
+                Text("\(squareFootage) sq ft")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
         .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(Color(.systemGray5))
         .clipShape(RoundedRectangle(cornerRadius: 6))
     }

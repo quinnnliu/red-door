@@ -10,12 +10,18 @@ import SwiftUI
 struct EditRoomV2Sheet: View {
     @Environment(\.dismiss) private var dismiss
     
-    var onSubmit: (String) -> Void
+    var onSubmit: (_ name: String, _ squareFootage: String?) -> Void
     @State var currentRoomName: String
+    @State var currentSquareFootage: String
     
-    init(currentRoomName: String = "", onSubmit: @escaping (String) -> Void) {
+    init(
+        currentRoomName: String = "",
+        currentSquareFootage: String? = nil,
+        onSubmit: @escaping (_ name: String, _ squareFootage: String?) -> Void
+    ) {
         self.onSubmit = onSubmit
         self._currentRoomName = State(initialValue: currentRoomName)
+        self._currentSquareFootage = State(initialValue: currentSquareFootage ?? "")
     }
     
     // MARK: Body
@@ -24,6 +30,9 @@ struct EditRoomV2Sheet: View {
         VStack(spacing: 16) {
             TextField("Room Name", text: $currentRoomName)
                 .submitLabel(.done)
+            
+            TextField("Square Footage (optional)", text: $currentSquareFootage)
+                .font(.caption2)
             
             HStack(spacing: 0) {
                 Button {
@@ -36,7 +45,7 @@ struct EditRoomV2Sheet: View {
                 Spacer()
                 
                 Button {
-                    onSubmit(currentRoomName)
+                    onSubmit(currentRoomName, currentSquareFootage.trimmedOrNil)
                     dismiss()
                 } label: {
                     Text("Save")
@@ -47,6 +56,6 @@ struct EditRoomV2Sheet: View {
         .frameTop()
         .frameHorizontalPadding()
         .frameVerticalPadding()
-        .presentationDetents([.fraction(0.125)])
+        .presentationDetents([.fraction(0.25)])
     }
 }

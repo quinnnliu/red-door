@@ -7,26 +7,34 @@
 
 import SwiftUI
 
-enum AccessoriesListItemAction {
+enum AccessoriesListItemAction: Equatable {
     case navigate(Accessories)
     case select(Accessories)
+}
+
+enum AccessoriesListItemStyle: Equatable {
+    case navigate(Accessories)
+    case essentialsGroup
 }
 
 struct AccessoriesListItemView: View {
     let accessories: Accessories
     var action: ((Any?) -> Void)?
     var actionType: AccessoriesListItemAction
+    let style: AccessoriesListItemStyle
     var onRemove: (() -> Void)?
 
     init(
-        accessories: Accessories,
+        _ accessories: Accessories,
         action: ((Any?) -> Void)? = nil,
         actionType: AccessoriesListItemAction? = nil,
+        style: AccessoriesListItemStyle = .essentialsGroup,
         onRemove: (() -> Void)? = nil
     ) {
         self.accessories = accessories
         self.action = action
         self.actionType = actionType ?? .navigate(accessories)
+        self.style = style
         self.onRemove = onRemove
     }
 
@@ -65,7 +73,7 @@ struct AccessoriesListItemView: View {
 
             Spacer()
 
-            if let onRemove {
+            if let onRemove, style == .essentialsGroup {
                 Button(action: onRemove) {
                     Image(systemName: SFSymbols.xmark)
                         .font(.caption)

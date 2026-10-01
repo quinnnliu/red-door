@@ -160,26 +160,39 @@ extension PullListRoomDetailsViewModel {
 
     // MARK: - deleteRoom
     
-    func deleteRoom() async {
+    var canDelete: Bool { roomState.itemIds.isEmpty }
+
+    @MainActor
+    func deleteRoom() async -> Bool {
+        guard canDelete else {
+            alertMessage = RoomDeleteError.notEmpty.localizedDescription
+            showAlert = true
+            return false
+        }
+
         do {
-            try await roomRepo.delete(id: roomState.id)
+            try await roomRepo.deleteRoom(id: roomState.id)
+            return true
         } catch {
             alertMessage = "Failed to delete room: \(error.localizedDescription)"
             showAlert = true
+            return false
         }
     }
-    
-    // MARK: - renameRoom
-    func renameRoom(roomId: String, newRoomName: String) async {
+
+    // MARK: - updateRoomDetails
+    func updateRoomDetails(roomId: String, newRoomName: String, squareFootage: String?) async {
         do {
             let newNameId = RoomV2.nameToId(newRoomName)
             try await roomRepo.update(id: roomId, fields: [
                 RoomV2.CodingKeys.nameId.stringValue: newNameId,
-                RoomV2.CodingKeys.baseName.stringValue: newRoomName
+                RoomV2.CodingKeys.baseName.stringValue: newRoomName,
+                RoomV2.CodingKeys.squareFootage.stringValue: (squareFootage as Any?) ?? FieldValue.delete()
             ])
             roomState.baseName = newRoomName
+            roomState.squareFootage = squareFootage
         } catch {
-            alertMessage = "Failed to rename \(roomState.displayName) to \(newRoomName)"
+            alertMessage = "Failed to update \(roomState.displayName)"
             showAlert = true
         }
     }

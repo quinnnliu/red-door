@@ -139,7 +139,7 @@ private extension EssentialsGroupDetailView {
             
             SmallCTA(
                 isButton: false,
-                type: viewModel.groupState.location.status.isAvailable ? .secondary: .red,
+                type: viewModel.groupState.location.status.isAvailable ? .outline: .red,
                 size: .small,
                 leadingIcon: viewModel.groupState.location.status.icon,
                 text: viewModel.groupState.location.status.displayTitle,
@@ -247,9 +247,9 @@ private extension EssentialsGroupDetailView {
             }
 
             if let accessories = viewModel.accessoriesState {
-                AccessoriesListItemView(accessories: accessories, onRemove: {
+                AccessoriesListItemView(accessories, style: .navigate(accessories)) {
                     showRemoveAccessoriesAlert = true
-                })
+                }
             }
         }
     }

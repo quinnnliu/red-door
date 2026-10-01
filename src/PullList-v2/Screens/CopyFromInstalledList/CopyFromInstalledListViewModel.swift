@@ -26,6 +26,7 @@ final class CopyFromInstalledListViewModel {
     var installDate: Date = .now
     var uninstallDate: Date = .now
     var clientId: String
+    var squareFootage: String
 
     // MARK: - Local UI state
 
@@ -55,6 +56,7 @@ final class CopyFromInstalledListViewModel {
     ) {
         self.installedList = installedList
         self.clientId = installedList.clientId
+        self.squareFootage = installedList.squareFootage ?? ""
         self.installedRoomRepo = installedRoomRepo
         self.itemRepo = itemRepo
         self.pullListRepo = pullListRepo
@@ -172,6 +174,7 @@ extension CopyFromInstalledListViewModel {
                 installDate: installDate,
                 uninstallDate: uninstallDate,
                 clientId: clientId,
+                squareFootage: squareFootage.trimmedOrNil,
                 sourceRooms: rooms,
                 candidateItemIds: candidateItemIds,
                 essentialsGroup: isEssentialsGroupCopyable ? essentialsGroup : nil,

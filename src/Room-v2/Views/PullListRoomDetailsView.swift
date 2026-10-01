@@ -11,6 +11,7 @@ import CachedAsyncImage
 struct PullListRoomDetailsView: View {
     
     @State var viewModel: PullListRoomDetailsViewModel
+    @Environment(NavigationCoordinator.self) private var coordinator
     @State var itemToRemove: ItemV2? = nil
 
     init(items: [ItemV2], room: RoomV2) {
@@ -21,13 +22,20 @@ struct PullListRoomDetailsView: View {
     @State private var showAddItemsSheet: Bool = false
     @State private var showEditRoomSheet: Bool = false
     @State private var showSelectStorageSheet: Bool = false
+    @State private var showDeleteConfirmation: Bool = false
     
     // MARK: Body
     
     var body: some View {
         VStack(spacing: 16) {
-            TopBar
-                .frameHorizontalPadding()
+            VStack(spacing: 4) {
+                TopBar
+                if let squareFootage = viewModel.roomState.squareFootage {
+                    Text("Square Footage: \(squareFootage)")
+                        .font(.caption2)
+                        .foregroundStyle(.gray)
+                }
+            }
             
             ScrollView {
                 VStack(spacing: 16) {
@@ -47,15 +55,28 @@ struct PullListRoomDetailsView: View {
                     
                     RoomItemList
                 }
-                .frameHorizontalPadding()
             }
             
         }
+        .frameHorizontalPadding()
         .sheet(isPresented: $showAddItemsSheet) {
             AddItemsToRoomSheet
         }
         .sheet(isPresented: $showEditRoomSheet) {
             EditRoomSheet
+        }
+        .alert(
+            "Delete this room?",
+            isPresented: $showDeleteConfirmation,
+        ) {
+            Button("Delete Room", role: .destructive) {
+                Task {
+                    if await viewModel.deleteRoom() { coordinator.removeFromSelectedPath(1) }
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This permanently deletes the room and its before and after images.")
         }
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("OK", role: .cancel) { }
@@ -131,15 +152,14 @@ struct PullListRoomDetailsView: View {
     
     private var RoomDetailsMenu: some View {
         Menu {
-            Button("Edit Room Name", systemImage: "pencil") {
+            Button("Edit Room", systemImage: "pencil") {
                 showEditRoomSheet = true
             }
             
-            Button("Delete Room", systemImage: SFSymbols.trash) {
-                    // Task {
-                    // await roomViewModel.deleteRoom()
-                    // }
+            Button("Delete Room", systemImage: SFSymbols.trash, role: .destructive) {
+                showDeleteConfirmation = true
             }
+            .disabled(!viewModel.canDelete)
         } label: {
             RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.ellipsis, fullWidth: false) { }
                 .clipShape(Circle())
@@ -154,6 +174,7 @@ struct PullListRoomDetailsView: View {
             ForEach(viewModel.items, id: \.self) { item in
                 NavigationLink(value: NavigationDestination.pullListItemDetailView(item: item, room: viewModel.roomState)) {
                     RoomItemListItemView(item: item)
+                        .padding(.horizontal, 4)
                 }
             }
         }
@@ -242,9 +263,12 @@ private extension PullListRoomDetailsView {
 // MARK: - EditRoomSheet
 private extension PullListRoomDetailsView {
     var EditRoomSheet: some View {
-        EditRoomV2Sheet(currentRoomName: viewModel.roomState.displayName) { newRoomName in
+        EditRoomV2Sheet(
+            currentRoomName: viewModel.roomState.displayName,
+            currentSquareFootage: viewModel.roomState.squareFootage
+        ) { newRoomName, squareFootage in
             Task {
-                await viewModel.renameRoom(roomId: viewModel.roomState.id, newRoomName: newRoomName)
+                await viewModel.updateRoomDetails(roomId: viewModel.roomState.id, newRoomName: newRoomName, squareFootage: squareFootage)
             }
         }
     }

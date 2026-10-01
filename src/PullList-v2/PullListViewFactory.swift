@@ -25,6 +25,10 @@ struct PullListViewFactory {
         return PullListDetailsViewV2(viewModel: vm)
     }
 
+    func makeEditView(list: PullListV2) -> EditPullListSheet {
+        EditPullListSheet(viewModel: EditPullListViewModel(list: list, pullListRepo: pullListRepo))
+    }
+
     func makeCopyFromInstalledView(
         installedList: InstalledListV2,
         onFinished: @escaping () -> Void

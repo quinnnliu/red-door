@@ -15,7 +15,7 @@ struct InstallItemListItemView: View {
     let action: (Any?) -> Void
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 0) {
             ItemListItemView(item: item, style: .installation(room: room))
                 .frame(maxWidth: .infinity)
 

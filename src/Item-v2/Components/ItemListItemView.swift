@@ -105,7 +105,7 @@ private extension ItemListItemView {
                 default:
                     SmallCTA(
                         isButton: false,
-                        type: item.location.status.isAvailable ? .secondary: .red,
+                        type: item.location.status.isAvailable ? .outline: .red,
                         size: .small,
                         leadingIcon: item.location.status.icon,
                         text: item.location.status.displayTitle,

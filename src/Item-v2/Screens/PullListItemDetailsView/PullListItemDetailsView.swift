@@ -37,8 +37,6 @@ struct PullListItemDetailsView: View {
 					VStack(spacing: 12) {
                         PrimaryImageView(image: viewModel.itemState.primaryImage)
 
-						ItemDetails
-
                         ItemDetailSection(
                             item: viewModel.itemState,
                             essentialsGroup: viewModel.essentialsGroup
@@ -129,42 +127,6 @@ struct PullListItemDetailsView: View {
             }
             .clipShape(.circle)
 		})
-	}
-
-	// MARK: - Item Details
-
-    private var ItemDetails: some View {
-		VStack(alignment: .leading, spacing: 12) {
-            if viewModel.itemState.location.status != .inStorage {
-                HStack(alignment: .center, spacing: 0) {
-                    Text("Location: ")
-                        .foregroundColor(.red)
-                        .bold()
-
-                    if let address = viewModel.pullList?.address.getStreetAddress() ?? viewModel.pullList?.address.formattedAddress {
-                        Text(address)
-                    } else {
-                        Text(viewModel.pullList?.address.getStreetAddress() ?? "Loading...")
-                            .task {
-                                await viewModel.fetchPullListForLocation()
-                            }
-                    }
-                }
-            }
-
-			HStack(alignment: .center, spacing: 0) {
-				Text("ID: ")
-					.foregroundColor(.red)
-					.bold()
-
-                Text(viewModel.itemState.id)
-					.font(.caption)
-			}
-		}
-		.frame(maxWidth: .infinity, alignment: .leading)
-		.padding(8)
-		.background(Color(.systemGray5))
-		.cornerRadius(Constants.CornerRadius.medium)
 	}
     
 	// MARK: - Footer

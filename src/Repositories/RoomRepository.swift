@@ -275,3 +275,59 @@ extension RoomRepository where Parent == PullListV2 {
         try await batch.commit()
     }
 }
+
+// MARK: - Delete room
+
+enum RoomDeleteError: LocalizedError {
+    case notEmpty
+
+    var errorDescription: String? {
+        switch self {
+        case .notEmpty: "Remove all items from this room before deleting it."
+        }
+    }
+}
+
+/// Only a pull list's rooms are deletable — an installed list's rooms are the
+/// record of where things physically went.
+extension RoomRepository where Parent == PullListV2 {
+
+    /// Deletes an empty room, drops it from the list's `roomIds`, and removes
+    /// its before/after images.
+    ///
+    /// Re-reads the room inside the transaction so an item added from another
+    /// device after the caller last looked still blocks the delete. Throws
+    /// `RoomDeleteError.notEmpty` in that case.
+    func deleteRoom(id roomId: String) async throws {
+        let deleted = try await db.runTransaction { transaction, errorPointer -> Any? in
+            do {
+                let room = try self.get(id: roomId, transaction: transaction)
+                guard room.itemIds.isEmpty else { throw RoomDeleteError.notEmpty }
+
+                self.delete(id: roomId, transaction: transaction)
+                transaction.updateData(
+                    [PullListV2.CodingKeys.roomIds.stringValue: FieldValue.arrayRemove([roomId])],
+                    forDocument: self.parentRef
+                )
+                return room
+            } catch {
+                errorPointer?.pointee = error as NSError
+                return nil
+            }
+        }
+        guard let room = deleted as? RoomV2 else { return }
+
+        // Cleans by folder: before and after images share `rooms_images/{roomId}`,
+        // and a room copied from an installed list starts with no images, so
+        // nothing here is shared with another room. The document is already
+        // gone, so a failure only orphans files and isn't a failed delete.
+        do {
+            try await FirebaseImageManager.shared.deleteDocumentImages(
+                document: room,
+                imageType: .roomBefore
+            )
+        } catch {
+            print("[WARN]: Deleted room \(roomId) but failed to clean up its images: \(error.localizedDescription)")
+        }
+    }
+}
