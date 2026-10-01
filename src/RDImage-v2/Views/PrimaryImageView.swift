@@ -116,7 +116,7 @@ struct PrimaryImageEditor: View {
                 SingleCameraPickerV2(action: handleResult(_:))
             }
         }
-        .expandImageOverlay(image)
+        .expandImageOverlay(image, isEnabled: image != nil)
         .contentShape(Rectangle())
     }
 
@@ -164,6 +164,10 @@ private struct PrimaryImageContent: View {
         .frame(size)
         .clipped()
         .cornerRadius(Constants.CornerRadius.large)
+        .overlay(
+            RoundedRectangle(cornerRadius: Constants.CornerRadius.large, style: .continuous)
+                .stroke(.primary.opacity(0.2), lineWidth: 2)
+        )
     }
 }
 

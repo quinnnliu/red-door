@@ -27,23 +27,25 @@ struct StorageLocationPicker: View {
     // MARK: Body
 
     var body: some View {
-        Button { showPicker = true } label: {
-            HStack {
-                Text("Storage Location:")
-                    .foregroundStyle(.red)
-                    .bold()
-
-                Spacer()
-
+        HStack {
+            Text("Storage Location:")
+                .foregroundStyle(.red)
+                .bold()
+            
+            Spacer(minLength: .zero)
+            
+            Button {
+                showPicker = true
+            } label: {
                 Text(valueLabel)
                     .foregroundStyle(locations.isEmpty ? Color.secondary : Color.blue)
             }
+            .buttonStyle(.plain)
+            .disabled(locations.isEmpty)
+            .padding(8)
+            .background(Color(.systemGray5))
+            .cornerRadius(Constants.CornerRadius.medium)
         }
-        .buttonStyle(.plain)
-        .disabled(locations.isEmpty)
-        .padding(8)
-        .background(Color(.systemGray5))
-        .cornerRadius(Constants.CornerRadius.medium)
         .sheet(isPresented: $showPicker) {
             SelectDocumentSheet(
                 title: "Select Storage Location",

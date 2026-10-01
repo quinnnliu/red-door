@@ -12,28 +12,26 @@ struct EditItemDetailSection: View {
     @Binding var color: ItemColor
     @Binding var material: ItemMaterial
     @Binding var type: ItemType
-    @Binding var selectedGroup: EssentialsGroup?
-    let groups: [EssentialsGroup]
-    @State private var showGroupPicker: Bool = false
     @Binding var value: Double?
     @Binding var brand: String?
     @Binding var purchaseLocation: String?
     @Binding var datePurchased: String?
+    @State private var showPurchaseInfoSection: Bool = true
 
     @State private var isColorPickerActive = false
     @State private var isMaterialPickerActive = false
+    @State private var isTypePickerActive = false
+    
+    @Binding var dimensions: ItemDimensions?
+    @State private var showDimensionsSection: Bool = true
 
     // MARK: Body
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-
-            // MARK: Description
-
             VStack(alignment: .leading, spacing: 4) {
                 SectionTitle("Description:")
                 
-                // TODO: make this multi-line (keyboard dismiss issue)
                 TextField("A brief description about these items...", text: $description)
                     .font(.footnote)
                     .lineLimit(2...5)
@@ -46,10 +44,13 @@ struct EditItemDetailSection: View {
 
             ColorMaterialRow
 
-            DetailsSection
+            TypeRow
             
-            PurchaseInfo
+            PurchaseInfoSection
+            
+            DimensionsSection
         }
+        
     }
 
     // MARK: ColorMaterialRow
@@ -68,7 +69,8 @@ struct EditItemDetailSection: View {
                             isActive: $isColorPickerActive,
                             items: ItemColor.allCases,
                             label: { $0.title },
-                            color: { $0.color }
+                            color: { $0.color },
+                            icon: { $0.icon }
                         )
                         .padding(8)
                         .background(Color(.systemGray5))
@@ -91,7 +93,8 @@ struct EditItemDetailSection: View {
                             isActive: $isMaterialPickerActive,
                             items: ItemMaterial.allCases,
                             label: { $0.title },
-                            color: { _ in nil }
+                            color: { _ in nil },
+                            icon: { _ in nil }
                         )
                         .padding(8)
                         .background(Color(.systemGray5))
@@ -104,119 +107,188 @@ struct EditItemDetailSection: View {
         }
     }
     
-    // MARK: DetailsSection
-    
-    var DetailsSection: some View {
+    // MARK: Type Row
+
+    private var TypeRow: some View {
         VStack(alignment: .leading, spacing: 4) {
-            SectionTitle("Details:")
-            
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(alignment: .center, spacing: 0) {
-                    HStack(alignment: .center, spacing: 4) {
-                        Text("Type:")
-                        
-                        Picker("", selection: $type) {
-                            ForEach(ItemType.allCases, id: \.self) { option in
-                                Text(option.rawValue)
-                                    .tag(option)
-                            }
+            Button {
+                withAnimation(Constants.Animation.snappy) {
+                    isTypePickerActive.toggle()
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Text("Type:")
+                        .foregroundColor(.red)
+                        .bold()
+
+                    Spacer(minLength: .zero)
+                    HStack {
+                        if let icon = type.icon {
+                            Image(systemName: icon)
                         }
-                        .fixedSize(horizontal: false, vertical: true)
+                        Text(type.title)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    
+                    .font(.caption2)
+                    .foregroundColor(.blue)
+                    .padding(8)
+                    .background(Color(.systemGray4))
+                    .cornerRadius(Constants.CornerRadius.small)
+                }
+            }
+
+            if isTypePickerActive {
+                EnumGridPicker(
+                    selectedItem: $type,
+                    isActive: $isTypePickerActive,
+                    items: ItemType.allCases,
+                    label: { $0.title },
+                    color: { $0.color },
+                    icon: { $0.icon }
+                )
+            }
+        }
+    }
+
+    // MARK: PurchaseInfoSection
+
+    var PurchaseInfoSection: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Button {
+                withAnimation(Constants.Animation.snappy) {
+                    showPurchaseInfoSection.toggle()
+                }
+            } label: {
+                HStack {
+                    SectionTitle("Purchase Info:")
+
                     Spacer()
                     
-                    Button { showGroupPicker = true } label: {
-                        HStack {
-                            Text("Essential:")
-                                .foregroundColor(.red)
-                                .bold()
-                            Spacer()
-                            Text(selectedGroup?.displayName ?? "None")
-                                .foregroundColor(.blue)
-                        }
+                    Image(systemName: showPurchaseInfoSection ? SFSymbols.chevronUp : SFSymbols.chevronDown)
+                }
+            }
+
+            if showPurchaseInfoSection {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Value ($):")
+                            .frame(width: 110, alignment: .leading)
+                        TextField("0.00 (optional)", value: $value, format: .number)
+                            .keyboardType(.decimalPad)
                     }
-                    .sheet(isPresented: $showGroupPicker) {
-                        SelectDocumentSheet(title: "Select Essentials Group", documents: groups) { action in
-                            guard let action = action as? SelectDocumentSheetAction<EssentialsGroup>,
-                                  case .selected(let group) = action else { return }
-                            selectedGroup = group
+                    
+                    HStack {
+                        Text("Brand:")
+                            .frame(width: 110, alignment: .leading)
+                        TextField("Brand (optional)", text: Binding(
+                            get: { brand ?? "" },
+                            set: { brand = $0.isEmpty ? nil : $0 }
+                        ))
+                    }
+                    
+                    HStack {
+                        Text("Purchased At:")
+                            .frame(width: 110, alignment: .leading)
+                        TextField("Store or URL (optional)", text: Binding(
+                            get: { purchaseLocation ?? "" },
+                            set: { purchaseLocation = $0.isEmpty ? nil : $0 }
+                        ))
+                    }
+                    
+                    HStack {
+                        Text("Date:")
+                            .frame(width: 110, alignment: .leading)
+                        if datePurchased != nil {
+                            DatePicker("", selection: datePickerBinding, displayedComponents: .date)
+                                .labelsHidden()
+                            Button {
+                                datePurchased = nil
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.secondary)
+                            }
+                        } else {
+                            Button("Add date") {
+                                datePurchased = Self.dateFormatter.string(from: Date())
+                            }
+                            .foregroundColor(.secondary)
                         }
                     }
                 }
+                .font(.caption)
+                .padding(8)
+                .background(Color(.systemGray5))
+                .cornerRadius(Constants.CornerRadius.medium)
             }
-            .padding(8)
-            .background(Color(.systemGray5))
-            .cornerRadius(Constants.CornerRadius.medium)
         }
 
     }
+
+    // MARK: DimensionsSection
     
-    // MARK: Purchase Info
-    
-    var PurchaseInfo: some View {
+    var DimensionsSection: some View {
         VStack(alignment: .leading, spacing: 4) {
-            SectionTitle("Purchase Info:")
             
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text("Value ($):")
-                        .frame(width: 110, alignment: .leading)
-                    TextField("0.00 (optional)", value: $value, format: .number)
-                        .keyboardType(.decimalPad)
+            Button {
+                withAnimation(Constants.Animation.snappy) {
+                    showDimensionsSection.toggle()
                 }
-                
+            } label: {
                 HStack {
-                    Text("Brand:")
-                        .frame(width: 110, alignment: .leading)
-                    TextField("Brand (optional)", text: Binding(
-                        get: { brand ?? "" },
-                        set: { brand = $0.isEmpty ? nil : $0 }
-                    ))
-                }
-                
-                HStack {
-                    Text("Purchased At:")
-                        .frame(width: 110, alignment: .leading)
-                    TextField("Store or URL (optional)", text: Binding(
-                        get: { purchaseLocation ?? "" },
-                        set: { purchaseLocation = $0.isEmpty ? nil : $0 }
-                    ))
-                }
-                
-                HStack {
-                    Text("Date:")
-                        .frame(width: 110, alignment: .leading)
-                    if datePurchased != nil {
-                        DatePicker("", selection: datePickerBinding, displayedComponents: .date)
-                            .labelsHidden()
-                        Button {
-                            datePurchased = nil
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.secondary)
-                        }
-                    } else {
-                        Button("Add date") {
-                            datePurchased = Self.dateFormatter.string(from: Date())
-                        }
-                        .foregroundColor(.secondary)
-                    }
+                    SectionTitle("Dimensions:")
+
+                    Spacer()
+                    
+                    Image(systemName: showDimensionsSection ? SFSymbols.chevronUp : SFSymbols.chevronDown)
                 }
             }
-            .padding(8)
-            .background(Color(.systemGray5))
-            .cornerRadius(Constants.CornerRadius.medium)
+            
+            if showDimensionsSection {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Text("Length:")
+                            .frame(width: 110, alignment: .leading)
+                        TextField("0 (optional)", text: dimensionsBinding.length)
+                            .keyboardType(.decimalPad)
+                    }
+                    
+                    HStack {
+                        Text("Width:")
+                            .frame(width: 110, alignment: .leading)
+                        TextField("0 (optional)", text: dimensionsBinding.width)
+                            .keyboardType(.decimalPad)
+                    }
+                    
+                    HStack {
+                        Text("Height:")
+                            .frame(width: 110, alignment: .leading)
+                        TextField("0 (optional)", text: dimensionsBinding.height)
+                            .keyboardType(.decimalPad)
+                    }
+                    
+                    HStack {
+                        Text("Unit:")
+                            .frame(width: 110, alignment: .leading)
+                        Picker("Unit", selection: dimensionsBinding.unit) {
+                            ForEach(ItemDimensions.UnitType.allCases, id: \.self) { unit in
+                                Text(unit.rawValue.capitalized)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
+                }
+                .font(.caption)
+                .padding(8)
+                .background(Color(.systemGray5))
+                .cornerRadius(Constants.CornerRadius.medium)
+            }
         }
-
     }
     
     // MARK: Section Title
     
     func SectionTitle(_ title: String) -> some View {
         Text(title)
-            .font(.title3)
+            .font(.headline)
             .foregroundStyle(.red)
             .bold()
     }
@@ -238,7 +310,7 @@ struct EditItemDetailSection: View {
                 Text(selectedMaterial.title)
                     .frame(maxWidth: .infinity)
                     .font(.caption2)
-                    .foregroundColor(.blue)
+                    .foregroundColor(.gray)
                     .padding(8)
                     .background(Color(.systemGray4))
                     .cornerRadius(Constants.CornerRadius.small)
@@ -286,6 +358,19 @@ struct EditItemDetailSection: View {
                 return Self.dateFormatter.date(from: str) ?? Date()
             },
             set: { datePurchased = Self.dateFormatter.string(from: $0) }
+        )
+    }
+    
+    // MARK: Dimensions Binding
+    private var dimensionsBinding: Binding<ItemDimensions> {
+        Binding(
+            get: {
+                guard let dimensions = dimensions else { return ItemDimensions(length: "0", width: "0", height: "0", unit: .imperial) }
+                return dimensions
+            },
+            set: { newDimensions in
+                dimensions = newDimensions
+            }
         )
     }
 }

@@ -16,7 +16,6 @@ struct ItemDetailsViewV2: View {
 
     // Presented
     @State private var showEditSheet: Bool = false
-    @State private var showInformation: Bool = true
     @State private var showQRCodeLabel: Bool = false
 
 
@@ -29,8 +28,14 @@ struct ItemDetailsViewV2: View {
     var body: some View {
         ZStack {
             VStack(spacing: 12) {
-                TopBar()
-                    .padding(.horizontal, 16)
+                VStack(spacing: 6) {
+                    TopBar()
+                    if let nickname = viewModel.itemState.nickname {
+                        Text("Nickname: \(nickname)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
 
                 ScrollView {
                     VStack(spacing: 12) {
@@ -39,12 +44,15 @@ struct ItemDetailsViewV2: View {
                         ItemDetails
                     }
                     .padding(.top, 4)
-                    .frameHorizontalPadding()
                 }
             }
             .frameTop()
+            .frameHorizontalPadding()
             .toolbar(.hidden)
             .onAppear { viewModel.startListening() }
+            .task(id: viewModel.itemState.essentialGroupId) {
+                await viewModel.loadEssentialsGroup()
+            }
             .sheet(isPresented: $showEditSheet) {
                 EditItemSheetV2(viewModel: viewModel)
             }
@@ -71,70 +79,48 @@ struct ItemDetailsViewV2: View {
                 BackButton()
             },
             header: {
-                VStack(alignment: .center, spacing: 6) {
-                    HStack {
-                        Text("Name:")
-                            .font(.headline)
-                        Text(viewModel.itemState.displayName)
-                    }
-                    if let nickname = viewModel.itemState.nickname {
-                        Text("Nickname: \(nickname)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
+                HStack {
+                    Text("Item:")
+                        .bold()
+                        .foregroundStyle(.red)
+                    Text(viewModel.itemState.displayName)
                 }
             },
             trailingView: {
-                RDButton(variant: .red, size: .icon, leadingIcon: "square.and.pencil", fullWidth: false) {
-                    showEditSheet = true
-                }
-                .clipShape(Circle())
+                TopBarMenu
             }
         )
     }
 }
 
 extension ItemDetailsViewV2 {
-    var ItemDetails: some View {
-        VStack(spacing: 12) {
-            
-            HStack {
-                SmallCTA(type: .secondary, leadingIcon: SFSymbols.qrcode, text: "Label") {
-                    showQRCodeLabel = true
-                }
-                
-                Button {
-                    withAnimation(Constants.Animation.snappy) {
-                        showInformation.toggle()
-                    }
-                } label: {
-                    
-                    HStack(spacing: 8) {
-                        Image(systemName: SFSymbols.infoCircleFill)
-                            .foregroundColor(.white)
-                        Text("Information")
-                            .foregroundColor(.white)
-                        Image(systemName: SFSymbols.chevronDown)
-                            .foregroundColor(.white)
-                            .rotationEffect(.degrees(showInformation ? 0 : -90))
-                            .animation(Constants.Animation.snappy, value: showInformation)
-                    }
-                    .font(.subheadline)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 8)
-                    .padding(.horizontal, 12)
-                    .background(.red)
-                    .cornerRadius(Constants.CornerRadius.large)
-                }
+    // MARK: - Top Bar Menu
+
+    var TopBarMenu: some View {
+        Menu {
+            Button("Edit", systemImage: SFSymbols.pencil) {
+                showEditSheet = true
             }
 
-            if showInformation {
-                ItemDetailSection(item: viewModel.itemState)
-                    .transition(.asymmetric(
-                        insertion: .opacity.combined(with: .scale(scale: 0.97, anchor: .top)),
-                        removal:   .opacity.combined(with: .scale(scale: 0.97, anchor: .top))
-                    ))
+            Button("Label", systemImage: SFSymbols.qrcode) {
+                showQRCodeLabel = true
             }
+        } label: {
+            RDButton(
+                variant: .red,
+                size: .icon,
+                leadingIcon: SFSymbols.ellipsis
+            ) { }.clipShape(.circle)
+        }
+        .tint(.red)
+    }
+
+    var ItemDetails: some View {
+        VStack(spacing: 12) {
+            ItemDetailSection(
+                item: viewModel.itemState,
+                essentialsGroup: viewModel.essentialsGroup
+            )
         }
     }
 }

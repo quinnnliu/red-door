@@ -12,6 +12,8 @@ final class AddItemToDocumentDetailViewModel {
     let item: ItemV2
     let destination: AddItemsToListableDestination
     private let itemRepo: ItemRepository = .init()
+    private let essentialsRepo: EssentialsRepository = .init()
+    var essentialsGroup: EssentialsGroup?
 
     var isLoading: Bool = false
     var showAlert: Bool = false
@@ -20,6 +22,16 @@ final class AddItemToDocumentDetailViewModel {
     init(item: ItemV2, destination: AddItemsToListableDestination) {
         self.item = item
         self.destination = destination
+    }
+}
+
+// MARK: - Load Essentials Group
+
+extension AddItemToDocumentDetailViewModel {
+    func loadEssentialsGroup() async {
+        guard let groupId = item.essentialGroupId else { return }
+        do { essentialsGroup = try await essentialsRepo.get(id: groupId) }
+        catch { print("error loading essentials group: \(error)") }
     }
 }
 

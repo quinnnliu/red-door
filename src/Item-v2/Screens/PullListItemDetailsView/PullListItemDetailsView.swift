@@ -12,7 +12,6 @@ struct PullListItemDetailsView: View {
 
 	@State var viewModel: PullListItemDetailsViewModel
 
-	@State private var showInformation: Bool = false
     @State private var showQRCodeSheet: Bool = false
     @State private var showSelectStorageSheet: Bool = false
 
@@ -40,7 +39,11 @@ struct PullListItemDetailsView: View {
 
 						ItemDetails
 
-                        ItemDetailSection(item: viewModel.itemState)
+                        ItemDetailSection(
+                            item: viewModel.itemState,
+                            essentialsGroup: viewModel.essentialsGroup
+                        )
+                        .task { await viewModel.loadEssentialsGroup() }
 					}
 					.padding(.top, 4)
 					.frameHorizontalPadding()
@@ -157,25 +160,6 @@ struct PullListItemDetailsView: View {
                 Text(viewModel.itemState.id)
 					.font(.caption)
 			}
-
-			VStack(alignment: .leading, spacing: 8) {
-				HStack(alignment: .center, spacing: 4) {
-					Text("Needs Attention: ")
-						.foregroundColor(.red)
-						.bold()
-
-					Image(systemName: SFSymbols.exclamationmarkTriangleFill)
-                        .foregroundColor(viewModel.itemState.attention ? .yellow : .gray)
-				}
-
-				if let attentionDescription = viewModel.itemState.attentionDescription, viewModel.itemState.attention {
-                    Text(attentionDescription)
-						.frame(maxWidth: .infinity, alignment: .leading)
-						.padding(8)
-						.background(Color(.systemGray5))
-						.cornerRadius(Constants.CornerRadius.small)
-				}
-			}
 		}
 		.frame(maxWidth: .infinity, alignment: .leading)
 		.padding(8)
@@ -183,51 +167,30 @@ struct PullListItemDetailsView: View {
 		.cornerRadius(Constants.CornerRadius.medium)
 	}
     
-	// MARK: - Model Information
-
-	@ViewBuilder
-	private func ModelInformation() -> some View {
-		VStack(spacing: 12) {
-			HStack {
-				Button(action: {
-					withAnimation(Constants.Animation.snappy) {
-						showInformation.toggle()
-					}
-				}) {
-					HStack(spacing: 0) {
-						Text("Model Information")
-							.foregroundColor(.white)
-							.bold()
-
-						Spacer()
-
-                        Image(systemName: showInformation ? SFSymbols.chevronUp : SFSymbols.chevronDown)
-							.foregroundColor(.white)
-					}
-					.padding(8)
-					.background(.red)
-					.cornerRadius(Constants.CornerRadius.small)
-				}
-
-				Spacer()
-
-				SmallCTA(type: .red, leadingIcon: SFSymbols.qrcode, text: "Label") {
-					viewModel.showQRCode = true
-				}
-			}
-		}
-	}
-    
 	// MARK: - Footer
 
 	@ViewBuilder
 	private func Footer() -> some View {
 		HStack(spacing: 12) {
-            RDButton(variant: .default, size: .default, leadingIcon: SFSymbols.arrowUturnBackward, label: "Move to Other Room", fullWidth: true, font: .caption2) {
+            RDButton(
+                variant: .default,
+                size: .default,
+                leadingIcon: SFSymbols.arrowUturnBackward,
+                label: "Move to Other Room",
+                fullWidth: true,
+                font: .caption2)
+            {
 				viewModel.showMoveItemSheet = true
 			}
 
-            RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.trash, label: "Remove from \(viewModel.room.displayName)", fullWidth: true, font: .caption2) {
+            RDButton(
+                variant: .red,
+                size: .default,
+                leadingIcon: SFSymbols.trash,
+                label: "Remove from Room",
+                fullWidth: true,
+                font: .caption2
+            ) {
                 if viewModel.itemState.essentialGroupId != nil {
                     Task {
                         let success = await viewModel.moveItemToUnassigned()

@@ -76,6 +76,10 @@ struct ItemListItemView: View {
         .padding(8)
         .background(Color(.systemGray5))
         .cornerRadius(Constants.CornerRadius.large)
+        .overlay(
+            RoundedRectangle(cornerRadius: Constants.CornerRadius.large)
+                .stroke(item.attention ? .orange : Color(.systemGray5), lineWidth: 2)
+        )
     }
 }
 

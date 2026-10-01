@@ -32,7 +32,10 @@ struct EditItemSheetV2: View {
         ZStack {
             ScrollView {
                 VStack(spacing: 12) {
-                    TopBar()
+                    VStack(alignment: .center, spacing: 6) {
+                        TopBar()
+                        NicknameEntry
+                    }
 
                     PrimaryImageEditor(image: editingItem.primaryImage) { action in
                         handleImageAction(action)
@@ -43,12 +46,21 @@ struct EditItemSheetV2: View {
                         color: $editingItem.color,
                         material: $editingItem.material,
                         type: $editingItem.type,
-                        selectedGroup: $selectedGroup,
-                        groups: viewModel.availableGroups,
                         value: $editingItem.value,
                         brand: $editingItem.brand,
                         purchaseLocation: $editingItem.purchaseLocation,
-                        datePurchased: $editingItem.datePurchased
+                        datePurchased: $editingItem.datePurchased,
+                        dimensions: $editingItem.dimensions
+                    )
+
+                    EssentialsGroupPicker(
+                        groups: viewModel.availableGroups,
+                        selected: $selectedGroup
+                    )
+                    
+                    AttentionPicker(
+                        needsAttention: $editingItem.attention,
+                        attentionDescription: $editingItem.attentionDescription
                     )
 
                     Spacer()
@@ -73,6 +85,7 @@ struct EditItemSheetV2: View {
                 .frameTopPadding()
             }
             .toolbar(.hidden)
+            .scrollDismissesKeyboard(.automatic)
 
             if viewModel.isLoading {
                 Color.black.opacity(0.3).ignoresSafeArea()
@@ -102,10 +115,7 @@ struct EditItemSheetV2: View {
                 .clipShape(Circle())
             },
             header: {
-                VStack(alignment: .center, spacing: 6) {
-                    ItemNameEntry
-                    NicknameEntry
-                }
+                ItemNameEntry
             },
             trailingView: {
                 RDButton(variant: .red, size: .icon, leadingIcon: "checkmark", fullWidth: false) {
