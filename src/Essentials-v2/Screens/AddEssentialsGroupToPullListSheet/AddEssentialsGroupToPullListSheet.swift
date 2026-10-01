@@ -39,7 +39,8 @@ struct AddEssentialsGroupToPullListSheet: View {
             await viewModel.refresh()
         }
         .sheet(isPresented: $showFilterSheet) {
-            PullListV2DocumentFilterSheet(
+            ListDocumentFilterSheet(
+                title: "Filter Pull Lists",
                 initialFilters: viewModel.activeFilters,
                 action: handleAction(_:)
             )

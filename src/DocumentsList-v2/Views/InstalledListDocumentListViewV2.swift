@@ -18,6 +18,7 @@ struct InstalledListDocumentListViewV2: View {
 
     @State private var searchFocused: Bool = false
     @State private var showFromInstalledCover: Bool = false
+    @State private var showFilterSheet: Bool = false
 
     init(
         path: Binding<NavigationPath>
@@ -47,6 +48,13 @@ struct InstalledListDocumentListViewV2: View {
             .fullScreenCover(isPresented: $showFromInstalledCover) {
                 // TODO: add from installed list functionality
             }
+            .sheet(isPresented: $showFilterSheet) {
+                ListDocumentFilterSheet(
+                    title: "Filter Installed Lists",
+                    initialFilters: viewModel.activeFilters,
+                    action: handleAction(_:)
+                )
+            }
             .rootNavigationDestinationsV2(path: $path)
         }
     }
@@ -59,10 +67,14 @@ extension InstalledListDocumentListViewV2 {
     private var TopBar: some View {
         TopAppBar(
             leadingView: {
-                Text("Installed Lists")
-                    .font(.system(.title2, design: .default))
-                    .bold()
-                    .foregroundStyle(.red)
+                HStack(spacing: 8) {
+                    Text("Installed Lists")
+                        .font(.system(.title2, design: .default))
+                        .bold()
+                        .foregroundStyle(.red)
+
+                    FilterButton(viewModel.activeFiltersApplied)
+                }
             },
             header: {
                 EmptyView()
@@ -86,6 +98,19 @@ extension InstalledListDocumentListViewV2 {
             }
             .foregroundColor(.red)
         }
+    }
+
+    // MARK: FilterButton
+
+    private func FilterButton(_ filtersActive: Bool = false) -> some View {
+        RDButton(
+            variant: filtersActive ? .red : .secondary,
+            size: .icon,
+            leadingIcon: SFSymbols.sliderHorizontal3
+        ) {
+            showFilterSheet = true
+        }
+        .clipShape(.circle)
     }
 
     // MARK: Installed Section
@@ -173,6 +198,12 @@ private extension InstalledListDocumentListViewV2 {
         switch action {
         case let searchAction as SearchBarAction:
             Task { await viewModel.handleSearchAction(searchAction) }
+        case let filterAction as DocumentFilterSheetAction:
+            Task {
+                switch filterAction {
+                case .applyFilters(let filters): await viewModel.setFilters(filters)
+                }
+            }
         case let sectionAction as DocumentListSectionAction:
             switch sectionAction {
             case .loadMore:

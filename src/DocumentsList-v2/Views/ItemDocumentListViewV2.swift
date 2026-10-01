@@ -27,6 +27,11 @@ struct ItemDocumentListViewV2: View {
     @State private var essentialsVM: DocumentListViewModelV2<EssentialsGroup> = DocumentListViewModelV2<EssentialsGroup>(pageSize: 50)
     @State private var accessoriesVM: DocumentListViewModelV2<Accessories> = DocumentListViewModelV2<Accessories>(pageSize: 50)
 
+    // MARK: - Filter Options
+
+    @State private var essentialsTypes: [EssentialsGroupType] = []
+    @State private var accessoriesTypes: [AccessoriesType] = []
+
     // MARK: - UI State
 
     @State private var searchFocused: Bool = false
@@ -82,7 +87,7 @@ struct ItemDocumentListViewV2: View {
                 }
             }
             .fullScreenCover(item: $itemToCopy) { item in
-                CreateItemsViewV2(template: item)
+                CreateItemViewV2(template: item)
             }
             .sheet(isPresented: $showScannerSheet) {
                 ItemScannerView(scannedItemId: $scannedItemId)
@@ -153,9 +158,17 @@ extension ItemDocumentListViewV2 {
                 availableGroups: essentialsVM.documents
             )
         case .essentials:
-            Text("FilterSheetView for \(type.title)")
+            EssentialsGroupDocumentFilterSheet(
+                action: handleAction(_:),
+                initialFilters: activeFilters(for: type),
+                availableTypes: essentialsTypes
+            )
         case .accessories:
-            Text("FilterSheetView for \(type.title)")
+            AccessoriesDocumentFilterSheet(
+                action: handleAction(_:),
+                initialFilters: activeFilters(for: type),
+                availableTypes: accessoriesTypes
+            )
         }
     }
     
@@ -193,7 +206,7 @@ extension ItemDocumentListViewV2 {
     private func CreateCover(for type: InventorySegment) -> some View {
         switch type {
         case .items:
-            CreateItemsViewV2()
+            CreateItemViewV2()
         case .essentials:
             EssentialsViewFactory().makeCreateEssentialsGroupView()
         case .accessories:
@@ -206,16 +219,8 @@ extension ItemDocumentListViewV2 {
     private var CreateButton: some View {
         switch selectedSegment {
         case .items:
-            Menu {
-                Button("New Item", systemImage: SFSymbols.couchFill) {
-                    createDocumentSheetType = .items
-                }
-                Button("Create from Existing", systemImage: "doc.on.doc") {
-                    showCopyItemSheet = true
-                }
-            } label: {
-                RDButton(variant: .outline, size: .icon, leadingIcon: "plus", fullWidth: false) { }
-                    .allowsHitTesting(false)
+            RDButton(variant: .outline, size: .icon, leadingIcon: "plus", fullWidth: false) {
+                createDocumentSheetType = .items
             }
         case .essentials:
             RDButton(variant: .outline, size: .icon, leadingIcon: "plus", fullWidth: false) {
@@ -263,6 +268,9 @@ extension ItemDocumentListViewV2 {
             if essentialsVM.documents.isEmpty {
                 await essentialsVM.refresh()
             }
+            if essentialsTypes.isEmpty {
+                essentialsTypes = (try? await ConfigurationService.shared.getAll(using: EssentialsGroupTypeRepository())) ?? []
+            }
         }
     }
 
@@ -283,6 +291,9 @@ extension ItemDocumentListViewV2 {
         .task {
             if accessoriesVM.documents.isEmpty {
                 await accessoriesVM.refresh()
+            }
+            if accessoriesTypes.isEmpty {
+                accessoriesTypes = (try? await ConfigurationService.shared.getAll(using: AccessoriesTypeRepository())) ?? []
             }
         }
     }
