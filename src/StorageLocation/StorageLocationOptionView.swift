@@ -50,6 +50,10 @@ struct StorageLocationOptionsView: View {
                 Spacer()
 
                 if viewModel.showStorageLocationSection {
+                    RDButton(variant: .outline, size: .icon, leadingIcon: "arrow.clockwise", fullWidth: false) {
+                        Task { await viewModel.refreshStorageLocations() }
+                    }
+
                     RDButton(variant: viewModel.editingStorageLocations ? .red : .outline, size: .icon, leadingIcon: "square.and.pencil", fullWidth: false) {
                         viewModel.editingStorageLocations.toggle()
                     }
