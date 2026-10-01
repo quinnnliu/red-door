@@ -69,7 +69,33 @@ extension UninstallDestinationSectioning {
         }
     }
 
+    /// `storageGroups` plus an empty group for the location essentials were sent
+    /// to, when no item went there. Without it the essentials would have no
+    /// storage section to sit under.
+    var storageGroupsIncludingEssentials: [(storageLocationId: String, storageLocation: String, items: [(item: ItemV2, room: RoomV2)])] {
+        var groups = storageGroups
+        if let destination = essentialsDestination,
+           destination.type == .storage,
+           !groups.contains(where: { $0.storageLocationId == destination.locationId }) {
+            groups.append((
+                storageLocationId: destination.locationId,
+                storageLocation: storageLocationName(destination.locationId),
+                items: []
+            ))
+        }
+        return groups
+    }
+
     var storageItemCount: Int { storageGroups.reduce(0) { $0 + $1.items.count } }
+
+    var essentialsDestination: UninstallDestination? { uninstallSession?.essentialsDestination }
+
+    /// True when essentials were sent to `type` (and, for storage, to that
+    /// specific location), meaning they render inside that section.
+    func essentialsAssigned(to type: UninstallDestinationType, locationId: String? = nil) -> Bool {
+        guard let destination = essentialsDestination, destination.type == type else { return false }
+        return locationId == nil || destination.locationId == locationId
+    }
 
     var copyItems: [(item: ItemV2, room: RoomV2)] { items(for: .copy) }
 

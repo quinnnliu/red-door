@@ -26,10 +26,10 @@ struct UninstallRecordSheet: View {
 
             Spacer(minLength: 0)
         }
+        .toolbar(.hidden)
         .frameTop()
         .frameHorizontalPadding()
         .frameBottomPadding()
-        .presentationDetents([.medium, .large])
         .task {
             await viewModel.load()
         }
@@ -93,7 +93,7 @@ private extension UninstallRecordSheet {
     var RecordList: some View {
         ScrollView {
             LazyVStack(spacing: 8, pinnedViews: .sectionHeaders) {
-                if viewModel.essentialsGroupState != nil {
+                if viewModel.essentialsGroupState != nil && viewModel.essentialsDestination == nil {
                     Section {
                         EssentialsGroupRow
                     } header: {
@@ -101,7 +101,7 @@ private extension UninstallRecordSheet {
                     }
                 }
 
-                if !viewModel.storageGroups.isEmpty {
+                if !viewModel.storageGroupsIncludingEssentials.isEmpty {
                     StorageSection
                 }
 
@@ -120,9 +120,9 @@ private extension UninstallRecordSheet {
     var StorageSection: some View {
         Section {
             LazyVStack(alignment: .leading, spacing: 12) {
-                ForEach(viewModel.storageGroups, id: \.storageLocationId) { group in
+                ForEach(viewModel.storageGroupsIncludingEssentials, id: \.storageLocationId) { group in
                     VStack(alignment: .leading, spacing: 8) {
-                        if viewModel.storageGroups.count > 1 {
+                        if viewModel.storageGroupsIncludingEssentials.count > 1 {
                             Text(group.storageLocation)
                                 .font(.subheadline)
                                 .bold()
@@ -130,6 +130,10 @@ private extension UninstallRecordSheet {
                         }
 
                         UninstallAssignedItemsList(entries: group.items)
+
+                        if viewModel.essentialsAssigned(to: .storage, locationId: group.storageLocationId) {
+                            EssentialsGroupRow
+                        }
                     }
                 }
             }
@@ -140,7 +144,13 @@ private extension UninstallRecordSheet {
 
     var CopySection: some View {
         Section {
-            UninstallAssignedItemsList(entries: viewModel.copyItems)
+            VStack(spacing: 8) {
+                UninstallAssignedItemsList(entries: viewModel.copyItems)
+
+                if viewModel.essentialsAssigned(to: .copy) {
+                    EssentialsGroupRow
+                }
+            }
         } header: {
             UninstallSectionHeader(
                 title: viewModel.copySectionTitle,
@@ -152,7 +162,13 @@ private extension UninstallRecordSheet {
 
     var ExistingListSection: some View {
         Section {
-            UninstallAssignedItemsList(entries: viewModel.existingListItems)
+            VStack(spacing: 8) {
+                UninstallAssignedItemsList(entries: viewModel.existingListItems)
+
+                if viewModel.essentialsAssigned(to: .existingList) {
+                    EssentialsGroupRow
+                }
+            }
         } header: {
             UninstallSectionHeader(
                 title: viewModel.existingSectionTitle,

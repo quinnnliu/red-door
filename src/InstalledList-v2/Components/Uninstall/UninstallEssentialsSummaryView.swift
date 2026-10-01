@@ -16,56 +16,26 @@ struct UninstallEssentialsSummaryView<Trailing: View>: View {
     @ViewBuilder let trailing: () -> Trailing
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                Text(group.emoji)
+        ExpandableSectionView(
+            style: .uninstallEssentials(
+                group: group,
+                accessories: accessories,
+                itemCount: items.count,
+                destinationLabel: destinationLabel,
+                destinationSubtitle: destinationSubtitle
+            ),
+            trailing: trailing
+        ) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Moves as a unit")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
 
-                Text(group.displayName)
-                    .font(.headline)
-
-                Spacer(minLength: 0)
-
-                if let destinationLabel {
-                    VStack(alignment: .trailing, spacing: 2) {
-                        Text(destinationLabel)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .lineLimit(2)
-
-                        if let destinationSubtitle {
-                            Text(destinationSubtitle)
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
-                        }
-                    }
-                }
-
-                trailing()
-            }
-
-            Text("Moves as a unit")
-                .font(.caption)
-                .foregroundStyle(.secondary)
-
-            ForEach(items, id: \.id) { item in
-                ItemListItemView(item: item, style: .display)
-            }
-
-            if let accessories {
-                HStack(spacing: 8) {
-                    Image(systemName: SFSymbols.wrenchFill)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                    Text(accessories.displayName)
-                        .font(.subheadline)
-
-                    Spacer(minLength: 0)
+                ForEach(items, id: \.id) { item in
+                    ItemListItemView(item: item, style: .display)
                 }
             }
         }
-        .padding(4)
         .toolbar(.hidden)
     }
 }

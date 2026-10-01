@@ -12,7 +12,8 @@ struct InstalledListDetailsViewV2: View {
     @Environment(NavigationCoordinator.self) private var coordinator
     @State private var viewModel: InstalledListDetailsViewModelV2
     
-    @State private var showDetails: Bool = false
+    @State private var footerContentState: FooterContentState? = nil
+    @State private var showPDFSheet: Bool = false
     @State private var showUninstallListCover: Bool = false
     @State private var showUninstallRecordSheet: Bool = false
 
@@ -26,15 +27,7 @@ struct InstalledListDetailsViewV2: View {
 
             ScrollView {
                 LazyVStack(spacing: 16, pinnedViews: .sectionHeaders) {
-                    HStack {
-                        PrimaryImageView(image: viewModel.installedListState.image)
-                        if viewModel.essentialsGroupState != nil {
-                            VStack {
-                                EssentialsGroupSectionHeader
-                                EssentialsGroupSectionContent
-                            }
-                        }
-                    }
+                    PrimaryImageView(image: viewModel.installedListState.image)
 
                     Section {
                         RoomsListContent
@@ -46,10 +39,6 @@ struct InstalledListDetailsViewV2: View {
 
             Spacer(minLength: 0)
 
-            if showDetails {
-                ListDetails
-            }
-
             FooterContent
         }
         .frameTop()
@@ -58,6 +47,9 @@ struct InstalledListDetailsViewV2: View {
         .toolbar(.hidden)
         .fullScreenCover(isPresented: $showUninstallListCover) {
             InstalledListViewFactory().makeUninstallSheet(list: viewModel.installedListState)
+        }
+        .fullScreenCover(isPresented: $showPDFSheet) {
+            PullListPDFViewV2(list: viewModel.installedListState)
         }
         .sheet(isPresented: $showUninstallRecordSheet) {
             InstalledListViewFactory().makeUninstallRecordSheet(list: viewModel.installedListState)
@@ -75,9 +67,9 @@ private extension InstalledListDetailsViewV2 {
 
     // MARK: ShowDetailsButton
     var ShowDetailsButton: some View {
-        RDButton(variant: showDetails ? .red : .secondary, leadingIcon: SFSymbols.infoCircleFill, label: "Details") {
+        RDButton(variant: .secondary, size: .icon, leadingIcon: SFSymbols.infoCircleFill) {
             withAnimation(Constants.Animation.snappy) {
-                showDetails.toggle()
+                footerContentState = .details
             }
         }
     }
@@ -85,7 +77,7 @@ private extension InstalledListDetailsViewV2 {
     var ListDetails: some View {
         Button {
             withAnimation(Constants.Animation.snappy) {
-                showDetails = false
+                footerContentState = nil
             }
         } label: {
             InstalledListDetailsSection(viewModel.installedListState)
@@ -193,15 +185,12 @@ private extension InstalledListDetailsViewV2 {
 
     // MARK: EssentialsGroupSectionHeader
     var EssentialsGroupSectionHeader: some View {
-        HStack(spacing: 16) {
-            Text("Essentials:")
-                .foregroundStyle(.red)
-                .font(.headline)
-
-            Spacer()
-        }
-        .padding(.vertical, 12)
-        .background(Color(.systemBackground))
+        Text("Essentials")
+            .foregroundStyle(.red)
+            .font(.headline)
+            .padding(12)
+            .background(.gray.opacity(0.5))
+            .cornerRadius(12)
     }
 
     // MARK: EssentialsGroupSectionContent
@@ -209,29 +198,13 @@ private extension InstalledListDetailsViewV2 {
     var EssentialsGroupSectionContent: some View {
         if let group = viewModel.essentialsGroupState {
             LazyVStack(spacing: 8) {
-                HStack {
-                    Text(group.emoji)
-                    Text(group.displayName)
-                        .font(.subheadline)
-                    Spacer()
-                }
-                .font(.subheadline)
-                .padding(12)
-                .background(Color(.systemGray6))
-                .cornerRadius(Constants.CornerRadius.medium)
+                EssentialsGroupListItemView(group: group, emoji: group.emoji, action: handleAction(_:))
 
                 if let accessories = viewModel.essentialsAccessories {
-                    HStack {
-                        Image(systemName: SFSymbols.wrenchFill)
-                            .foregroundStyle(.secondary)
-                            .font(.caption)
-                        Text(accessories.displayName)
-                            .font(.subheadline)
-                        Spacer()
-                    }
-                    .padding(12)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(Constants.CornerRadius.medium)
+                    Text("Accessories")
+                        .font(.caption)
+                        .foregroundStyle(.primary)
+                    AccessoriesListItemView(accessories)
                 }
             }
         }
@@ -239,13 +212,20 @@ private extension InstalledListDetailsViewV2 {
 
     // MARK: RoomsListHeader
     var RoomsListHeader: some View {
-        HStack {
-            Spacer()
+        ZStack {
             Text("Rooms")
                 .foregroundStyle(.red)
                 .font(.headline)
-            Spacer()
+
+            HStack(spacing: .zero) {
+                SmallCTA(type: .secondary, leadingIcon: SFSymbols.richtextPageFill, text: "Show PDF") {
+                    showPDFSheet = true
+                }
+
+                Spacer()
+            }
         }
+        .padding(.bottom, 8)
         .background(Color(.systemBackground))
     }
 
@@ -283,19 +263,66 @@ private extension InstalledListDetailsViewV2 {
 // MARK: - FooterContent
 
 private extension InstalledListDetailsViewV2 {
+    enum FooterContentState {
+        case details, essentials
+    }
+
+    @ViewBuilder
     var FooterContent: some View {
-        HStack {
-            if !viewModel.installedListState.uninstalled {
-                RDButton(variant: .red, leadingIcon: SFSymbols.shippingbox, label: "Uninstall List") {
-                    showUninstallListCover = true
+        switch footerContentState {
+        case .details:
+            ListDetails
+        case .essentials:
+            EssentialsGroupContent
+        default:
+            HStack {
+                ShowDetailsButton
+
+                if !viewModel.installedListState.uninstalled {
+                    RDButton(variant: .red, leadingIcon: SFSymbols.shippingbox, label: "Uninstall List", fullWidth: true) {
+                        showUninstallListCover = true
+                    }
+                } else {
+                    RDButton(variant: .outline, leadingIcon: SFSymbols.shippingbox, label: "Uninstall Summary", fullWidth: true) {
+                        showUninstallRecordSheet = true
+                    }
                 }
-            } else {
-                RDButton(variant: .outline, leadingIcon: SFSymbols.shippingbox, label: "Uninstall Summary") {
-                    showUninstallRecordSheet = true
+
+                ShowEssentialsButton
+            }
+        }
+    }
+
+    var EssentialsGroupContent: some View {
+        Button {
+            withAnimation(Constants.Animation.snappy) {
+                footerContentState = nil
+            }
+        } label: {
+            VStack(spacing: 12) {
+                EssentialsGroupSectionHeader
+                EssentialsGroupSectionContent
+            }
+            .transition(.asymmetric(
+                insertion: .opacity.combined(with: .scale(scale: 0.97, anchor: .top)),
+                removal:   .opacity.combined(with: .scale(scale: 0.97, anchor: .top))
+            ))
+            .padding(16)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(.red, lineWidth: 4)
+            )
+        }
+    }
+
+    @ViewBuilder
+    var ShowEssentialsButton: some View {
+        if let essentialsGroup = viewModel.essentialsGroupState {
+            RDButton(variant: .secondary, size: .icon, label: essentialsGroup.emoji) {
+                withAnimation(Constants.Animation.snappy) {
+                    footerContentState = .essentials
                 }
             }
-
-            ShowDetailsButton
         }
     }
 }
@@ -332,6 +359,13 @@ private extension InstalledListDetailsViewV2 {
                 viewModel.refreshRoom(roomId)
             default:
                 break
+            }
+        }
+
+        if let essentialsAction = actionArgument as? EssentialsGroupListItemAction {
+            switch essentialsAction {
+            case .navigate(let group):
+                coordinator.appendToSelectedPath(NavigationDestination.essentialsGroupDetailView(group))
             }
         }
     }

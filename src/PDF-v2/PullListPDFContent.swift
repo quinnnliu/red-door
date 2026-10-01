@@ -10,7 +10,7 @@ import SwiftUI
 /// Builds the blocks a pull list PDF is made of. This is the layer to change
 /// when the document is redesigned — `PDFPaginator` and `PDFWriter` stay put.
 struct PullListPDFContent {
-    let pullList: PullListV2
+    let pullList: PDFListInfo
     let rooms: [RoomV2]
     let itemsById: [String: ItemV2]
     let preloadedImages: [String: UIImage]
@@ -66,7 +66,7 @@ struct PullListPDFContent {
         AnyView(
             VStack(alignment: .leading, spacing: 4) {
                 HStack {
-                    Text("Pull List — \(pullList.baseName)")
+                    Text("\(pullList.kindTitle) — \(pullList.baseName)")
                         .font(.system(size: 9, weight: .semibold))
                     Spacer()
                     Text("Page \(page) of \(total)")
@@ -216,5 +216,36 @@ private extension PullListPDFContent {
                 .fill(Color.gray.opacity(0.2))
                 .frame(width: Size.thumbnail, height: Size.thumbnail)
         }
+    }
+}
+
+// MARK: - PDFListInfo
+
+/// The list fields a PDF prints, so pull lists and installed lists share one
+/// document layout.
+struct PDFListInfo {
+    let kindTitle: String
+    let baseName: String
+    let address: Address
+    let clientId: String
+    let installDate: Date
+    let uninstallDate: Date
+
+    init(_ list: PullListV2) {
+        kindTitle = "Pull List"
+        baseName = list.baseName
+        address = list.address
+        clientId = list.clientId
+        installDate = list.installDate
+        uninstallDate = list.uninstallDate
+    }
+
+    init(_ list: InstalledListV2) {
+        kindTitle = "Installed List"
+        baseName = list.baseName
+        address = list.address
+        clientId = list.clientId
+        installDate = list.installDate
+        uninstallDate = list.uninstallDate
     }
 }
