@@ -43,7 +43,6 @@ struct PullListDetailsViewV2: View {
             ScrollView {
                 LazyVStack(spacing: Constants.Padding(2), pinnedViews: .sectionHeaders) {
                     PrimaryImageView(image: viewModel.pullListState.image)
-
                     Section {
                         RoomsListContent
                     } header: {

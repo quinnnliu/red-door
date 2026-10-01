@@ -38,11 +38,36 @@ struct InstalledListV2ListItem: View {
     }
 
     private var cellContent: some View {
-        HStack(alignment: .center, spacing: 12) {
-            Text(list.address.getStreetAddress() ?? "")
+        HStack(alignment: .center, spacing: Constants.Padding(1)) {
+            LeadingContent
+
+            CenterContent
+
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(Color(.systemGray5))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color(.systemGray3), lineWidth: 4)
+        )
+        .frame(maxWidth: .infinity)
+    }
+}
+
+private extension InstalledListV2ListItem {
+    var LeadingContent: some View {
+        HStack(spacing: Constants.Padding(1)) {
+            PrimaryImageView(image: list.image, size: Constants.Image.listItemLarge, isExpandable: false)
+        }
+    }
+
+    var CenterContent: some View {
+        VStack(alignment: .leading, spacing: Constants.Padding(0.5)) {
+            Text(list.displayName)
                 .font(.headline)
 
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: Constants.Padding(0.25)) {
                 (
                     Text("Install Date: ")
                         .foregroundColor(.red)
@@ -52,23 +77,14 @@ struct InstalledListV2ListItem: View {
                 )
 
                 (
-                    Text("Client ID: ")
+                    Text("Client: ")
                         .foregroundColor(.red)
                     +
                     Text(list.clientId)
                         .foregroundColor(.secondary)
                 )
             }
-            .font(.caption)
-
-            Spacer()
+            .font(.footnote)
         }
-        .padding(12)
-        .background(Color(.systemGray5))
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color(.systemGray3), lineWidth: 4)
-        )
-        .frame(maxWidth: .infinity)
     }
 }

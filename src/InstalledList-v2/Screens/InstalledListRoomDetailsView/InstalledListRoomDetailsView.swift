@@ -137,6 +137,7 @@ struct InstalledListRoomDetailsView: View {
                     uninstalled: viewModel.uninstalled
                 )) {
                     RoomItemListItemView(item: item)
+                        .padding(.horizontal, 4)
                 }
             }
         }

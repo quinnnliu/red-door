@@ -16,14 +16,24 @@ struct PullListPDFViewV2: View {
     @State private var pdfData: Data? = nil
     @State private var errorMessage: String? = nil
 
-    let list: PullListV2
+    private let info: PDFListInfo
+    private let roomIds: [String]
+    private let getRooms: ([String]) async throws -> [RoomV2]
 
     private let itemRepository = ItemRepository()
-    private let roomRepository: RoomRepository<PullListV2>
 
     init(list: PullListV2) {
-        self.roomRepository = RoomRepository(list: list)
-        self.list = list
+        let roomRepository = RoomRepository<PullListV2>(list: list)
+        self.info = PDFListInfo(list)
+        self.roomIds = list.roomIds
+        self.getRooms = { try await roomRepository.get(ids: $0) }
+    }
+
+    init(list: InstalledListV2) {
+        let roomRepository = RoomRepository<InstalledListV2>(list: list)
+        self.info = PDFListInfo(list)
+        self.roomIds = list.roomIds
+        self.getRooms = { try await roomRepository.get(ids: $0) }
     }
 
     var body: some View {
@@ -92,7 +102,7 @@ private extension PullListPDFViewV2 {
         ShareLink(
             item: PDFFile(data: data),
             preview: SharePreview(
-                "(PullList) \(list.address.formattedAddress).pdf",
+                "(\(info.kindTitle)) \(info.address.formattedAddress).pdf",
                 image: Image(systemName: SFSymbols.docFill)
             ),
             label: {
@@ -133,7 +143,7 @@ private extension PullListPDFViewV2 {
             let images = await preloadImages(for: itemsById)
 
             let content = PullListPDFContent(
-                pullList: list,
+                pullList: info,
                 rooms: rooms,
                 itemsById: itemsById,
                 preloadedImages: images
@@ -157,9 +167,8 @@ private extension PullListPDFViewV2 {
     }
 
     func fetchRooms() async throws -> [RoomV2] {
-        guard !list.roomIds.isEmpty else { return [] }
-        return try await roomRepository
-            .get(ids: list.roomIds)
+        guard !roomIds.isEmpty else { return [] }
+        return try await getRooms(roomIds)
             .sorted { $0.displayName < $1.displayName }
     }
 

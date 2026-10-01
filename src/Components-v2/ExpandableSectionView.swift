@@ -11,6 +11,14 @@ enum ExpandableSectionStyle {
     case essentialsItemTypeGroup(type: ItemType, count: Int)
     case pullListRoom(room: RoomV2, itemCount: Int)
     case installingRoom(room: RoomV2, itemCount: Int)
+    case uninstallingRoom(room: RoomV2, itemCount: Int)
+    case uninstallEssentials(
+        group: EssentialsGroup,
+        accessories: Accessories?,
+        itemCount: Int,
+        destinationLabel: String?,
+        destinationSubtitle: String?
+    )
 }
 
 enum ExpandableSectionAction {
@@ -20,21 +28,24 @@ enum ExpandableSectionAction {
     case refreshRoom(roomId: String)
 }
 
-struct ExpandableSectionView<Content: View>: View {
+struct ExpandableSectionView<Content: View, Trailing: View>: View {
     private let style: ExpandableSectionStyle
     private let action: (Any?) -> Void
     @State private var isExpanded: Bool
     @ViewBuilder private let content: () -> Content
+    @ViewBuilder private let trailing: () -> Trailing
 
     init(
         style: ExpandableSectionStyle,
         isExpanded: Bool = true,
         action: @escaping (Any?) -> Void = { _ in },
+        @ViewBuilder trailing: @escaping () -> Trailing,
         @ViewBuilder content: @escaping () -> Content
     ) {
         self.style = style
         self._isExpanded = State(initialValue: isExpanded)
         self.action = action
+        self.trailing = trailing
         self.content = content
     }
 
@@ -52,6 +63,17 @@ struct ExpandableSectionView<Content: View>: View {
     }
 }
 
+extension ExpandableSectionView where Trailing == EmptyView {
+    init(
+        style: ExpandableSectionStyle,
+        isExpanded: Bool = true,
+        action: @escaping (Any?) -> Void = { _ in },
+        @ViewBuilder content: @escaping () -> Content
+    ) {
+        self.init(style: style, isExpanded: isExpanded, action: action, trailing: { EmptyView() }, content: content)
+    }
+}
+
 // MARK: - Header
 
 private extension ExpandableSectionView {
@@ -65,10 +87,9 @@ private extension ExpandableSectionView {
 
             TrailingContent
         }
-        .padding(8)
         .background {
             switch style {
-            case .installingRoom:
+            case .installingRoom, .uninstallingRoom:
                 Color.red.opacity(0.4)
             default:
                 Color.clear
@@ -91,8 +112,14 @@ private extension ExpandableSectionView {
                 ExpandToggle
                 PrimaryImageView(image: room.afterImage ?? room.beforeImage, size: Constants.Image.listItemDefault, isExpandable: false)
             }
-        case .installingRoom:
-            EmptyView()
+        case .installingRoom, .uninstallingRoom:
+            ExpandToggle
+        case .uninstallEssentials(let group, _, _, _, _):
+            HStack(spacing: 6) {
+                ExpandToggle
+                Text(group.emoji)
+                    .font(.title2)
+            }
         }
     }
 
@@ -103,10 +130,29 @@ private extension ExpandableSectionView {
             Text(type.title)
                 .font(.headline)
                 .foregroundColor(.primary)
-        case .pullListRoom(let room, _), .installingRoom(let room, _):
+        case .pullListRoom(let room, _), .installingRoom(let room, _), .uninstallingRoom(let room, _):
             Text(room.displayName)
                 .font(.headline)
                 .foregroundColor(.primary)
+        case .uninstallEssentials(let group, let accessories, let itemCount, _, _):
+            VStack(alignment: .leading, spacing: 6) {
+                Text(group.displayName)
+                    .font(.headline)
+                    .foregroundColor(.primary)
+
+                HStack(spacing: 2) {
+                    Text("\(itemCount) items")
+
+                    if let accessories {
+                        Text("•")
+                        Image(systemName: SFSymbols.booksVerticalFill)
+                        Text(accessories.displayName)
+                            .lineLimit(1)
+                    }
+                }
+                .font(.footnote)
+                .foregroundStyle(.primary)
+            }
         }
     }
 
@@ -130,6 +176,12 @@ private extension ExpandableSectionView {
                     .frame(24)
                     .foregroundStyle(.gray)
             }
+        case .uninstallingRoom(let room, let itemCount):
+            HStack(spacing: Constants.Padding(0.25)) {
+                ItemCountLabel(itemCount)
+                
+                RefreshButton(roomId: room.id)
+            }
         case .installingRoom(let room, let itemCount):
             HStack(spacing: Constants.Padding(0.25)) {
                 ItemCountLabel(itemCount)
@@ -137,6 +189,26 @@ private extension ExpandableSectionView {
                 RefreshButton(roomId: room.id)
 
                 ExpandToggle
+            }
+        case .uninstallEssentials(_, _, _, let destinationLabel, let destinationSubtitle):
+            HStack(spacing: Constants.Padding(0.5)) {
+                if let destinationLabel {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text(destinationLabel)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(2)
+
+                        if let destinationSubtitle {
+                            Text(destinationSubtitle)
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
+                    }
+                }
+
+                trailing()
             }
         }
     }
@@ -183,7 +255,8 @@ private extension ExpandableSectionView {
         switch style {
         case .essentialsItemTypeGroup(_, let count): count
         case .pullListRoom(_, let itemCount): itemCount
-        case .installingRoom(_, let itemCount): itemCount
+        case .installingRoom(_, let itemCount), .uninstallingRoom(_, let itemCount): itemCount
+        case .uninstallEssentials(_, _, let itemCount, _, _): itemCount
         }
     }
 
@@ -193,8 +266,8 @@ private extension ExpandableSectionView {
     /// chrome of their own.
     var hasCardChrome: Bool {
         switch style {
-        case .essentialsItemTypeGroup, .pullListRoom: true
-        case .installingRoom: false
+        case .essentialsItemTypeGroup, .pullListRoom, .uninstallEssentials: true
+        case .installingRoom, .uninstallingRoom: false
         }
     }
 }

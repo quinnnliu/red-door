@@ -27,10 +27,10 @@ struct EssentialsGroupDetailView: View {
     var body: some View {
         VStack(spacing: 16) {
             TopBar
-
-            LocationRow
             
             AccessoriesSection
+
+            LocationRow
             
             ItemList
                 

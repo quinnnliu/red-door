@@ -156,7 +156,7 @@ private extension UninstallInstalledListSheet {
     var ItemList: some View {
         ScrollView {
             LazyVStack(spacing: 8, pinnedViews: .sectionHeaders) {
-                if viewModel.essentialsGroupState != nil {
+                if viewModel.essentialsGroupState != nil && viewModel.essentialsDestination == nil {
                     Section {
                         EssentialsGroupRow
                     } header: {
@@ -191,7 +191,7 @@ private extension UninstallInstalledListSheet {
         LazyVStack(spacing: 8) {
             ForEach(viewModel.unassignedItemsByRoom, id: \.room.id) { entry in
                 ExpandableSectionView(
-                    style: .installingRoom(room: entry.room, itemCount: entry.items.count),
+                    style: .uninstallingRoom(room: entry.room, itemCount: entry.items.count),
                     isExpanded: false,
                     action: handleAction
                 ) {
@@ -211,9 +211,9 @@ private extension UninstallInstalledListSheet {
     var StorageSection: some View {
         Section {
             LazyVStack(alignment: .leading, spacing: 12) {
-                ForEach(viewModel.storageGroups, id: \.storageLocationId) { group in
+                ForEach(viewModel.storageGroupsIncludingEssentials, id: \.storageLocationId) { group in
                     VStack(alignment: .leading, spacing: 8) {
-                        if viewModel.storageGroups.count > 1 {
+                        if viewModel.storageGroupsIncludingEssentials.count > 1 {
                             Text(group.storageLocation)
                                 .font(.subheadline)
                                 .bold()
@@ -221,6 +221,10 @@ private extension UninstallInstalledListSheet {
                         }
 
                         AssignedItems(group.items)
+
+                        if viewModel.essentialsAssigned(to: .storage, locationId: group.storageLocationId) {
+                            EssentialsGroupRow
+                        }
                     }
                 }
             }
@@ -231,7 +235,13 @@ private extension UninstallInstalledListSheet {
 
     var CopySection: some View {
         Section {
-            AssignedItems(viewModel.copyItems)
+            VStack(spacing: 8) {
+                AssignedItems(viewModel.copyItems)
+
+                if viewModel.essentialsAssigned(to: .copy) {
+                    EssentialsGroupRow
+                }
+            }
         } header: {
             UninstallSectionHeader(
                 title: viewModel.copySectionTitle,
@@ -243,7 +253,13 @@ private extension UninstallInstalledListSheet {
 
     var ExistingListSection: some View {
         Section {
-            AssignedItems(viewModel.existingListItems)
+            VStack(spacing: 8) {
+                AssignedItems(viewModel.existingListItems)
+
+                if viewModel.essentialsAssigned(to: .existingList) {
+                    EssentialsGroupRow
+                }
+            }
         } header: {
             UninstallSectionHeader(
                 title: viewModel.existingSectionTitle,
@@ -341,6 +357,8 @@ private extension UninstallInstalledListSheet {
                 viewModel.showDestinationSheet = true
             }
         }
+        .padding(12)
+        .background(.primary.opacity(0.5))
     }
 }
 

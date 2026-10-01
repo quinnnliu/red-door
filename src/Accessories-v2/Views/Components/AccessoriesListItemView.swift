@@ -46,7 +46,6 @@ struct AccessoriesListItemView: View {
                 } label: {
                     cellContent
                 }
-                .buttonStyle(PlainButtonStyle())
             } else {
                 cellContent
             }

@@ -31,8 +31,6 @@ struct InstalledListItemDetailsView: View {
                     VStack(spacing: 12) {
                         PrimaryImageView(image: viewModel.itemState.primaryImage)
 
-                        ItemDetails
-
                         ItemDetailSection(
                             item: viewModel.itemState,
                             essentialsGroup: viewModel.essentialsGroup
@@ -131,33 +129,6 @@ struct InstalledListItemDetailsView: View {
         })
     }
 
-    // MARK: - Item Details
-
-    private var ItemDetails: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            if viewModel.itemState.location.status == .inInstalledList {
-                HStack(alignment: .center, spacing: 0) {
-                    Text("Location: ")
-                        .foregroundColor(.red)
-                        .bold()
-
-                    if let address = viewModel.installedList?.address.getStreetAddress() ?? viewModel.installedList?.address.formattedAddress {
-                        Text(address)
-                    } else {
-                        Text("Loading...")
-                            .task {
-                                await viewModel.fetchInstalledListForLocation()
-                            }
-                    }
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(8)
-        .background(Color(.systemGray5))
-        .cornerRadius(Constants.CornerRadius.medium)
-    }
-
     // MARK: - Footer
 
     @ViewBuilder
@@ -167,7 +138,7 @@ struct InstalledListItemDetailsView: View {
                 viewModel.showMoveItemSheet = true
             }
 
-            RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.trash, label: "Remove from \(viewModel.room.displayName)", fullWidth: true, font: .caption2) {
+            RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.trash, label: "Remove from Room", fullWidth: true, font: .caption2) {
                 showSelectStorageSheet = true
             }
         }
