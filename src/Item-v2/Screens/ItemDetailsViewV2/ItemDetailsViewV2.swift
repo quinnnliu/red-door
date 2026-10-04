@@ -19,54 +19,16 @@ struct ItemDetailsViewV2: View {
     @State private var showQRCodeLabel: Bool = false
 
 
-    init(item: ItemV2) {
-        viewModel = ItemDetailViewModel(item: item)
+    init(viewModel: ItemDetailViewModel) {
+        self._viewModel = State(initialValue: viewModel)
     }
 
     // MARK: - Body
 
     var body: some View {
         ZStack {
-            VStack(spacing: 12) {
-                VStack(spacing: 6) {
-                    TopBar()
-                    if let nickname = viewModel.itemState.nickname {
-                        Text("Nickname: \(nickname)")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
+            MainContent
 
-                ScrollView {
-                    VStack(spacing: 12) {
-                        PrimaryImageView(image: viewModel.itemState.primaryImage)
-
-                        ItemDetails
-                    }
-                    .padding(.top, 4)
-                }
-            }
-            .frameTop()
-            .frameHorizontalPadding()
-            .toolbar(.hidden)
-            .onAppear { viewModel.startListening() }
-            .task(id: viewModel.itemState.essentialGroupId) {
-                await viewModel.loadEssentialsGroup()
-            }
-            .sheet(isPresented: $showEditSheet) {
-                EditItemSheetV2(viewModel: viewModel)
-            }
-            .fullScreenCover(isPresented: $showQRCodeLabel) {
-                ItemV2LabelView(item: viewModel.itemState)
-            }
-
-            if viewModel.isLoading {
-                Color.black.opacity(0.3).ignoresSafeArea()
-                ProgressView("Saving Item...")
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
-                    .shadow(radius: 10)
-            }
         }
     }
 
@@ -93,7 +55,49 @@ struct ItemDetailsViewV2: View {
     }
 }
 
-extension ItemDetailsViewV2 {
+private extension ItemDetailsViewV2 {
+    // MARK: - Loading Content
+    var MainContent: some View {
+        VStack(spacing: 12) {
+            VStack(spacing: 6) {
+                TopBar()
+                if let nickname = viewModel.itemState.nickname {
+                    Text("Nickname: \(nickname)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+            
+            ScrollView {
+                VStack(spacing: 12) {
+                    PrimaryImageView(image: viewModel.itemState.primaryImage)
+                    
+                    ItemDetails
+                }
+                .padding(.top, 4)
+            }
+        }
+        .frameTop()
+        .frameHorizontalPadding()
+        .toolbar(.hidden)
+        .onAppear { viewModel.startListening() }
+        .task(id: viewModel.itemState.essentialGroupId) {
+            await viewModel.loadEssentialsGroup()
+        }
+        .sheet(isPresented: $showEditSheet) {
+            ItemViewFactory().makeEditItemView(
+                item: viewModel.itemState,
+                essentialsGroup: viewModel.essentialsGroup
+            )
+        }
+        .fullScreenCover(isPresented: $showQRCodeLabel) {
+            ItemV2LabelView(item: viewModel.itemState)
+        }
+    }
+}
+
+private extension ItemDetailsViewV2 {
+    
     // MARK: - Top Bar Menu
 
     var TopBarMenu: some View {
