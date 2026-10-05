@@ -86,7 +86,7 @@ private extension SelectAccessoriesSheet {
                     RDButton(variant: viewModel.activeFiltersApplied ? .red : .outline, size: .icon, leadingIcon: SFSymbols.sliderHorizontal3, fullWidth: false) {
                         showFilterSheet = true
                     }
-                    RDButton(variant: .outline, size: .icon, leadingIcon: SFSymbols.magnifyingglass, fullWidth: false) {
+                    RDButton(variant: .outline, size: .icon, leadingIcon: SFSymbols.magnifyingglass, fullWidth: false, disabled: viewModel.activeFiltersApplied) {
                         withAnimation(Constants.Animation.snappy) {
                             searchFocused = true
                         }

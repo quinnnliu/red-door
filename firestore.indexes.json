@@ -1,0 +1,125 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "accessories",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "location.status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "essentials_group_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "base_name_lowercased",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "accessories",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "accessories_type_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "accessories_number",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "essentials",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "essentials_type_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "group_number",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "installed_list_v2",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "uninstalled",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "uninstall_date",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "installed_list_v2",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "uninstalled",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "address_id",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "installed_list_v2",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "uninstalled",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "install_date",
+          "order": "DESCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "items_v2",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "location.status",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "essential_group_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "base_name_lowercased",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "items_v2",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "model_id",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "item_number",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

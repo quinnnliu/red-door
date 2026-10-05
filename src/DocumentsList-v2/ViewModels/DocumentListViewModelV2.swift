@@ -26,7 +26,7 @@ final class DocumentListViewModelV2<T: RDDocument> {
     private(set) var activeFilters: [String: AnyHashable] = [:]
     private(set) var defaultFilters: [String: AnyHashable]?
     var activeFiltersApplied: Bool {
-        !activeFilters.isEmpty
+        activeFilters.keys.contains { $0 != T.searchField }
     }
     var defaultFilterKeys: Set<String> {
         defaultFilters.map { Set($0.keys) } ?? []
@@ -56,18 +56,17 @@ final class DocumentListViewModelV2<T: RDDocument> {
         await startReload(filters: updatedFilters)
     }
     
-    /// Remove  a filter and reloads
+    /// Remove a filter and reloads
     func removeFilter(key: String) async {
         var updatedFilters = activeFilters
         updatedFilters.removeValue(forKey: key)
         await startReload(filters: updatedFilters)
     }
 
-    /// Search by text and reload from page 1.
+    /// Search by text and reload from page 1. Ignored while filters are applied.
     func search(text: String) async {
-        if !text.isEmpty {
-            await updateFilter(key: T.searchField, value: T.normalizeSearchText(text))
-        }
+        guard !text.isEmpty, !activeFiltersApplied else { return }
+        await updateFilter(key: T.searchField, value: T.normalizeSearchText(text))
     }
 
     /// Handle a SearchBarAction by dispatching to search or refresh.
@@ -106,6 +105,13 @@ final class DocumentListViewModelV2<T: RDDocument> {
         await fetchPage(appending: false)
     }
 
+    /// Filtered queries are left unsorted so Firestore can serve them from its automatic
+    /// single-field indexes. Search sorts by its own range field.
+    private var sortField: String? {
+        if activeFilters[T.searchField] != nil { return T.searchField }
+        return activeFiltersApplied ? nil : T.orderByField
+    }
+
     private func fetchPage(appending: Bool) async {
         guard hasMore, !isLoading else { return }
         isLoading = true
@@ -115,9 +121,10 @@ final class DocumentListViewModelV2<T: RDDocument> {
 
         var query: Query = collectionRef
         query = applyFilters(to: query)
-        query = query
-            .order(by: T.orderByField)
-            .limit(to: pageSize)
+        if let sortField {
+            query = query.order(by: sortField)
+        }
+        query = query.limit(to: pageSize)
         if appending, let cursor {
             query = query.start(afterDocument: cursor)
         }
