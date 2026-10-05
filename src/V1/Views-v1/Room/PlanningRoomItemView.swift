@@ -321,11 +321,11 @@ struct PlanningRoomItemView: View {
     @ViewBuilder
     private func Footer() -> some View {
         HStack(spacing: 12) {
-            RDButton(variant: .default, size: .default, leadingIcon: SFSymbols.arrowUturnBackward, label: "Move to Other Room", fullWidth: true) {
+            RDButton(style: .default, size: .default, leadingIcon: SFSymbols.arrowUturnBackward, label: "Move to Other Room", fullWidth: true) {
                 itemToMove = item
             }
 
-            RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.trash, label: "Remove from \(roomViewModel.selectedRoom.roomName)", fullWidth: true) {
+            RDButton(style: .red, size: .default, leadingIcon: SFSymbols.trash, label: "Remove from \(roomViewModel.selectedRoom.roomName)", fullWidth: true) {
                 showRemoveConfirmationAlert = true
             }
         }

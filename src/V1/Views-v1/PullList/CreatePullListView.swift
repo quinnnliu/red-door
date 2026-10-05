@@ -74,7 +74,7 @@ struct CreatePullListView: View {
                 }
             }
 
-            RDButton(variant: .red, size: .default, label: "Create Pull List", fullWidth: true) {
+            RDButton(style: .red, size: .default, label: "Create Pull List", fullWidth: true) {
                 viewModel.selectedList.installDate = installDate.formatted(.dateTime.year().month().day())
                 viewModel.selectedList.uninstallDate = uninstallDate.formatted(.dateTime.year().month().day())
                 viewModel.createPullList()
@@ -104,7 +104,7 @@ struct CreatePullListView: View {
         TopAppBar(leadingView: {
             BackButton()
         }, header: {
-            RDButton(variant: .outline, size: .default, label: viewModel.selectedList.address.isInitialized() ? viewModel.selectedList.address.getStreetAddress() ?? "" : "Enter Address") {
+            RDButton(style: .outline, size: .default, label: viewModel.selectedList.address.isInitialized() ? viewModel.selectedList.address.getStreetAddress() ?? "" : "Enter Address") {
                 showAddressSheet = true
             }
         }, trailingView: {

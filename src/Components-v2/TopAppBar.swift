@@ -42,7 +42,7 @@ struct BackButton: View {
 
     var body: some View {
         RDButton(
-            variant: .red,
+            style: .red,
             size: .icon,
             leadingIcon: icon, // TODO: consider the environment variable injection instead of UIKit (isModallyPresented)
             fullWidth: false

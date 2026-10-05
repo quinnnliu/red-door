@@ -62,7 +62,7 @@ struct EditItemView: View {
 
                     Spacer()
 
-                    RDButton(variant: .red, size: .default, leadingIcon: "trash", label: "Delete Item", fullWidth: false) {
+                    RDButton(style: .red, size: .default, leadingIcon: "trash", label: "Delete Item", fullWidth: false) {
                         showDeleteAlert = true
                     }
                     .disabled(!viewModel.canDelete)
@@ -108,7 +108,7 @@ struct EditItemView: View {
     private func TopBar() -> some View {
         TopAppBar(
             leadingView: {
-                RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.xmark, fullWidth: false) {
+                RDButton(style: .red, size: .icon, leadingIcon: SFSymbols.xmark, fullWidth: false) {
                     dismiss()
                 }
                 .clipShape(Circle())
@@ -117,7 +117,7 @@ struct EditItemView: View {
                 ItemNameEntry
             },
             trailingView: {
-                RDButton(variant: .red, size: .icon, leadingIcon: "checkmark", fullWidth: false) {
+                RDButton(style: .red, size: .icon, leadingIcon: "checkmark", fullWidth: false) {
                     saveItem()
                 }
                 .clipShape(Circle())

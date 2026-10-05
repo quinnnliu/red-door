@@ -84,16 +84,16 @@ struct EditPullListDetailsSheet: View {
     @ViewBuilder
     private func TopBar() -> some View {
         TopAppBar(leadingView: {
-            RDButton(variant: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
+            RDButton(style: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
                 dismiss()
             }
             .clipShape(Circle())
         }, header: {
-            RDButton(variant: .outline, size: .default, label: editingList.address.isInitialized() ? editingList.address.getStreetAddress() ?? "" : "Enter Address") {
+            RDButton(style: .outline, size: .default, label: editingList.address.isInitialized() ? editingList.address.getStreetAddress() ?? "" : "Enter Address") {
                 showAddressSheet = true
             }
         }, trailingView: {
-            RDButton(variant: .red, size: .icon, leadingIcon: "checkmark", fullWidth: false) {
+            RDButton(style: .red, size: .icon, leadingIcon: "checkmark", fullWidth: false) {
                 let installDateString = installDate.formatted(.dateTime.year().month().day())
                 if installDateString != viewModel.selectedList.installDate {
                     viewModel.selectedList.installDate = installDateString

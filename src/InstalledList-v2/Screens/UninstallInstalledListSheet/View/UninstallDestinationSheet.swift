@@ -203,7 +203,7 @@ private extension UninstallDestinationSheet {
             AddressRow
 
             RDButton(
-                variant: .red,
+                style: .red,
                 leadingIcon: SFSymbols.plus,
                 label: "Send to This List",
                 fullWidth: true,
@@ -247,13 +247,13 @@ private extension UninstallDestinationSheet {
 
                 Spacer(minLength: 0)
 
-                RDButton(variant: .outline, size: .sm, label: "Change") {
+                RDButton(style: .outline, size: .sm, label: "Change") {
                     showAddressSheet = true
                 }
             }
         } else {
             RDButton(
-                variant: .outline,
+                style: .outline,
                 leadingIcon: SFSymbols.mapPinAndEllipse,
                 label: "Select Address",
                 fullWidth: true

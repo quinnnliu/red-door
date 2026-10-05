@@ -50,7 +50,7 @@ struct EditEssentialsGroupSheet: View {
                 
                 HStack(spacing: 12) {
                     RDButton(
-                        variant: .default,
+                        style: .default,
                         size: .default,
                         leadingIcon: "trash",
                         label: "Delete",
@@ -61,7 +61,7 @@ struct EditEssentialsGroupSheet: View {
                     .disabled(!originalGroup.itemIds.isEmpty)
 
                     RDButton(
-                        variant: .red,
+                        style: .red,
                         size: .default,
                         leadingIcon: "checkmark",
                         label: "Save",
@@ -235,7 +235,7 @@ private extension EditEssentialsGroupSheet {
                         .background(Color(.systemGray5))
                         .cornerRadius(Constants.CornerRadius.medium)
 
-                    RDButton(variant: .default, size: .sm, label: "Create", fullWidth: false) {
+                    RDButton(style: .default, size: .sm, label: "Create", fullWidth: false) {
                         withAnimation(Constants.Animation.snappy) {
                             if let newType = viewModel.createAndSelectNewGroupType() {
                                 applyGroupType(newType)
@@ -251,7 +251,7 @@ private extension EditEssentialsGroupSheet {
                     .font(.body)
                     .bold()
                 Spacer()
-                RDButton(variant: .outline, size: .sm, label: "Change", fullWidth: false) {
+                RDButton(style: .outline, size: .sm, label: "Change", fullWidth: false) {
                     viewModel.showGroupTypePicker = true
                 }
             }

@@ -83,7 +83,7 @@ private struct AttentionSheet: View {
 
             Spacer()
 
-            RDButton(variant: .red, size: .default, label: "Done") {
+            RDButton(style: .red, size: .default, label: "Done") {
                 dismiss()
             }
         }

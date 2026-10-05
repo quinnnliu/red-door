@@ -90,7 +90,7 @@ extension InstalledListDocumentListViewV2 {
     private var TrailingIconGroup: some View {
         HStack(spacing: 8) {
             Group {
-                RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", fullWidth: false, disabled: viewModel.activeFiltersApplied) {
+                RDButton(style: .outline, size: .icon, leadingIcon: "magnifyingglass", fullWidth: false, disabled: viewModel.activeFiltersApplied) {
                     withAnimation(Constants.Animation.snappy) {
                         searchFocused = true
                     }
@@ -103,14 +103,22 @@ extension InstalledListDocumentListViewV2 {
     // MARK: FilterButton
 
     private func FilterButton(_ filtersActive: Bool = false) -> some View {
-        RDButton(
-            variant: filtersActive ? .red : .secondary,
-            size: .icon,
-            leadingIcon: SFSymbols.sliderHorizontal3
-        ) {
-            showFilterSheet = true
+        HStack(spacing: 4) {
+            RDButton(
+                style: filtersActive ? .red : .secondary,
+                size: .icon,
+                leadingIcon: SFSymbols.sliderHorizontal3
+            ) {
+                showFilterSheet = true
+            }
+            .clipShape(.circle)
+            
+            if filtersActive {
+                Text("Filters Applied")
+                    .font(.caption2)
+                    .foregroundStyle(.red)
+            }
         }
-        .clipShape(.circle)
     }
 
     // MARK: Installed Section

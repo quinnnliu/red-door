@@ -49,7 +49,7 @@ struct EditAccessoriesSheet: View {
                 Spacer()
 
                 RDButton(
-                    variant: .red,
+                    style: .red,
                     size: .default,
                     leadingIcon: "checkmark",
                     label: "Save",
@@ -150,14 +150,14 @@ private extension EditAccessoriesSheet {
     var TopBar: some View {
         TopAppBar(
             leadingView: {
-                RDButton(variant: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
+                RDButton(style: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
                     dismiss()
                 }
                 .clipShape(Circle())
             },
             header: {
                 RDButton(
-                    variant: .outline,
+                    style: .outline,
                     size: .default,
                     label: editingAccessory.baseName
                 ) {
@@ -208,7 +208,7 @@ private extension EditAccessoriesSheet {
                         .background(Color(.systemGray5))
                         .cornerRadius(Constants.CornerRadius.medium)
 
-                    RDButton(variant: .default, size: .default, label: "Create", fullWidth: false) {
+                    RDButton(style: .default, size: .default, label: "Create", fullWidth: false) {
                         if let newType = viewModel.createAndSelectNewType() {
                             applyType(newType)
                         }
@@ -225,7 +225,7 @@ private extension EditAccessoriesSheet {
                     .bold()
                     .frame(maxWidth: .infinity, alignment: .leading)
 
-                RDButton(variant: .outline, size: .default, label: "Select Type", fullWidth: true) {
+                RDButton(style: .outline, size: .default, label: "Select Type", fullWidth: true) {
                     viewModel.showExistingTypePicker = true
                 }
             }

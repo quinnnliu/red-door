@@ -42,7 +42,7 @@ struct InstalledRoomListItemView: View {
     @ViewBuilder
     private func RoomPreviewHeader() -> some View {
         HStack(spacing: 12) {
-            RDButton(variant: .outline, size: .icon, leadingIcon: showRoomPreview ? SFSymbols.minus : SFSymbols.plus, fullWidth: false) {
+            RDButton(style: .outline, size: .icon, leadingIcon: showRoomPreview ? SFSymbols.minus : SFSymbols.plus, fullWidth: false) {
                 showRoomPreview.toggle()
             }
             .disabled(viewModel.selectedRoom.itemModelIdMap.isEmpty)

@@ -43,7 +43,7 @@ struct UninstallInstalledListSheet: View {
             
             if viewModel.isOwner {
                 RDButton(
-                    variant: .red,
+                    style: .red,
                     size: .default,
                     label: "Confirm Uninstall",
                     disabled: !viewModel.allAssigned
@@ -108,7 +108,7 @@ private extension UninstallInstalledListSheet {
             },
             trailingView: {
                 RDButton(
-                    variant: .red,
+                    style: .red,
                     size: .icon,
                     leadingIcon: SFSymbols.arrowCounterclockwise
                 ) {
@@ -134,7 +134,7 @@ private extension UninstallInstalledListSheet {
 
             Spacer(minLength: 0)
 
-            RDButton(variant: .red, size: .sm, label: "Take Over") {
+            RDButton(style: .red, size: .sm, label: "Take Over") {
                 Task { await viewModel.takeoverSession() }
             }
         }
@@ -274,7 +274,7 @@ private extension UninstallInstalledListSheet {
         UninstallAssignedItemsList(entries: entries) { item in
             if viewModel.isOwner {
                 RDButton(
-                    variant: .default,
+                    style: .default,
                     size: .icon,
                     leadingIcon: SFSymbols.arrowUturnBackward
                 ) {
@@ -299,7 +299,7 @@ private extension UninstallInstalledListSheet {
                 if viewModel.isOwner {
                     if viewModel.essentialsDestinationLabel != nil {
                         RDButton(
-                            variant: .default,
+                            style: .default,
                             size: .icon,
                             leadingIcon: SFSymbols.arrowUturnBackward
                         ) {
@@ -349,11 +349,11 @@ private extension UninstallInstalledListSheet {
 
             Spacer()
 
-            RDButton(variant: .ghost, size: .sm, label: "Clear") {
+            RDButton(style: .ghost, size: .sm, label: "Clear") {
                 viewModel.clearSelection()
             }
 
-            RDButton(variant: .red, size: .sm, label: "Send to…") {
+            RDButton(style: .red, size: .sm, label: "Send to…") {
                 viewModel.showDestinationSheet = true
             }
         }

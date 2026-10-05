@@ -12,6 +12,8 @@ import SwiftUI
 struct FilterDocumentPickerRow<T: RDDocument>: View {
     @Binding var selection: T?
 
+    @State private var showSheet = false
+
     private let options: [T]
     private let title: String
 
@@ -28,18 +30,49 @@ struct FilterDocumentPickerRow<T: RDDocument>: View {
                 .fontWeight(.semibold)
                 .foregroundStyle(.primary)
             Spacer()
-            Picker("", selection: $selection) {
-                Text("Any").tag(Optional<T>.none)
-                ForEach(options) { option in
-                    Text(option.displayName).tag(Optional(option))
+            Button {
+                showSheet = true
+            } label: {
+                HStack(spacing: 4) {
+                    Text(selection?.displayName ?? "Any")
+                    Image(systemName: "chevron.up.chevron.down")
+                        .font(.system(size: 11))
                 }
+                .font(.subheadline)
+                .foregroundStyle(selection != nil ? .red : .secondary)
             }
-            .pickerStyle(.menu)
-            .tint(selection != nil ? .red : .secondary)
+            .buttonStyle(.plain)
         }
         .padding(.vertical, 12)
         .overlay(alignment: .bottom) {
             Divider()
+        }
+        .sheet(isPresented: $showSheet) {
+            SelectDocumentSheet(
+                title: title,
+                documents: options,
+                action: handleAction,
+                footer: {
+                    RDButton(style: .red, label: "Any", fullWidth: true)
+                }
+            )
+        }
+    }
+}
+
+// MARK: - Actions
+
+private extension FilterDocumentPickerRow {
+    func handleAction(_ action: Any?) {
+        switch action {
+        case let action as SelectDocumentSheetAction<T>:
+            switch action {
+            case .selected(let document):
+                selection = document
+            case .footerAction:
+                selection = nil
+            }
+        default: break
         }
     }
 }

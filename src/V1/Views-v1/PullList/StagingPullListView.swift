@@ -104,7 +104,7 @@ struct StagingPullListView: View {
 
     @ViewBuilder
     private func Footer() -> some View {
-        RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.truckBoxBadgeClockFill, label: "Create Installed List", fullWidth: true) {
+        RDButton(style: .red, size: .default, leadingIcon: SFSymbols.truckBoxBadgeClockFill, label: "Create Installed List", fullWidth: true) {
             Task { // TODO: consider wrapping this in some error-handling function
                 do {
                     await viewModel.loadRooms() // get updated selections
@@ -142,7 +142,7 @@ struct StagingPullListView: View {
 
     @ViewBuilder
     private var RefreshButton: some View {
-        RDButton(variant: .red, size: .icon, leadingIcon: "arrow.counterclockwise", fullWidth: false) {
+        RDButton(style: .red, size: .icon, leadingIcon: "arrow.counterclockwise", fullWidth: false) {
             Task {
                 await viewModel.refreshRDList()
             }

@@ -113,7 +113,7 @@ private extension ListDocumentFilterSheet {
     }
 
     var ApplyButton: some View {
-        RDButton(variant: .red, label: "Apply Filters", fullWidth: true) {
+        RDButton(style: .red, label: "Apply Filters", fullWidth: true) {
             applyFilters()
         }
     }

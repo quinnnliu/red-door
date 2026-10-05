@@ -160,7 +160,7 @@ struct StagingRoomDetailsView: View {
 
             Spacer() 
 
-            RDButton(variant: .default, size: .icon, leadingIcon: SFSymbols.arrowUturnBackward, fullWidth: false) {
+            RDButton(style: .default, size: .icon, leadingIcon: SFSymbols.arrowUturnBackward, fullWidth: false) {
                 itemToMove = item
             }
         }

@@ -35,7 +35,7 @@ struct CreateAccessoriesView: View {
                 Spacer()
 
                 RDButton(
-                    variant: .red,
+                    style: .red,
                     size: .default,
                     leadingIcon: "plus",
                     label: "Add Accessory",
@@ -102,14 +102,14 @@ private extension CreateAccessoriesView {
     var TopBar: some View {
         TopAppBar(
             leadingView: {
-                RDButton(variant: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
+                RDButton(style: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
                     dismiss()
                 }
                 .clipShape(Circle())
             },
             header: {
                 RDButton(
-                    variant: .outline,
+                    style: .outline,
                     size: .default,
                     label: viewModel.selectedType?.displayName ?? "Accessory Type") {
                         viewModel.showSelectTypeSheet = true
@@ -157,7 +157,7 @@ private extension CreateAccessoriesView {
                         .background(Color(.systemGray5))
                         .cornerRadius(Constants.CornerRadius.medium)
 
-                    RDButton(variant: .default, size: .default, label: "Create", fullWidth: false) {
+                    RDButton(style: .default, size: .default, label: "Create", fullWidth: false) {
                         viewModel.createAndSelectNewType()
                     }
                     .disabled(viewModel.newTypeName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -172,7 +172,7 @@ private extension CreateAccessoriesView {
                     .bold()
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
-                RDButton(variant: .outline, size: .default, label: "Select Type", fullWidth: true) {
+                RDButton(style: .outline, size: .default, label: "Select Type", fullWidth: true) {
                     viewModel.showExistingTypePicker = true
                 }
             }

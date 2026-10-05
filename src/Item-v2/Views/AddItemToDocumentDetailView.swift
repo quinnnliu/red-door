@@ -43,7 +43,7 @@ struct AddItemToDocumentDetailView: View {
                 Spacer(minLength: .zero)
 
                 RDButton(
-                    variant: .red,
+                    style: .red,
                     leadingIcon: SFSymbols.plus,
                     label: "Add to \(viewModel.destination.document.displayName)",
                     fullWidth: true
@@ -95,7 +95,7 @@ struct AddItemToDocumentDetailView: View {
                 }
             },
             trailingView: {
-                RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.qrcode) {
+                RDButton(style: .red, size: .icon, leadingIcon: SFSymbols.qrcode) {
                     showQRCodeSheet = true
                 }
                 .clipShape(.circle)

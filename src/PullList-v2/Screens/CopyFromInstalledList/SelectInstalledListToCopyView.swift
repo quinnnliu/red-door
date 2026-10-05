@@ -62,7 +62,7 @@ struct SelectInstalledListToCopyView: View {
             },
             trailingView: {
                 RDButton(
-                    variant: .outline,
+                    style: .outline,
                     size: .icon,
                     leadingIcon: "magnifyingglass",
                     fullWidth: false

@@ -50,16 +50,16 @@ struct StorageLocationOptionsView: View {
                 Spacer()
 
                 if viewModel.showStorageLocationSection {
-                    RDButton(variant: .outline, size: .icon, leadingIcon: "arrow.clockwise", fullWidth: false) {
+                    RDButton(style: .outline, size: .icon, leadingIcon: "arrow.clockwise", fullWidth: false) {
                         Task { await viewModel.refreshStorageLocations() }
                     }
 
-                    RDButton(variant: viewModel.editingStorageLocations ? .red : .outline, size: .icon, leadingIcon: "square.and.pencil", fullWidth: false) {
+                    RDButton(style: viewModel.editingStorageLocations ? .red : .outline, size: .icon, leadingIcon: "square.and.pencil", fullWidth: false) {
                         viewModel.editingStorageLocations.toggle()
                     }
                 }
 
-                RDButton(variant: .outline, size: .icon, leadingIcon: viewModel.showStorageLocationSection ? "chevron.up" : "chevron.down", fullWidth: false) {
+                RDButton(style: .outline, size: .icon, leadingIcon: viewModel.showStorageLocationSection ? "chevron.up" : "chevron.down", fullWidth: false) {
                     withAnimation(Constants.Animation.snappy) {
                         viewModel.showStorageLocationSection.toggle()
                         viewModel.editingStorageLocations = false
@@ -80,7 +80,7 @@ struct StorageLocationOptionsView: View {
                     }
 
                     if viewModel.editingStorageLocations {
-                        RDButton(variant: .secondary, size: .default, leadingIcon: "plus", label: "Add Storage Location", fullWidth: true) {
+                        RDButton(style: .secondary, size: .default, leadingIcon: "plus", label: "Add Storage Location", fullWidth: true) {
                             viewModel.resetStorageLocation()
                             viewModel.showAddressSheet = true
                         }

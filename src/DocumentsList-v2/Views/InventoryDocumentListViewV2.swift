@@ -1,5 +1,5 @@
 //
-//  ItemDocumentListViewV2.swift
+//  InventoryDocumentListViewV2.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 4/25/26.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ItemDocumentListViewV2: View {
+struct InventoryDocumentListViewV2: View {
     @Environment(\.dismiss) var dismiss
     @Binding var path: NavigationPath
     let itemRepo: ItemRepository
@@ -24,8 +24,8 @@ struct ItemDocumentListViewV2: View {
 
     @State private var selectedSegment: InventorySegment = .items
     @State private var itemsVM: DocumentListViewModelV2<ItemV2> = DocumentListViewModelV2<ItemV2>()
-    @State private var essentialsVM: DocumentListViewModelV2<EssentialsGroup> = DocumentListViewModelV2<EssentialsGroup>(pageSize: 50)
-    @State private var accessoriesVM: DocumentListViewModelV2<Accessories> = DocumentListViewModelV2<Accessories>(pageSize: 50)
+    @State private var essentialsVM: DocumentListViewModelV2<EssentialsGroup> = DocumentListViewModelV2<EssentialsGroup>()
+    @State private var accessoriesVM: DocumentListViewModelV2<Accessories> = DocumentListViewModelV2<Accessories>()
 
     // MARK: - Filter Options
 
@@ -70,7 +70,10 @@ struct ItemDocumentListViewV2: View {
             .frameTop()
             .frameHorizontalPadding()
             .task {
-                await itemsVM.refresh()
+                // The items filter sheet needs the essentials groups, so don't wait for the essentials tab.
+                async let items: Void = itemsVM.refresh()
+                async let essentials: Void = essentialsVM.documents.isEmpty ? essentialsVM.refresh() : ()
+                _ = await (items, essentials)
             }
             .fullScreenCover(item: $createDocumentSheetType) { type in
                 CreateCover(for: type)
@@ -101,7 +104,7 @@ struct ItemDocumentListViewV2: View {
     }
 }
 
-extension ItemDocumentListViewV2 {
+extension InventoryDocumentListViewV2 {
     // MARK: - TopBar
 
     private var TopBar: some View {
@@ -130,13 +133,13 @@ extension ItemDocumentListViewV2 {
     private var TrailingIconGroup: some View {
         HStack(spacing: 8) {
             Group {
-                RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", fullWidth: false, disabled: filtersActive) {
+                RDButton(style: .outline, size: .icon, leadingIcon: "magnifyingglass", fullWidth: false, disabled: filtersActive) {
                     withAnimation(Constants.Animation.snappy) {
                         searchFocused = true
                     }
                 }
 
-                RDButton(variant: .outline, size: .icon, leadingIcon: "qrcode.viewfinder", fullWidth: false) {
+                RDButton(style: .outline, size: .icon, leadingIcon: "qrcode.viewfinder", fullWidth: false) {
                     showScannerSheet = true
                 }
 
@@ -175,14 +178,22 @@ extension ItemDocumentListViewV2 {
     // MARK: - FilterButton
     
     private func FilterButton(_ filtersActive: Bool = false) -> some View {
-        RDButton(
-            variant: filtersActive ? .red : .secondary,
-            size: .icon,
-            leadingIcon: SFSymbols.sliderHorizontal3
-        ) {
-            filterDocumentSheetType = selectedSegment
+        HStack(spacing: 4) {
+            RDButton(
+                style: filtersActive ? .red : .secondary,
+                size: .icon,
+                leadingIcon: SFSymbols.sliderHorizontal3
+            ) {
+                filterDocumentSheetType = selectedSegment
+            }
+            .clipShape(.circle)
+            
+            if filtersActive {
+                Text("Filters Applied")
+                    .font(.caption2)
+                    .foregroundStyle(.red)
+            }
         }
-        .clipShape(.circle)
     }
     
     private var filtersActive: Bool {
@@ -219,15 +230,15 @@ extension ItemDocumentListViewV2 {
     private var CreateButton: some View {
         switch selectedSegment {
         case .items:
-            RDButton(variant: .outline, size: .icon, leadingIcon: "plus", fullWidth: false) {
+            RDButton(style: .outline, size: .icon, leadingIcon: "plus", fullWidth: false) {
                 createDocumentSheetType = .items
             }
         case .essentials:
-            RDButton(variant: .outline, size: .icon, leadingIcon: "plus", fullWidth: false) {
+            RDButton(style: .outline, size: .icon, leadingIcon: "plus", fullWidth: false) {
                 createDocumentSheetType = .essentials
             }
         case .accessories:
-            RDButton(variant: .outline, size: .icon, leadingIcon: "plus", fullWidth: false) {
+            RDButton(style: .outline, size: .icon, leadingIcon: "plus", fullWidth: false) {
                 createDocumentSheetType = .accessories
             }
         }
@@ -299,7 +310,7 @@ extension ItemDocumentListViewV2 {
     }
 }
 
-private extension ItemDocumentListViewV2 {
+private extension InventoryDocumentListViewV2 {
 
     // MARK: - InventorySegment
 

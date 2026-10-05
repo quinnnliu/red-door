@@ -82,7 +82,7 @@ struct UnstageInstalledListCover: View {
                 )
             },
             trailingView: { 
-                RDButton(variant: .red, size: .icon, leadingIcon: "arrow.counterclockwise", fullWidth: false) {
+                RDButton(style: .red, size: .icon, leadingIcon: "arrow.counterclockwise", fullWidth: false) {
                     Task {
                         stagedItems = []
                         unstagedItems = []
@@ -99,7 +99,7 @@ struct UnstageInstalledListCover: View {
 
     @ViewBuilder
     private func ExitButton() -> some View {
-        RDButton(variant: .red, size: .icon, leadingIcon: "xmark",  fullWidth: false) {
+        RDButton(style: .red, size: .icon, leadingIcon: "xmark",  fullWidth: false) {
             dismiss()
         }
     }
@@ -185,7 +185,7 @@ struct UnstageInstalledListCover: View {
                 Spacer()
 
                 if item.isAvailable {
-                    RDButton(variant: .default, size: .icon, leadingIcon: SFSymbols.arrowUturnBackward, fullWidth: false) {
+                    RDButton(style: .default, size: .icon, leadingIcon: SFSymbols.arrowUturnBackward, fullWidth: false) {
                         Task {
                             let result = await ItemViewModel(selectedItem: item).revertItemUnstage(listId: item.listId)
                             unstagedItems.removeAll { $0.id == result.id }
@@ -195,7 +195,7 @@ struct UnstageInstalledListCover: View {
                         }
                     }
                 } else {
-                    RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.shippingbox, fullWidth: false) {
+                    RDButton(style: .red, size: .icon, leadingIcon: SFSymbols.shippingbox, fullWidth: false) {
                         selectedItemAndModel = (item, model)
                         showUnstageSheet = true
                     }
@@ -217,7 +217,7 @@ struct UnstageInstalledListCover: View {
     private func Footer() -> some View {
         if stagedItems.isEmpty {
             HStack(spacing: 0) {
-                RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.checkmarkSquareFill, label: "Set List as Unstaged", fullWidth: true) {
+                RDButton(style: .red, size: .default, leadingIcon: SFSymbols.checkmarkSquareFill, label: "Set List as Unstaged", fullWidth: true) {
                     Task {
                         await viewModel.setListAsUnstaged()
                         coordinator.resetSelectedPath()

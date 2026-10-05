@@ -58,7 +58,7 @@ private extension AccessoriesDetailsView {
                 }
             },
             trailingView: {
-                RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.pencil) {
+                RDButton(style: .red, size: .icon, leadingIcon: SFSymbols.pencil) {
                     showEditSheet = true
                 }
                 .clipShape(Circle())

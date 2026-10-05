@@ -33,7 +33,7 @@ struct InstallPullListSheet: View {
 
             if viewModel.isOwner {
                 RDButton(
-                    variant: .red,
+                    style: .red,
                     size: .default,
                     leadingIcon: SFSymbols.plus,
                     label: "Create Installed List",
@@ -106,7 +106,7 @@ extension InstallPullListSheet {
 
             Spacer(minLength: 0)
 
-            RDButton(variant: .red, size: .sm, label: "Take Over") {
+            RDButton(style: .red, size: .sm, label: "Take Over") {
                 Task { await viewModel.takeoverSession() }
             }
         }

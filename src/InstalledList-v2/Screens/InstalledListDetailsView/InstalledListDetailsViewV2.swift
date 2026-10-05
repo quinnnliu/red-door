@@ -67,7 +67,7 @@ private extension InstalledListDetailsViewV2 {
 
     // MARK: ShowDetailsButton
     var ShowDetailsButton: some View {
-        RDButton(variant: .secondary, size: .icon, leadingIcon: SFSymbols.infoCircleFill) {
+        RDButton(style: .secondary, size: .icon, leadingIcon: SFSymbols.infoCircleFill) {
             withAnimation(Constants.Animation.snappy) {
                 footerContentState = .details
             }
@@ -122,7 +122,7 @@ private extension InstalledListDetailsViewV2 {
             .tint(.red)
         } label: {
             RDButton(
-                variant: .red,
+                style: .red,
                 size: .icon,
                 leadingIcon: SFSymbols.ellipsis
             ) { }.clipShape(.circle)
@@ -279,11 +279,11 @@ private extension InstalledListDetailsViewV2 {
                 ShowDetailsButton
 
                 if !viewModel.installedListState.uninstalled {
-                    RDButton(variant: .red, leadingIcon: SFSymbols.shippingbox, label: "Uninstall List", fullWidth: true) {
+                    RDButton(style: .red, leadingIcon: SFSymbols.shippingbox, label: "Uninstall List", fullWidth: true) {
                         showUninstallListCover = true
                     }
                 } else {
-                    RDButton(variant: .outline, leadingIcon: SFSymbols.shippingbox, label: "Uninstall Summary", fullWidth: true) {
+                    RDButton(style: .outline, leadingIcon: SFSymbols.shippingbox, label: "Uninstall Summary", fullWidth: true) {
                         showUninstallRecordSheet = true
                     }
                 }
@@ -318,7 +318,7 @@ private extension InstalledListDetailsViewV2 {
     @ViewBuilder
     var ShowEssentialsButton: some View {
         if let essentialsGroup = viewModel.essentialsGroupState {
-            RDButton(variant: .secondary, size: .icon, label: essentialsGroup.emoji) {
+            RDButton(style: .secondary, size: .icon, label: essentialsGroup.emoji) {
                 withAnimation(Constants.Animation.snappy) {
                     footerContentState = .essentials
                 }

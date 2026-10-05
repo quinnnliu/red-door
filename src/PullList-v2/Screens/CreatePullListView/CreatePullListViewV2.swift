@@ -91,7 +91,7 @@ struct CreatePullListViewV2: View {
                 }
                 
                 RDButton(
-                    variant: .red,
+                    style: .red,
                     size: .default,
                     leadingIcon: SFSymbols.plus,
                     label: "Create Pull List",
@@ -138,7 +138,7 @@ struct CreatePullListViewV2: View {
                 BackButton()
             }, header: {
                 RDButton(
-                    variant: .outline,
+                    style: .outline,
                     size: .default,
                     leadingIcon: SFSymbols.mapPinAndEllipse,
                     label: viewModel.pullListState.address.isInitialized() ? viewModel.pullListState.address.getStreetAddress() ?? "" : "Enter Address") {

@@ -94,7 +94,7 @@ private extension AccessoriesDocumentFilterSheet {
     }
 
     var ApplyButton: some View {
-        RDButton(variant: .red, label: "Apply Filters", fullWidth: true) {
+        RDButton(style: .red, label: "Apply Filters", fullWidth: true) {
             applyFilters()
         }
     }

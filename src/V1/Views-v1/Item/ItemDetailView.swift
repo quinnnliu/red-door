@@ -115,7 +115,7 @@ struct ItemDetailView: View {
                 Text(model?.name ?? "Loading...")
             }
         }, trailingView: {
-            RDButton(variant: .red, size: .icon, leadingIcon: "square.and.pencil", fullWidth: false) {
+            RDButton(style: .red, size: .icon, leadingIcon: "square.and.pencil", fullWidth: false) {
                 showEditSheet = true
                 backupItem = viewModel.selectedItem
             }

@@ -68,13 +68,13 @@ struct PullListDocumentView: View {
             trailingView: {
                 HStack(spacing: 8) {
                     if !searchFocused {
-                        RDButton(variant: .outline, size: .icon, leadingIcon: "magnifyingglass", fullWidth: false) {
+                        RDButton(style: .outline, size: .icon, leadingIcon: "magnifyingglass", fullWidth: false) {
                             searchTextFocused = true
                             searchFocused = true
                         }
                     }
 
-                    RDButton(variant: .outline, size: .icon, leadingIcon: "arrow.counterclockwise", fullWidth: false) {
+                    RDButton(style: .outline, size: .icon, leadingIcon: "arrow.counterclockwise", fullWidth: false) {
                         Task {
                             await viewModel.fetchPrimaryLists()
                             await viewModel.fetchSecondaryLists(initial: true)
@@ -123,7 +123,7 @@ struct PullListDocumentView: View {
                 Image(systemName: SFSymbols.documentOnDocument)
             }
         } label: {
-            RDButton(variant: .outline, size: .icon, leadingIcon: "plus", fullWidth: false, action: { }) 
+            RDButton(style: .outline, size: .icon, leadingIcon: "plus", fullWidth: false, action: { }) 
         }
     }
 

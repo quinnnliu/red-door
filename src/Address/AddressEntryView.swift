@@ -74,7 +74,7 @@ struct AddressEntryView: View {
 
 
             RDButton(
-                variant: .default,
+                style: .default,
                 label: "Save Address",
                 fullWidth: true,
                 disabled: !canSave
