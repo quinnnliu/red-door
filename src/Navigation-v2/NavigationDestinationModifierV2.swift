@@ -46,7 +46,7 @@ struct NavigationDestinationsModifierV2: ViewModifier {
                 Group {
                     switch destination {
                     case .itemDetailView(let item):
-                        ItemDetailsViewV2(item: item)
+                        ItemViewFactory().makeItemDetailsView(item: item)
                     case .pullListDetailView(let list):
                         PullListViewFactory().makeDetailsView(list: list)
                     case .pulllistRoomDetailView(let items, let room):

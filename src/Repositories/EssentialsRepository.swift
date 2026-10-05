@@ -22,6 +22,18 @@ final class EssentialsRepository: GenericRepository<EssentialsGroup> {
         ])
     }
 
+    func addItem(_ itemId: String, toGroup groupId: String, inBatch batch: WriteBatch) {
+        update(id: groupId, fields: [
+            EssentialsGroup.CodingKeys.itemIds.stringValue: FieldValue.arrayUnion([itemId])
+        ], inBatch: batch)
+    }
+
+    func removeItem(_ itemId: String, fromGroup groupId: String, inBatch batch: WriteBatch) {
+        update(id: groupId, fields: [
+            EssentialsGroup.CodingKeys.itemIds.stringValue: FieldValue.arrayRemove([itemId])
+        ], inBatch: batch)
+    }
+
     func updateEmoji(_ newEmoji: String, forTypeId typeId: String) async throws {
         let snapshot = try await collectionRef
             .whereField(EssentialsGroup.CodingKeys.essentialsTypeId.stringValue, isEqualTo: typeId)

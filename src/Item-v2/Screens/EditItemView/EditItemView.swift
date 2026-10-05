@@ -1,5 +1,5 @@
 //
-//  EditItemSheetV2.swift
+//  EditItemView.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 5/14/26.
@@ -7,22 +7,19 @@
 
 import SwiftUI
 
-struct EditItemSheetV2: View {
+struct EditItemView: View {
 
     @Environment(\.dismiss) private var dismiss
     @Environment(NavigationCoordinator.self) private var coordinator: NavigationCoordinator
 
-    var viewModel: ItemDetailViewModel
-    @State private var editingItem: ItemV2
+    @State private var viewModel: EditItemViewModel
     var onDelete: (() -> Void)?
 
-    // Loading and delete
+    // Delete
     @State private var showDeleteAlert: Bool = false
-    @State private var selectedGroup: EssentialsGroup? = nil
 
-    init(viewModel: ItemDetailViewModel, onDelete: (() -> Void)? = nil) {
-        self.viewModel = viewModel
-        self.editingItem = viewModel.itemState
+    init(viewModel: EditItemViewModel, onDelete: (() -> Void)? = nil) {
+        self._viewModel = State(initialValue: viewModel)
         self.onDelete = onDelete
     }
 
@@ -37,30 +34,30 @@ struct EditItemSheetV2: View {
                         NicknameEntry
                     }
 
-                    PrimaryImageEditor(image: editingItem.primaryImage) { action in
+                    PrimaryImageEditor(image: viewModel.updatedItem.primaryImage) { action in
                         handleImageAction(action)
                     }
 
                     EditItemDetailSection(
-                        description: $editingItem.description,
-                        color: $editingItem.color,
-                        material: $editingItem.material,
-                        type: $editingItem.type,
-                        value: $editingItem.value,
-                        brand: $editingItem.brand,
-                        purchaseLocation: $editingItem.purchaseLocation,
-                        datePurchased: $editingItem.datePurchased,
-                        dimensions: $editingItem.dimensions
+                        description: $viewModel.updatedItem.description,
+                        color: $viewModel.updatedItem.color,
+                        material: $viewModel.updatedItem.material,
+                        type: $viewModel.updatedItem.type,
+                        value: $viewModel.updatedItem.value,
+                        brand: $viewModel.updatedItem.brand,
+                        purchaseLocation: $viewModel.updatedItem.purchaseLocation,
+                        datePurchased: $viewModel.updatedItem.datePurchased,
+                        dimensions: $viewModel.updatedItem.dimensions
                     )
 
                     EssentialsGroupPicker(
                         groups: viewModel.availableGroups,
-                        selected: $selectedGroup
+                        selected: $viewModel.selectedGroup
                     )
                     
                     AttentionPicker(
-                        needsAttention: $editingItem.attention,
-                        attentionDescription: $editingItem.attentionDescription
+                        needsAttention: $viewModel.updatedItem.attention,
+                        attentionDescription: $viewModel.updatedItem.attentionDescription
                     )
 
                     Spacer()
@@ -68,7 +65,7 @@ struct EditItemSheetV2: View {
                     RDButton(variant: .red, size: .default, leadingIcon: "trash", label: "Delete Item", fullWidth: false) {
                         showDeleteAlert = true
                     }
-                    .disabled(!editingItem.location.status.isAvailable || editingItem.essentialGroupId != nil)
+                    .disabled(!viewModel.canDelete)
                     .alert("Confirm Delete", isPresented: $showDeleteAlert) {
                         Button(role: .destructive) {
                             deleteItem()
@@ -97,9 +94,11 @@ struct EditItemSheetV2: View {
         }
         .task {
             await viewModel.loadGroups()
-            if let groupId = editingItem.essentialGroupId {
-                selectedGroup = viewModel.availableGroups.first { $0.id == groupId }
-            }
+        }
+        .alert("Error", isPresented: $viewModel.showAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(viewModel.alertMessage)
         }
     }
 
@@ -129,7 +128,7 @@ struct EditItemSheetV2: View {
     // MARK: - Item Name Entry
 
     var ItemNameEntry: some View {
-        TextField("Item Name", text: $editingItem.baseName)
+        TextField("Item Name", text: $viewModel.updatedItem.baseName)
             .padding(6)
             .background(Color(.systemGray5))
             .cornerRadius(Constants.CornerRadius.medium)
@@ -138,8 +137,8 @@ struct EditItemSheetV2: View {
     
     var NicknameEntry: some View {
         TextField("Nickname (optional)", text: Binding(
-            get: { editingItem.nickname ?? "" },
-            set: { editingItem.nickname = $0.isEmpty ? nil : $0 }
+            get: { viewModel.updatedItem.nickname ?? "" },
+            set: { viewModel.updatedItem.nickname = $0.isEmpty ? nil : $0 }
         ))
         .font(.caption)
         .foregroundStyle(.secondary)
@@ -152,27 +151,26 @@ struct EditItemSheetV2: View {
         guard let action = actionArg as? ImageEditorAction else { return }
         switch action {
         case .newImage(let image):
-            editingItem.primaryImage = image
+            viewModel.updatedItem.primaryImage = image
         case .deleteImage(let deletedImage):
-            editingItem.primaryImage = deletedImage
+            viewModel.updatedItem.primaryImage = deletedImage
         }
     }
 
     private func saveItem() {
         Task {
-            let oldGroupId = editingItem.essentialGroupId
-            editingItem.essentialGroupId = selectedGroup?.id
-            viewModel.itemState = editingItem
-            await viewModel.updateItem(oldGroupId: oldGroupId)
-            dismiss()
+            if await viewModel.save() {
+                dismiss()
+            }
         }
     }
 
     private func deleteItem() {
         Task {
-            await viewModel.deleteItem()
-            onDelete?()
-            coordinator.resetSelectedPath()
+            if await viewModel.delete() {
+                onDelete?()
+                coordinator.resetSelectedPath()
+            }
         }
     }
 }
