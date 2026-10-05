@@ -105,6 +105,13 @@ final class DocumentListViewModelV2<T: RDDocument> {
         await fetchPage(appending: false)
     }
 
+    /// Filtered queries are left unsorted so Firestore can serve them from its automatic
+    /// single-field indexes. Search sorts by its own range field.
+    private var sortField: String? {
+        if activeFilters[T.searchField] != nil { return T.searchField }
+        return activeFiltersApplied ? nil : T.orderByField
+    }
+
     private func fetchPage(appending: Bool) async {
         guard hasMore, !isLoading else { return }
         isLoading = true
@@ -114,9 +121,10 @@ final class DocumentListViewModelV2<T: RDDocument> {
 
         var query: Query = collectionRef
         query = applyFilters(to: query)
-        query = query
-            .order(by: T.orderByField)
-            .limit(to: pageSize)
+        if let sortField {
+            query = query.order(by: sortField)
+        }
+        query = query.limit(to: pageSize)
         if appending, let cursor {
             query = query.start(afterDocument: cursor)
         }

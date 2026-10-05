@@ -9,48 +9,6 @@
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "base_name_lowercased",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "accessories",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "accessories_type_id",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "base_name_lowercased",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "accessories",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "essentials_group_id",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "base_name_lowercased",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "accessories",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "location.status",
-          "order": "ASCENDING"
-        },
-        {
           "fieldPath": "essentials_group_id",
           "order": "ASCENDING"
         },
@@ -71,34 +29,6 @@
         {
           "fieldPath": "accessories_number",
           "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "essentials",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "location.status",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "base_name_lowercased",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "essentials",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "essentials_type_id",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "base_name_lowercased",
-          "order": "ASCENDING"
         }
       ]
     },
@@ -135,39 +65,11 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "install_date",
+          "fieldPath": "uninstalled",
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "uninstall_date",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "installed_list_v2",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "address.state",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "uninstall_date",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "installed_list_v2",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "address.town",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "uninstall_date",
+          "fieldPath": "address_id",
           "order": "ASCENDING"
         }
       ]
@@ -183,90 +85,6 @@
         {
           "fieldPath": "install_date",
           "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "items_v2",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "type",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "base_name_lowercased",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "items_v2",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "color",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "base_name_lowercased",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "items_v2",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "material",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "base_name_lowercased",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "items_v2",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "location.status",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "base_name_lowercased",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "items_v2",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "attention",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "base_name_lowercased",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "items_v2",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "essential_group_id",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "base_name_lowercased",
-          "order": "ASCENDING"
         }
       ]
     },
@@ -299,48 +117,6 @@
         {
           "fieldPath": "item_number",
           "order": "DESCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "pull_list_v2",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "uninstall_date",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "install_date",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "pull_list_v2",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "address.state",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "install_date",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "pull_list_v2",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "address.town",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "install_date",
-          "order": "ASCENDING"
         }
       ]
     }
