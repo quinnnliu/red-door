@@ -39,7 +39,7 @@ struct CreateModelView: View {
 
                     Spacer()
 
-                    RDButton(variant: .default, size: .default, leadingIcon: "plus", label: "Add Model to Inventory") {
+                    RDButton(style: .default, size: .default, leadingIcon: "plus", label: "Add Model to Inventory") {
                         saveModel()
                     }
                 }   
@@ -79,7 +79,7 @@ struct CreateModelView: View {
     private func TopBar() -> some View {
         TopAppBar(
             leadingView: {
-                RDButton(variant: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
+                RDButton(style: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
                     dismiss()
                 }
                 .clipShape(Circle())

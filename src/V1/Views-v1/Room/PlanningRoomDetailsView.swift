@@ -134,7 +134,7 @@ struct PlanningRoomDetailsView: View {
                 // }
             }
         } label: {
-            RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.ellipsis, fullWidth: false, action: {})
+            RDButton(style: .red, size: .icon, leadingIcon: SFSymbols.ellipsis, fullWidth: false, action: {})
             .clipShape(Circle())
         }
         .tint(.red)
@@ -197,7 +197,7 @@ struct PlanningRoomDetailsView: View {
 
             Spacer() 
 
-            RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.trash, fullWidth: false) {
+            RDButton(style: .red, size: .icon, leadingIcon: SFSymbols.trash, fullWidth: false) {
                 itemToRemove = item
                 showRemoveItemAlert = true
             }

@@ -90,7 +90,7 @@ struct AddressSearchView: View {
                 // A placemark that can't be converted would otherwise dismiss
                 // having silently written nothing.
                 RDButton(
-                    variant: .red,
+                    style: .red,
                     label: "Use This Address",
                     fullWidth: true,
                     disabled: convertToAddress(item) == nil

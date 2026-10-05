@@ -225,7 +225,7 @@ private extension ExpandableSectionView {
 private extension ExpandableSectionView {
     var ExpandToggle: some View {
         RDButton(
-            variant: .outline,
+            style: .outline,
             size: .icon,
             leadingIcon: isExpanded ? SFSymbols.minus : SFSymbols.plus,
             fullWidth: false,
@@ -239,7 +239,7 @@ private extension ExpandableSectionView {
 
     func RefreshButton(roomId: String) -> some View {
         RDButton(
-            variant: .default,
+            style: .default,
             size: .icon,
             leadingIcon: SFSymbols.arrowCounterclockwise
         ) {

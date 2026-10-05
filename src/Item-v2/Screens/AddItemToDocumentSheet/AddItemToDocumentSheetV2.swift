@@ -96,7 +96,7 @@ private extension AddItemToDocumentSheetV2 {
      var SelectedItemsSection: some View {
         VStack(spacing: 12) {
             RDButton(
-                variant: multiSelectEnabled ? .red : .secondary,
+                style: multiSelectEnabled ? .red : .secondary,
                 size: .sm,
                 label: multiSelectEnabled ? "Deselect All" : "Select",
                 fullWidth: false
@@ -146,7 +146,7 @@ private extension AddItemToDocumentSheetV2 {
                 Spacer()
                 
                 RDButton(
-                    variant: .secondary,
+                    style: .secondary,
                     size: .sm,
                     leadingIcon: SFSymbols.plus,
                     label: "Add Selected",
@@ -181,25 +181,27 @@ private extension AddItemToDocumentSheetV2 {
 
 // MARK: - Subviews
 
-extension AddItemToDocumentSheetV2 {
+private extension AddItemToDocumentSheetV2 {
 
-    private var TopBar: some View {
+    var TopBar: some View {
         TopAppBar(
             leadingView: {
-                Text(title)
-                    .font(.system(.title2, design: .default))
-                    .bold()
-                    .foregroundStyle(.red)
+                HStack(spacing: 4) {
+                    Text(title)
+                        .font(.system(.title2, design: .default))
+                        .bold()
+                        .foregroundStyle(.red)
+                    
+                    FiltersButton
+                }
             },
             header: {
                 EmptyView()
             },
             trailingView: {
                 HStack(spacing: 8) {
-                    RDButton(variant: documentListViewModel.activeFiltersApplied ? .red : .outline, size: .icon, leadingIcon: SFSymbols.sliderHorizontal3, fullWidth: false) {
-                        showFilterSheet = true
-                    }
-                    RDButton(variant: .outline, size: .icon, leadingIcon: SFSymbols.magnifyingglass, fullWidth: false, disabled: documentListViewModel.activeFiltersApplied) {
+                    
+                    RDButton(style: .outline, size: .icon, leadingIcon: SFSymbols.magnifyingglass, fullWidth: false, disabled: documentListViewModel.activeFiltersApplied) {
                         withAnimation(Constants.Animation.snappy) {
                             searchFocused = true
                         }
@@ -208,8 +210,27 @@ extension AddItemToDocumentSheetV2 {
             }
         )
     }
+    
+    var FiltersButton: some View {
+        HStack {
+            RDButton(
+                style: documentListViewModel.activeFiltersApplied ? .red : .outline,
+                size: .icon,
+                leadingIcon: SFSymbols.sliderHorizontal3,
+                fullWidth: false
+            ) {
+                showFilterSheet = true
+            }
+            
+            if documentListViewModel.activeFiltersApplied {
+                Text("Filters Applied")
+                    .font(.caption2)
+                    .foregroundStyle(.red)
+            }
+        }
+    }
 
-    private var ItemList: some View {
+    var ItemList: some View {
         DocumentListSection(
             viewModel: documentListViewModel,
             noMoreLabel: "No More Items",

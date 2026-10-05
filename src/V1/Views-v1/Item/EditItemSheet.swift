@@ -67,7 +67,7 @@ struct EditItemSheet: View {
                     }
                 }
 
-                RDButton(variant: .red, size: .default, leadingIcon: "trash", label: "Delete Item", fullWidth: false) {
+                RDButton(style: .red, size: .default, leadingIcon: "trash", label: "Delete Item", fullWidth: false) {
                     if editingItem.isAvailable {
                         Task {
                             await viewModel.deleteItem()
@@ -105,7 +105,7 @@ struct EditItemSheet: View {
     @ViewBuilder
     private func TopBar() -> some View {
         TopAppBar(leadingView: {
-            RDButton(variant: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
+            RDButton(style: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
                 dismiss()
             }
             .clipShape(Circle())
@@ -118,7 +118,7 @@ struct EditItemSheet: View {
                 Text(model.name)
             }
         }, trailingView: {
-            RDButton(variant: .red, size: .icon, leadingIcon: "checkmark", fullWidth: false) {
+            RDButton(style: .red, size: .icon, leadingIcon: "checkmark", fullWidth: false) {
                 focusAttentionReason = false
                 saveItem()
             }

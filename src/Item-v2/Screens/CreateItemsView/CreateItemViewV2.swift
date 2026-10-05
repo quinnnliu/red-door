@@ -57,7 +57,7 @@ struct CreateItemViewV2: View {
                 Spacer()
 
                 RDButton(
-                    variant: .red,
+                    style: .red,
                     size: .default,
                     leadingIcon: "plus",
                     label: "Add Items to Inventory"
@@ -92,7 +92,7 @@ struct CreateItemViewV2: View {
     private func TopBar() -> some View {
         TopAppBar(
             leadingView: {
-                RDButton(variant: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
+                RDButton(style: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
                     dismiss()
                 }
                 .clipShape(Circle())

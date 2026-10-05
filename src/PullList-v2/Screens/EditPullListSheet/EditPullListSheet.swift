@@ -92,7 +92,7 @@ struct EditPullListSheet: View {
 
     private var AddressButton: some View {
         RDButton(
-            variant: .outline,
+            style: .outline,
             size: .default,
             leadingIcon: SFSymbols.mapPinAndEllipse,
             label: viewModel.draft.address.isInitialized() ? viewModel.draft.address.getStreetAddress() ?? "" : "Enter Address"
@@ -105,11 +105,11 @@ struct EditPullListSheet: View {
 
     private var Footer: some View {
         HStack(spacing: 12) {
-            RDButton(variant: .outline, size: .default, label: "Cancel", fullWidth: true) {
+            RDButton(style: .outline, size: .default, label: "Cancel", fullWidth: true) {
                 dismiss()
             }
 
-            RDButton(variant: .red, size: .default, label: "Save", fullWidth: true) {
+            RDButton(style: .red, size: .default, label: "Save", fullWidth: true) {
                 Task {
                     if await viewModel.save() { dismiss() }
                 }

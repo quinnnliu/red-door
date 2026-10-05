@@ -84,11 +84,11 @@ private extension ConfirmUninstallSheet {
 
     var Actions: some View {
         HStack(spacing: 12) {
-            RDButton(variant: .outline, label: "Cancel", fullWidth: true) {
+            RDButton(style: .outline, label: "Cancel", fullWidth: true) {
                 dismiss()
             }
 
-            RDButton(variant: .red, label: "Confirm", fullWidth: true) {
+            RDButton(style: .red, label: "Confirm", fullWidth: true) {
                 action(ConfirmUninstallSheetAction.confirm)
                 dismiss()
             }

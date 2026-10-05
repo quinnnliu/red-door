@@ -90,7 +90,7 @@ struct CopyFromInstalledListView: View {
             leadingView: { BackButton() },
             header: {
                 RDButton(
-                    variant: .outline,
+                    style: .outline,
                     size: .default,
                     leadingIcon: SFSymbols.mapPinAndEllipse,
                     label: viewModel.address.map { $0.getStreetAddress() ?? $0.formattedAddress } ?? "Enter Address"
@@ -247,7 +247,7 @@ struct CopyFromInstalledListView: View {
                 .foregroundStyle(.secondary)
 
             RDButton(
-                variant: .red,
+                style: .red,
                 size: .default,
                 leadingIcon: SFSymbols.plus,
                 label: "Create Pull List",

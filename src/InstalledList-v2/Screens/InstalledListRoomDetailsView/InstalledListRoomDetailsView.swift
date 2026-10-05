@@ -172,7 +172,7 @@ struct InstalledListRoomDetailsView: View {
             Spacer()
 
             if !viewModel.uninstalled {
-                RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.trash, fullWidth: false) {
+                RDButton(style: .red, size: .icon, leadingIcon: SFSymbols.trash, fullWidth: false) {
                     itemToRemove = item
                     showSelectStorageSheet = true
                 }

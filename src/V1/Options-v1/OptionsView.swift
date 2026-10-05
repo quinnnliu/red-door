@@ -115,12 +115,12 @@ struct OptionsView: View {
                 Spacer()
 
                 if showWarehouseSection {
-                    RDButton(variant: editingWarehouses ? .red : .outline, size: .icon, leadingIcon: "square.and.pencil", fullWidth: false) {
+                    RDButton(style: editingWarehouses ? .red : .outline, size: .icon, leadingIcon: "square.and.pencil", fullWidth: false) {
                         editingWarehouses.toggle()
                     }
                 }
 
-                RDButton(variant: .outline, size: .icon, leadingIcon: showWarehouseSection ? "chevron.up" : "chevron.down", fullWidth: false) {
+                RDButton(style: .outline, size: .icon, leadingIcon: showWarehouseSection ? "chevron.up" : "chevron.down", fullWidth: false) {
                     withAnimation(Constants.Animation.snappy) {
                         showWarehouseSection.toggle()
                         editingWarehouses = false
@@ -141,7 +141,7 @@ struct OptionsView: View {
                     }
 
                     if editingWarehouses {
-                        RDButton(variant: .secondary, size: .default, leadingIcon: "plus", label: "Add Warehouse", fullWidth: true) {
+                        RDButton(style: .secondary, size: .default, leadingIcon: "plus", label: "Add Warehouse", fullWidth: true) {
                             newWarehouse = Warehouse(name: "", address: Address())
                             showAddressSheet = true
                         }

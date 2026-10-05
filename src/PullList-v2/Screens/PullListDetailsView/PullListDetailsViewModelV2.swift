@@ -54,8 +54,6 @@ final class PullListDetailsViewModelV2 {
         self.loader = ItemsListLoader(itemRepo: itemRepo)
     }
 
-    /// Detaches only: `deinit` can run on any thread, while the rest of
-    /// `stopListening()` mutates state the UI reads on the main thread.
     deinit {
         roomsListener?.remove()
         listListener?.remove()
@@ -80,12 +78,6 @@ final class PullListDetailsViewModelV2 {
             }
         }
 
-        // The rooms listener alone misses changes to the list document itself
-        // — attaching an essentials group or assigning an item from another
-        // device rewrites `unassignedItemIds` without touching any room.
-        // Loading the essentials group and the unassigned pool hangs off this
-        // listener's first snapshot rather than a separate fetch here, so the
-        // list document has exactly one writer.
         listListener = pullListRepo.addDocumentListener(id: pullListState.id) { [weak self] result in
             Task { @MainActor in
                 switch result {
@@ -324,13 +316,8 @@ final class PullListDetailsViewModelV2 {
 
     // MARK: deletePullList
 
-    /// A list can only be deleted once it holds nothing. Rooms are checked
-    /// first (deleting a list never deletes its rooms), then the other two
-    /// places a list holds items: its unassigned pool and an attached
-    /// essentials group. Deletion doesn't relocate anything.
-    ///
-    /// Reads `essentialGroupId` off the list document rather than the fetched
-    /// `essentialsGroupState`, which is still nil while loading.
+    /// A list can only be deleted once it holds nothing. There must be no rooms, no unassigned items, and
+    /// no essentials group.
     var canDelete: Bool {
         rooms.isEmpty
             && pullListState.roomIds.isEmpty

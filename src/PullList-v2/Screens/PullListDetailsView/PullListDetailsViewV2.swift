@@ -116,7 +116,7 @@ private extension PullListDetailsViewV2 {
 
     // MARK: ShowDetailsButton
     var ShowDetailsButton: some View {
-        RDButton(variant: .secondary, size: .icon, leadingIcon: SFSymbols.infoCircleFill) {
+        RDButton(style: .secondary, size: .icon, leadingIcon: SFSymbols.infoCircleFill) {
             withAnimation(Constants.Animation.snappy) {
                 footerContentState = .details
             }
@@ -188,7 +188,7 @@ private extension PullListDetailsViewV2 {
             .tint(.red)
         } label: {
             RDButton(
-                variant: .red,
+                style: .red,
                 size: .icon,
                 leadingIcon: SFSymbols.ellipsis
             ) { }.clipShape(.circle)
@@ -292,7 +292,7 @@ private extension PullListDetailsViewV2 {
     // MARK: UnassignedItemsButton
     var UnassignedItemsButton: some View {
         RDButton(
-            variant: viewModel.unassignedItems.isEmpty ? .secondary : .red,
+            style: viewModel.unassignedItems.isEmpty ? .secondary : .red,
             size: .sm,
             label: "Unassigned Items: \(viewModel.unassignedItems.count)"
         ) {
@@ -345,7 +345,7 @@ private extension PullListDetailsViewV2 {
                             }
 
                             if item.essentialGroupId == nil {
-                                RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.shippingbox) {
+                                RDButton(style: .red, size: .icon, leadingIcon: SFSymbols.shippingbox) {
                                     itemToStore = item
                                     showStoreUnassignedItemSheet = true
                                 }
@@ -356,7 +356,7 @@ private extension PullListDetailsViewV2 {
             }
 
             RDButton(
-                variant: viewModel.selectedUnassignedItems.isEmpty ? .secondary : .red,
+                style: viewModel.selectedUnassignedItems.isEmpty ? .secondary : .red,
                 leadingIcon: SFSymbols.plus,
                 label: "Assign to Room (\(viewModel.selectedUnassignedItems.count))",
                 fullWidth: true
@@ -459,7 +459,7 @@ private extension PullListDetailsViewV2 {
                 ShowDetailsButton
                 
                 RDButton(
-                    variant: .red,
+                    style: .red,
                     leadingIcon: SFSymbols.truckBoxBadgeClockFill,
                     label: "Begin Install",
                     fullWidth: true
@@ -499,7 +499,7 @@ private extension PullListDetailsViewV2 {
     @ViewBuilder
     var ShowEssentialsButton: some View {
         if let essentialsGroup = viewModel.essentialsGroupState {
-            RDButton(variant: .secondary, size: .icon, label: essentialsGroup.emoji) {
+            RDButton(style: .secondary, size: .icon, label: essentialsGroup.emoji) {
                 withAnimation(Constants.Animation.snappy) {
                     footerContentState = .essentials
                 }

@@ -35,7 +35,7 @@ struct CreateEssentialsGroupView: View {
                 Spacer()
                 
                 RDButton(
-                    variant: .red,
+                    style: .red,
                     size: .default,
                     leadingIcon: "plus",
                     label: "Create Essentials Group",
@@ -70,6 +70,32 @@ struct CreateEssentialsGroupView: View {
         }
         .sheet(isPresented: $viewModel.showAddAccessoriesSheet) {
             SelectAccessoriesSheet(action: handleAction(_:))
+        }
+        .alert(
+            viewModel.existingTypeMatchingNewName == nil ? "Create New Group Type?" : "Type Already Exists",
+            isPresented: $viewModel.showConfirmNewTypeAlert
+        ) {
+            if viewModel.existingTypeMatchingNewName != nil {
+                Button("Use Existing") {
+                    withAnimation(Constants.Animation.snappy) {
+                        viewModel.selectExistingTypeMatchingNewName()
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            } else {
+                Button("Create") {
+                    withAnimation(Constants.Animation.snappy) {
+                        viewModel.createAndSelectNewGroupType()
+                    }
+                }
+                Button("Cancel", role: .cancel) {}
+            }
+        } message: {
+            if let existing = viewModel.existingTypeMatchingNewName {
+                Text("\"\(existing.emoji) \(existing.displayName)\" is already in the list of group types. Use it instead of creating a duplicate?")
+            } else {
+                Text("\"\(viewModel.newGroupTypeName.trimmingCharacters(in: .whitespacesAndNewlines))\" doesn't exist in the current group types. This will create a brand new group type.")
+            }
         }
         .task {
             await viewModel.loadGroupTypes()
@@ -108,7 +134,7 @@ private extension CreateEssentialsGroupView {
     var TopBar: some View {
         TopAppBar(
             leadingView: {
-                RDButton(variant: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
+                RDButton(style: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
                     dismiss()
                 }
                 .clipShape(Circle())
@@ -177,10 +203,8 @@ private extension CreateEssentialsGroupView {
                             .font(.caption)
                     }
 
-                    RDButton(variant: .default, size: .sm, label: "Create", fullWidth: false) {
-                        withAnimation(Constants.Animation.snappy) {
-                            viewModel.createAndSelectNewGroupType()
-                        }
+                    RDButton(style: .default, size: .sm, label: "Create", fullWidth: false) {
+                        viewModel.showConfirmNewTypeAlert = true
                     }
                     .disabled(!viewModel.newGroupTypeValid)
                 }
@@ -192,7 +216,7 @@ private extension CreateEssentialsGroupView {
                         .font(.body)
                         .bold()
                     Spacer()
-                    RDButton(variant: .outline, size: .sm, label: "Change", fullWidth: false) {
+                    RDButton(style: .outline, size: .sm, label: "Change", fullWidth: false) {
                         viewModel.showGroupTypePicker = true
                     }
                 }
@@ -200,7 +224,7 @@ private extension CreateEssentialsGroupView {
                 .background(Color(.systemGray5))
                 .cornerRadius(Constants.CornerRadius.medium)
             } else {
-                RDButton(variant: .outline, size: .default, label: "Select Type", fullWidth: true) {
+                RDButton(style: .outline, size: .default, label: "Select Type", fullWidth: true) {
                     viewModel.showGroupTypePicker = true
                 }
             }
@@ -257,7 +281,7 @@ private extension CreateEssentialsGroupView {
                 .background(Color(.systemGray5))
                 .cornerRadius(Constants.CornerRadius.medium)
             } else {
-                RDButton(variant: .outline, size: .default, leadingIcon: "plus", label: "Add Accessories", fullWidth: true) {
+                RDButton(style: .outline, size: .default, leadingIcon: "plus", label: "Add Accessories", fullWidth: true) {
                     viewModel.showAddAccessoriesSheet = true
                 }
             }

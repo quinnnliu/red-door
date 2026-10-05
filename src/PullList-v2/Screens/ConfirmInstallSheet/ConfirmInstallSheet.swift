@@ -56,11 +56,11 @@ struct ConfirmInstallSheet: View {
 
             // MARK: Actions
             HStack(spacing: 12) {
-                RDButton(variant: .outline, size: .default, label: "Cancel", fullWidth: true) {
+                RDButton(style: .outline, size: .default, label: "Cancel", fullWidth: true) {
                     dismiss()
                 }
 
-                RDButton(variant: .red, size: .default, label: "Confirm", fullWidth: true) {
+                RDButton(style: .red, size: .default, label: "Confirm", fullWidth: true) {
                     action(ConfirmInstallSheetAction.confirm)
                     dismiss()
                 }

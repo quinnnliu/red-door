@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-enum RDButtonVariant {
+enum RDButtonStyle {
     case `default`
     case destructive
     case outline
@@ -138,7 +138,7 @@ enum RDButtonSize {
 }
 
 struct RDButton: View {
-    let variant: RDButtonVariant
+    let style: RDButtonStyle
     var size: RDButtonSize = .default
     var leadingIcon: String? = nil
     var trailingIcon: String? = nil
@@ -201,7 +201,7 @@ struct RDButton: View {
                     .font(.system(size: size.iconSize))
             }
         }
-        .foregroundStyle(disabled ? Color.gray : variant.foregroundColor)
+        .foregroundStyle(disabled ? Color.gray : style.foregroundColor)
         .padding(.horizontal, size.horizontalPadding)
         .padding(.vertical, size.verticalPadding)
         .frame(
@@ -212,11 +212,11 @@ struct RDButton: View {
         .frame(maxWidth: fullWidth ? .infinity : nil)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(disabled ? Color.gray.opacity(0.2) : variant.backgroundColor)
+                .fill(disabled ? Color.gray.opacity(0.2) : style.backgroundColor)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(variant.borderColor ?? Color.clear, lineWidth: variant.borderWidth)
+                .stroke(style.borderColor ?? Color.clear, lineWidth: style.borderWidth)
         )
         .scaleEffect(isPressed ? 0.98 : 1.0)
         .opacity(disabled ? 0.5 : 1.0)
@@ -260,33 +260,33 @@ struct RDLinkButton: View {
     VStack(spacing: 16) {
         // Default variants
         VStack(spacing: 12) {
-            RDButton(variant: .default, label: "Default", action: {})
-            RDButton(variant: .destructive, label: "Destructive", action: {})
-            RDButton(variant: .outline, label: "Outline", action: {})
-            RDButton(variant: .secondary, label: "Secondary", action: {})
-            RDButton(variant: .ghost, label: "Ghost", action: {})
+            RDButton(style: .default, label: "Default", action: {})
+            RDButton(style: .destructive, label: "Destructive", action: {})
+            RDButton(style: .outline, label: "Outline", action: {})
+            RDButton(style: .secondary, label: "Secondary", action: {})
+            RDButton(style: .ghost, label: "Ghost", action: {})
             RDLinkButton(text: "Link Button", action: {})
         }
         
         // Sizes
         VStack(spacing: 12) {
-            RDButton(variant: .default, size: .sm, label: "Small", action: {})
-            RDButton(variant: .default, size: .default, label: "Default", action: {})
-            RDButton(variant: .default, size: .lg, label: "Large", action: {})
-            RDButton(variant: .default, size: .icon, leadingIcon: "plus", action: {})
+            RDButton(style: .default, size: .sm, label: "Small", action: {})
+            RDButton(style: .default, size: .default, label: "Default", action: {})
+            RDButton(style: .default, size: .lg, label: "Large", action: {})
+            RDButton(style: .default, size: .icon, leadingIcon: "plus", action: {})
         }
         
         // With icons
         VStack(spacing: 12) {
-            RDButton(variant: .default, leadingIcon: "plus", label: "Add Item", action: {})
-            RDButton(variant: .outline, trailingIcon: "arrow.right", label: "Continue", action: {})
+            RDButton(style: .default, leadingIcon: "plus", label: "Add Item", action: {})
+            RDButton(style: .outline, trailingIcon: "arrow.right", label: "Continue", action: {})
         }
         
         // Full width
-        RDButton(variant: .default, label: "Full Width Button", fullWidth: true, action: {})
+        RDButton(style: .default, label: "Full Width Button", fullWidth: true, action: {})
         
         // Disabled
-        RDButton(variant: .default, label: "Disabled", disabled: true, action: {})
+        RDButton(style: .default, label: "Disabled", disabled: true, action: {})
     }
     .padding()
 }

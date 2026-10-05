@@ -49,7 +49,7 @@ struct EditModelInformationSheet: View {
                     
                     Spacer()
                     
-                    RDButton(variant: .red, size: .default, leadingIcon: "trash", label: "Delete Model", fullWidth: false) {
+                    RDButton(style: .red, size: .default, leadingIcon: "trash", label: "Delete Model", fullWidth: false) {
                         showDeleteAlert = true
                     }
                     .alert(
@@ -93,7 +93,7 @@ struct EditModelInformationSheet: View {
     private func TopBar() -> some View {
         TopAppBar(
             leadingView: {
-                RDButton(variant: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
+                RDButton(style: .red, size: .icon, leadingIcon: "xmark", fullWidth: false) {
                     dismiss()
                 }
                 .clipShape(Circle())
@@ -102,7 +102,7 @@ struct EditModelInformationSheet: View {
                 ModelNameEntry()
             },
             trailingView: {
-                RDButton(variant: .red, size: .icon, leadingIcon: "checkmark", fullWidth: false) {
+                RDButton(style: .red, size: .icon, leadingIcon: "checkmark", fullWidth: false) {
                     saveModel()
                 }
                 .clipShape(Circle())

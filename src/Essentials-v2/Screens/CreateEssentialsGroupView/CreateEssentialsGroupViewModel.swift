@@ -42,6 +42,23 @@ final class CreateEssentialsGroupViewModel {
         return !name.isEmpty && (newGroupTypeEmoji.isEmpty || newGroupTypeEmoji.isSingleEmoji)
     }
 
+    var showConfirmNewTypeAlert: Bool = false
+
+    /// An existing group type whose name matches the name entered for a new type.
+    var existingTypeMatchingNewName: EssentialsGroupType? {
+        let name = EssentialsGroupType.normalizeSearchText(newGroupTypeName.trimmingCharacters(in: .whitespacesAndNewlines))
+        guard !name.isEmpty else { return nil }
+        return groupTypes.first { EssentialsGroupType.normalizeSearchText($0.baseName) == name }
+    }
+
+    func selectExistingTypeMatchingNewName() {
+        guard let existing = existingTypeMatchingNewName else { return }
+        selectedGroupType = existing
+        newGroupTypeName = ""
+        newGroupTypeEmoji = ""
+        showNewTypeField = false
+    }
+
     // MARK: - Storage Location
     var storageLocations: [StorageLocation] = []
     var selectedStorageLocation: StorageLocation?

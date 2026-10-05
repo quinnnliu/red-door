@@ -17,7 +17,7 @@ struct ContentView: View {
                 systemImage: "chair.lounge.fill",
                 value: NavigationCoordinator.Tab.itemInventory
             ) {
-                ItemDocumentListViewV2(path: $coordinator.itemInventoryPath)
+                InventoryDocumentListViewV2(path: $coordinator.itemInventoryPath)
                     .tint(.blue)
                     .environment(coordinator)
             }

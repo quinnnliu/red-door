@@ -64,10 +64,10 @@ private extension AddEssentialsGroupToPullListSheet {
             },
             trailingView: {
                 HStack(spacing: 8) {
-                    RDButton(variant: viewModel.activeFiltersApplied ? .red : .outline, size: .icon, leadingIcon: SFSymbols.sliderHorizontal3, fullWidth: false) {
+                    RDButton(style: viewModel.activeFiltersApplied ? .red : .outline, size: .icon, leadingIcon: SFSymbols.sliderHorizontal3, fullWidth: false) {
                         showFilterSheet = true
                     }
-                    RDButton(variant: .outline, size: .icon, leadingIcon: SFSymbols.magnifyingglass, fullWidth: false, disabled: viewModel.activeFiltersApplied) {
+                    RDButton(style: .outline, size: .icon, leadingIcon: SFSymbols.magnifyingglass, fullWidth: false, disabled: viewModel.activeFiltersApplied) {
                         withAnimation(Constants.Animation.snappy) {
                             searchFocused = true
                         }

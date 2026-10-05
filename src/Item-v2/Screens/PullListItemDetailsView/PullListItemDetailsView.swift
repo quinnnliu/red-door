@@ -122,7 +122,7 @@ struct PullListItemDetailsView: View {
 				Text(viewModel.itemState.displayName)
 			}
 		}, trailingView: {
-            RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.qrcode) {
+            RDButton(style: .red, size: .icon, leadingIcon: SFSymbols.qrcode) {
                 showQRCodeSheet = true
             }
             .clipShape(.circle)
@@ -135,7 +135,7 @@ struct PullListItemDetailsView: View {
 	private func Footer() -> some View {
 		HStack(spacing: 12) {
             RDButton(
-                variant: .default,
+                style: .default,
                 size: .default,
                 leadingIcon: SFSymbols.arrowUturnBackward,
                 label: "Move to Other Room",
@@ -146,7 +146,7 @@ struct PullListItemDetailsView: View {
 			}
 
             RDButton(
-                variant: .red,
+                style: .red,
                 size: .default,
                 leadingIcon: SFSymbols.trash,
                 label: "Remove from Room",

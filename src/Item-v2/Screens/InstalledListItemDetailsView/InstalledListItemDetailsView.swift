@@ -122,7 +122,7 @@ struct InstalledListItemDetailsView: View {
                 Text(viewModel.itemState.displayName)
             }
         }, trailingView: {
-            RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.qrcode) {
+            RDButton(style: .red, size: .icon, leadingIcon: SFSymbols.qrcode) {
                 showQRCodeSheet = true
             }
             .clipShape(.circle)
@@ -134,11 +134,11 @@ struct InstalledListItemDetailsView: View {
     @ViewBuilder
     private func Footer() -> some View {
         HStack(spacing: 12) {
-            RDButton(variant: .default, size: .default, leadingIcon: SFSymbols.arrowUturnBackward, label: "Move to Other Room", fullWidth: true, font: .caption2) {
+            RDButton(style: .default, size: .default, leadingIcon: SFSymbols.arrowUturnBackward, label: "Move to Other Room", fullWidth: true, font: .caption2) {
                 viewModel.showMoveItemSheet = true
             }
 
-            RDButton(variant: .red, size: .default, leadingIcon: SFSymbols.trash, label: "Remove from Room", fullWidth: true, font: .caption2) {
+            RDButton(style: .red, size: .default, leadingIcon: SFSymbols.trash, label: "Remove from Room", fullWidth: true, font: .caption2) {
                 showSelectStorageSheet = true
             }
         }

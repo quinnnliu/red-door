@@ -22,7 +22,7 @@ struct DocumentLoadMoreButton: View {
                     .padding()
             } else if hasMore {
                 RDButton(
-                    variant: .outline,
+                    style: .outline,
                     label: "Load More",
                     fullWidth: true
                 ) {

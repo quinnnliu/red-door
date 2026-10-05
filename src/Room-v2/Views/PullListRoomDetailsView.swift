@@ -89,7 +89,7 @@ struct PullListRoomDetailsView: View {
                 action: handleAction(_:),
                 footer: {
                     RDButton(
-                        variant: .red,
+                        style: .red,
                         label: "Add to Unassigned Items",
                         fullWidth: true,
                         isButton: false
@@ -161,7 +161,7 @@ struct PullListRoomDetailsView: View {
             }
             .disabled(!viewModel.canDelete)
         } label: {
-            RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.ellipsis, fullWidth: false) { }
+            RDButton(style: .red, size: .icon, leadingIcon: SFSymbols.ellipsis, fullWidth: false) { }
                 .clipShape(Circle())
         }
         .tint(.red)
@@ -208,7 +208,7 @@ struct PullListRoomDetailsView: View {
             
             Spacer()
             
-            RDButton(variant: .red, size: .icon, leadingIcon: SFSymbols.trash, fullWidth: false) {
+            RDButton(style: .red, size: .icon, leadingIcon: SFSymbols.trash, fullWidth: false) {
                 itemToRemove = item
                 if item.essentialGroupId != nil {
                     Task {
