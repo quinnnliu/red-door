@@ -11,29 +11,10 @@ import SwiftUI
 
 struct PullListPDFViewV2: View {
     @Environment(\.dismiss) private var dismiss
-    @State private var pdfDocument: PDFDocument? = nil
-    @State private var isGeneratingPDF: Bool = false
-    @State private var pdfData: Data? = nil
-    @State private var errorMessage: String? = nil
+    @State private var viewModel: PullListPDFViewModelV2
 
-    private let info: PDFListInfo
-    private let roomIds: [String]
-    private let getRooms: ([String]) async throws -> [RoomV2]
-
-    private let itemRepository = ItemRepository()
-
-    init(list: PullListV2) {
-        let roomRepository = RoomRepository<PullListV2>(list: list)
-        self.info = PDFListInfo(list)
-        self.roomIds = list.roomIds
-        self.getRooms = { try await roomRepository.get(ids: $0) }
-    }
-
-    init(list: InstalledListV2) {
-        let roomRepository = RoomRepository<InstalledListV2>(list: list)
-        self.info = PDFListInfo(list)
-        self.roomIds = list.roomIds
-        self.getRooms = { try await roomRepository.get(ids: $0) }
+    init(viewModel: PullListPDFViewModelV2) {
+        _viewModel = State(initialValue: viewModel)
     }
 
     var body: some View {
@@ -41,7 +22,7 @@ struct PullListPDFViewV2: View {
             BackButton()
 
             VStack(alignment: .center, spacing: 0) {
-                if let pdfDocument {
+                if let pdfDocument = viewModel.pdfDocument {
                     PDFKitView(document: pdfDocument)
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                         .overlay(
@@ -49,12 +30,12 @@ struct PullListPDFViewV2: View {
                                 .stroke(Color.gray, lineWidth: 1)
                         )
 
-                    if let pdfData {
+                    if let pdfData = viewModel.pdfData {
                         ShareButton(pdfData)
                     }
                 } else {
                     Spacer()
-                    if let errorMessage {
+                    if let errorMessage = viewModel.errorMessage {
                         ErrorState(errorMessage)
                     } else {
                         LoadingState
@@ -64,7 +45,7 @@ struct PullListPDFViewV2: View {
             }
         }
         .task {
-            await generatePDF()
+            await viewModel.generatePDF()
         }
         .frameTop()
         .frameHorizontalPadding()
@@ -102,7 +83,7 @@ private extension PullListPDFViewV2 {
         ShareLink(
             item: PDFFile(data: data),
             preview: SharePreview(
-                "(\(info.kindTitle)) \(info.address.formattedAddress).pdf",
+                "(\(viewModel.info.kindTitle)) \(viewModel.info.address.formattedAddress).pdf",
                 image: Image(systemName: SFSymbols.docFill)
             ),
             label: {
@@ -124,84 +105,5 @@ private extension PullListPDFViewV2 {
             }
         )
         .padding()
-    }
-}
-
-// MARK: - Generation
-
-private extension PullListPDFViewV2 {
-
-    @MainActor
-    func generatePDF() async {
-        isGeneratingPDF = true
-        errorMessage = nil
-        defer { isGeneratingPDF = false }
-
-        do {
-            let rooms = try await fetchRooms()
-            let itemsById = try await fetchItems(for: rooms)
-            let images = await preloadImages(for: itemsById)
-
-            let content = PullListPDFContent(
-                pullList: info,
-                rooms: rooms,
-                itemsById: itemsById,
-                preloadedImages: images
-            )
-
-            let paginator = PDFPaginator()
-            let pages = paginator.paginate(content.blocks()) { page, total in
-                content.chrome(page: page, of: total)
-            }
-
-            let data = try PDFWriter.data(pages: pages, pageSize: paginator.pageSize)
-            guard let document = PDFDocument(data: data) else {
-                throw PDFWriterError.emptyDocument
-            }
-
-            pdfData = data
-            pdfDocument = document
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    func fetchRooms() async throws -> [RoomV2] {
-        guard !roomIds.isEmpty else { return [] }
-        return try await getRooms(roomIds)
-            .sorted { $0.displayName < $1.displayName }
-    }
-
-    /// One fetch for the whole list rather than one per room, so items shared
-    /// across rooms are only read once.
-    func fetchItems(for rooms: [RoomV2]) async throws -> [String: ItemV2] {
-        let ids = Array(Set(rooms.flatMap(\.itemIds)))
-        let items = try await itemRepository.get(ids: ids)
-
-        var byId: [String: ItemV2] = [:]
-        for item in items { byId[item.id] = item }
-        return byId
-    }
-
-    /// Downloads concurrently: a full list serially fetching one image at a
-    /// time dominated generation time.
-    func preloadImages(for itemsById: [String: ItemV2]) async -> [String: UIImage] {
-        await withTaskGroup(of: (String, UIImage)?.self) { group in
-            for (itemId, item) in itemsById {
-                guard let imageURL = item.primaryImage.thumbnailURL ?? item.primaryImage.imageURL else { continue }
-                group.addTask {
-                    guard let (data, _) = try? await URLSession.shared.data(from: imageURL),
-                          let image = UIImage(data: data)
-                    else { return nil }
-                    return (itemId, image)
-                }
-            }
-
-            var result: [String: UIImage] = [:]
-            for await entry in group {
-                if let entry { result[entry.0] = entry.1 }
-            }
-            return result
-        }
     }
 }

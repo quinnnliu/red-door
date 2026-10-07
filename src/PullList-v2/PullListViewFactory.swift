@@ -29,6 +29,16 @@ struct PullListViewFactory {
         EditPullListSheet(viewModel: EditPullListViewModel(list: list, pullListRepo: pullListRepo))
     }
 
+    func makePDFView(list: PullListV2) -> PullListPDFViewV2 {
+        let vm = PullListPDFViewModelV2(
+            list: list,
+            roomRepo: RoomRepository<PullListV2>(list: list),
+            itemRepo: itemRepo,
+            essentialsRepo: essentialsRepo
+        )
+        return PullListPDFViewV2(viewModel: vm)
+    }
+
     func makeCopyFromInstalledView(
         installedList: InstalledListV2,
         onFinished: @escaping () -> Void

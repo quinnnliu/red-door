@@ -107,7 +107,7 @@ struct PullListDetailsViewV2: View {
             InstallPullListSheet(list: viewModel.pullListState, rooms: viewModel.rooms, itemsByRoom: viewModel.itemsByRoom)
         }
         .fullScreenCover(isPresented: $showPDFSheet) {
-            PullListPDFViewV2(list: viewModel.pullListState)
+            PullListViewFactory().makePDFView(list: viewModel.pullListState)
         }
     }
 }

@@ -21,7 +21,7 @@ enum PDFWriterError: Error {
 enum PDFWriter {
 
     /// PDF points are 1/72", so these are literal inches: 8.5 x 11.
-    static let letter = CGSize(width: 612, height: 792)
+    nonisolated static let letter = CGSize(width: 612, height: 792)
 
     /// One page per view, in order. Writes to memory rather than a temp file so
     /// a failure surfaces as a thrown error instead of an unreadable file.
