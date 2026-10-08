@@ -51,7 +51,7 @@ struct PullListItemDetailsView: View {
 					.frameHorizontalPadding()
 			}
             .fullScreenCover(isPresented: $showQRCodeSheet) {
-                ItemV2LabelView(item: viewModel.itemState)
+                ItemViewFactory().makePDFView(item: viewModel.itemState)
             }
             .sheet(isPresented: $viewModel.showMoveItemSheet) {
                 SelectDocumentSheet(title: "Other Rooms", documents: viewModel.rooms.filter { $0.id != viewModel.room.id }, action: handleAction(_:))
@@ -76,7 +76,7 @@ struct PullListItemDetailsView: View {
 			.frameBottomPadding()
 			.toolbar(.hidden)
 			.fullScreenCover(isPresented: $viewModel.showQRCode) {
-                ItemV2LabelView(item: viewModel.itemState)
+                ItemViewFactory().makePDFView(item: viewModel.itemState)
 			}
 		}
 	}

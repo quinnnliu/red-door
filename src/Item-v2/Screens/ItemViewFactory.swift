@@ -20,6 +20,16 @@ struct ItemViewFactory {
         return ItemDetailsViewV2(viewModel: vm)
     }
 
+    func makePDFView(item: ItemV2) -> ItemV2PDFView {
+        let vm = ItemV2PDFViewModel(
+            item: item,
+            storageLocationRepo: StorageLocationRepository(),
+            pullListRepo: PullListRepository(),
+            installedListRepo: InstalledListRepository()
+        )
+        return ItemV2PDFView(viewModel: vm)
+    }
+
     func makeEditItemView(
         item: ItemV2,
         essentialsGroup: EssentialsGroup?,

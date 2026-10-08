@@ -22,3 +22,14 @@ struct ItemDimensions: Codable, Hashable {
         case unit
     }
 }
+
+extension ItemDimensions {
+    /// "L × W × H in", skipping any empty measurement. Nil when all are empty.
+    var summary: String? {
+        let parts = [length, width, height].filter { !$0.isEmpty }
+        guard !parts.isEmpty else { return nil }
+
+        let unitSymbol = unit == .imperial ? "in" : "cm"
+        return parts.joined(separator: " × ") + " " + unitSymbol
+    }
+}

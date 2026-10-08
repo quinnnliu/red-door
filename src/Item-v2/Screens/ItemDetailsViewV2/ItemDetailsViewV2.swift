@@ -53,7 +53,7 @@ struct ItemDetailsViewV2: View {
             )
         }
         .fullScreenCover(isPresented: $showQRCodeLabel) {
-            ItemV2LabelView(item: viewModel.itemState)
+            ItemViewFactory().makePDFView(item: viewModel.itemState)
         }
     }
 
