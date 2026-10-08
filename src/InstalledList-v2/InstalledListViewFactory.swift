@@ -65,6 +65,16 @@ struct InstalledListViewFactory {
         return UninstallRecordSheet(viewModel: vm)
     }
 
+    func makePDFView(list: InstalledListV2) -> PullListPDFViewV2 {
+        let vm = PullListPDFViewModelV2(
+            list: list,
+            roomRepo: RoomRepository<InstalledListV2>(list: list),
+            itemRepo: itemRepo,
+            essentialsRepo: essentialsRepo
+        )
+        return PullListPDFViewV2(viewModel: vm)
+    }
+
     func makeDetailsView(list: InstalledListV2) -> InstalledListDetailsViewV2 {
         let vm = InstalledListDetailsViewModelV2(
             list: list,

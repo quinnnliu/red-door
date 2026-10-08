@@ -49,7 +49,7 @@ struct InstalledListDetailsViewV2: View {
             InstalledListViewFactory().makeUninstallSheet(list: viewModel.installedListState)
         }
         .fullScreenCover(isPresented: $showPDFSheet) {
-            PullListPDFViewV2(list: viewModel.installedListState)
+            InstalledListViewFactory().makePDFView(list: viewModel.installedListState)
         }
         .sheet(isPresented: $showUninstallRecordSheet) {
             InstalledListViewFactory().makeUninstallRecordSheet(list: viewModel.installedListState)

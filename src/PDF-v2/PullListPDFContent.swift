@@ -13,6 +13,7 @@ struct PullListPDFContent {
     let pullList: PDFListInfo
     let rooms: [RoomV2]
     let itemsById: [String: ItemV2]
+    let essentialsNamesById: [String: String]
     let preloadedImages: [String: UIImage]
 
     /// Sums to `PDFPaginator.contentWidth` minus the row's inter-column
@@ -20,12 +21,11 @@ struct PullListPDFContent {
     private enum Column {
         static let spacing: CGFloat = 6
         static let image: CGFloat = 44
-        static let name: CGFloat = 104
-        static let itemId: CGFloat = 96
-        static let type: CGFloat = 68
-        static let locationId: CGFloat = 96
-        static let essential: CGFloat = 46
+        static let name: CGFloat = 110
         static let qrCode: CGFloat = 50
+        static let type: CGFloat = 80
+        static let dimensions: CGFloat = 110
+        static let essential: CGFloat = 116
     }
 
     private enum Size {
@@ -134,10 +134,9 @@ private extension PullListPDFContent {
         HStack(spacing: Column.spacing) {
             HeaderCell("Image", width: Column.image)
             HeaderCell("Name", width: Column.name)
-            HeaderCell("Item ID", width: Column.itemId)
             HeaderCell("Type", width: Column.type)
-            HeaderCell("Location ID", width: Column.locationId)
-            HeaderCell("Essential", width: Column.essential, alignment: .center)
+            HeaderCell("Dimensions", width: Column.dimensions)
+            HeaderCell("Essentials Group", width: Column.essential)
             HeaderCell("QR", width: Column.qrCode, alignment: .center)
         }
         .frame(height: 18)
@@ -161,24 +160,14 @@ private extension PullListPDFContent {
                 .frame(width: Column.name, alignment: .leading)
                 .lineLimit(3)
 
-            Text(item.id)
-                .font(.system(size: 6))
-                .frame(width: Column.itemId, alignment: .leading)
-                .lineLimit(3)
-
             Text(item.type.title)
                 .font(.system(size: 8))
                 .frame(width: Column.type, alignment: .leading)
                 .lineLimit(2)
 
-            Text(item.location.locationId)
-                .font(.system(size: 6))
-                .frame(width: Column.locationId, alignment: .leading)
-                .lineLimit(3)
+            OptionalCell(dimensionsText(item.dimensions), missing: "dimensions", width: Column.dimensions, lineLimit: 2)
 
-            Image(systemName: item.essentialGroupId == nil ? "circle" : "checkmark.circle.fill")
-                .font(.system(size: 9))
-                .frame(width: Column.essential, alignment: .center)
+            OptionalCell(essentialGroupName(item), missing: "essentials group", width: Column.essential, lineLimit: 3)
 
             QRCode(item)
                 .frame(width: Column.qrCode, alignment: .center)
@@ -186,6 +175,39 @@ private extension PullListPDFContent {
         .frame(height: Size.rowHeight)
         .background(item.attention ? Color(white: 0.94) : Color.white)
         .overlay(Rectangle().stroke(Color(white: 0.8), lineWidth: 0.5))
+    }
+
+    /// The value, or a small gray "no <field> provided" when there isn't one.
+    @ViewBuilder
+    func OptionalCell(_ value: String?, missing field: String, width: CGFloat, lineLimit: Int) -> some View {
+        Group {
+            if let value {
+                Text(value)
+                    .font(.system(size: 8))
+            } else {
+                Text("no \(field) provided")
+                    .font(.system(size: 6))
+                    .foregroundColor(.secondary)
+            }
+        }
+        .frame(width: width, alignment: .leading)
+        .lineLimit(lineLimit)
+    }
+
+    /// "L × W × H unit", skipping any empty measurement. Nil when the item has
+    /// no dimensions.
+    func dimensionsText(_ dimensions: ItemDimensions?) -> String? {
+        guard let dimensions else { return nil }
+        let parts = [dimensions.length, dimensions.width, dimensions.height].filter { !$0.isEmpty }
+        guard !parts.isEmpty else { return nil }
+
+        let unit = dimensions.unit == .imperial ? "in" : "cm"
+        return parts.joined(separator: " × ") + " " + unit
+    }
+
+    /// Nil when the item isn't essential or its group failed to resolve.
+    func essentialGroupName(_ item: ItemV2) -> String? {
+        item.essentialGroupId.flatMap { essentialsNamesById[$0] }
     }
 
     @ViewBuilder
