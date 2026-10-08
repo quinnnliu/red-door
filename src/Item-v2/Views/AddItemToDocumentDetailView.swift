@@ -62,7 +62,7 @@ struct AddItemToDocumentDetailView: View {
                 Button("OK") { }
             }
             .fullScreenCover(isPresented: $showQRCodeSheet) {
-                ItemV2LabelView(item: viewModel.item)
+                ItemViewFactory().makePDFView(item: viewModel.item)
             }
             .sheet(isPresented: $showMoveRoomSheet) {
                 if case .room(let room, let listKind) = viewModel.destination {

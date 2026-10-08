@@ -47,7 +47,7 @@ struct InstalledListItemDetailsView: View {
                 }
             }
             .fullScreenCover(isPresented: $showQRCodeSheet) {
-                ItemV2LabelView(item: viewModel.itemState)
+                ItemViewFactory().makePDFView(item: viewModel.itemState)
             }
             .sheet(isPresented: $viewModel.showMoveItemSheet) {
                 SelectDocumentSheet(
@@ -76,7 +76,7 @@ struct InstalledListItemDetailsView: View {
             .frameBottomPadding()
             .toolbar(.hidden)
             .fullScreenCover(isPresented: $viewModel.showQRCode) {
-                ItemV2LabelView(item: viewModel.itemState)
+                ItemViewFactory().makePDFView(item: viewModel.itemState)
             }
         }
     }

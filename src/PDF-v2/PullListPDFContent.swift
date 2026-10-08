@@ -197,12 +197,7 @@ private extension PullListPDFContent {
     /// "L × W × H unit", skipping any empty measurement. Nil when the item has
     /// no dimensions.
     func dimensionsText(_ dimensions: ItemDimensions?) -> String? {
-        guard let dimensions else { return nil }
-        let parts = [dimensions.length, dimensions.width, dimensions.height].filter { !$0.isEmpty }
-        guard !parts.isEmpty else { return nil }
-
-        let unit = dimensions.unit == .imperial ? "in" : "cm"
-        return parts.joined(separator: " × ") + " " + unit
+        dimensions?.summary
     }
 
     /// Nil when the item isn't essential or its group failed to resolve.
