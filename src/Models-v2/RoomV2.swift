@@ -88,3 +88,9 @@ extension String {
 extension RoomV2 {
     var metadata: String? { "\(itemIds.count) \(itemIds.count == 1 ? "item" : "items")" }
 }
+
+// MARK: - Delete
+
+extension RoomV2 {
+    var canDelete: Bool { itemIds.isEmpty }
+}

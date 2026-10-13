@@ -23,6 +23,7 @@ final class EditItemViewModel {
 
     // MARK: View State
     var isLoading: Bool = false
+    var isDeleting: Bool = false
     var showAlert: Bool = false
     var alertMessage: String = ""
 
@@ -37,10 +38,6 @@ final class EditItemViewModel {
         self.selectedGroup = essentialsGroup
         self.itemRepo = itemRepo
         self.essentialsRepo = essentialsRepo
-    }
-
-    var canDelete: Bool {
-        originalItem.location.status.isAvailable && originalItem.essentialGroupId == nil
     }
 
     // MARK: - loadGroups
@@ -102,11 +99,15 @@ final class EditItemViewModel {
     // MARK: - delete
 
     func delete() async -> Bool {
+        guard originalItem.canDelete, !isLoading else { return false }
         isLoading = true
-        defer { isLoading = false }
+        isDeleting = true
+        defer {
+            isLoading = false
+            isDeleting = false
+        }
         do {
-            try await FirebaseImageManager.shared.deleteDocumentImages(document: originalItem, imageType: .item)
-            try await itemRepo.delete(id: originalItem.id)
+            try await itemRepo.deleteItem(id: originalItem.id)
             return true
         } catch {
             showError(error)

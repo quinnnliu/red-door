@@ -9,6 +9,7 @@ import SwiftUI
 
 struct InstalledListRoomDetailsView: View {
     @State var viewModel: InstalledListRoomDetailsViewModel
+    @Environment(NavigationCoordinator.self) private var coordinator
     @State var itemToRemove: ItemV2? = nil
 
     init(viewModel: InstalledListRoomDetailsViewModel) {
@@ -60,16 +61,7 @@ struct InstalledListRoomDetailsView: View {
                 title: "Select Storage Location",
                 documents: viewModel.availableStorageLocations,
                 refreshAction: { Task { await viewModel.fetchAvailableStorageLocations() } },
-                action: { action in
-                    if let storageAction = action as? SelectDocumentSheetAction<StorageLocation>,
-                       case .selected(let storageLocation) = storageAction,
-                       let item = itemToRemove {
-                        Task {
-                            await viewModel.removeItemToStorage(item: item, storageLocation: storageLocation)
-                            itemToRemove = nil
-                        }
-                    }
-                }
+                action: handleAction(_:)
             )
             .task { await viewModel.fetchAvailableStorageLocations() }
         }
@@ -131,59 +123,44 @@ struct InstalledListRoomDetailsView: View {
     private var RoomItemList: some View {
         LazyVStack(spacing: 12) {
             ForEach(viewModel.items, id: \.self) { item in
-                NavigationLink(value: NavigationDestination.installedListItemDetailView(
+                ItemListItemView(
                     item: item,
-                    room: viewModel.roomState,
-                    uninstalled: viewModel.uninstalled
-                )) {
-                    RoomItemListItemView(item: item)
-                        .padding(.horizontal, 4)
-                }
+                    style: viewModel.uninstalled ? .display : .listRoom,
+                    action: handleAction(_:)
+                )
+                .padding(.horizontal, 4)
             }
         }
     }
 
-    // MARK: - Room Item List Item
-
-    @ViewBuilder
-    private func RoomItemListItemView(item: ItemV2) -> some View {
-        HStack(alignment: .center, spacing: 8) {
-            PrimaryImageView(image: item.primaryImage, size: Constants.Image.listItemDefault, isExpandable: false)
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(item.displayName)
-                    .foregroundColor(.primary)
-                    .bold()
-
-                HStack(spacing: 4) {
-                    Image(systemName: item.type.icon ?? SFSymbols.ellipsis)
-                    Text("•")
-                    Text(item.material.title)
-                    if let color = item.color.color {
-                        Text("•")
-                        Image(systemName: SFSymbols.circleFill)
-                            .foregroundColor(color)
-                    }
-                }
-                .font(.caption)
-                .foregroundColor(.secondary)
+    private func handleAction(_ action: Any?) {
+        switch action {
+        case let storageAction as SelectDocumentSheetAction<StorageLocation>:
+            guard let item = itemToRemove,
+                  case .selected(let storageLocation) = storageAction else { return }
+            Task {
+                await viewModel.removeItemToStorage(item: item, storageLocation: storageLocation)
+                itemToRemove = nil
             }
-
-            Spacer()
-
-            if !viewModel.uninstalled {
-                RDButton(style: .red, size: .icon, leadingIcon: SFSymbols.trash, fullWidth: false) {
-                    itemToRemove = item
-                    showSelectStorageSheet = true
-                }
+        case let itemAction as ItemListItemAction:
+            switch itemAction {
+            case .removeItem(let item):
+                itemToRemove = item
+                showSelectStorageSheet = true
+            case .navigate(let item):
+                coordinator.appendToSelectedPath(
+                    NavigationDestination.installedListItemDetailView(
+                        item: item,
+                        room: viewModel.roomState,
+                        uninstalled: viewModel.uninstalled
+                    )
+                )
+            default:
+                return
             }
+        default:
+            return
         }
-        .padding(12)
-        .background(Color(.systemGray5))
-        .overlay(
-            RoundedRectangle(cornerRadius: 6)
-                .stroke(item.attention ? Color.yellow : Color(.systemGray3), lineWidth: 3)
-        )
     }
 
     private func handleImageAction(_ actionArgument: Any?, isBefore: Bool) {

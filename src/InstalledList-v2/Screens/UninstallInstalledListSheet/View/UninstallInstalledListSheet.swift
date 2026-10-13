@@ -321,10 +321,6 @@ private extension UninstallInstalledListSheet {
     }
 
     // MARK: SelectableItemRow
-
-    /// `ItemListItemView` renders its own selection circle when handed an
-    /// action. The surrounding tap gesture makes the whole row a target too,
-    /// per the design's "tap rows to add or remove".
     func SelectableItemRow(_ item: ItemV2, room: RoomV2) -> some View {
         ItemListItemView(
             item: item,

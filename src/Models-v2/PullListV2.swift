@@ -150,3 +150,11 @@ enum NewEnglandState: String, Filterable, CaseIterable, Codable {
 extension PullListV2: RDListDocument {
     static let listKind: RDListKind = .pullList
 }
+
+// MARK: - Delete
+
+extension PullListV2 {
+    var canDelete: Bool {
+        roomIds.isEmpty && unassignedItemIds.isEmpty && essentialGroupId == nil
+    }
+}

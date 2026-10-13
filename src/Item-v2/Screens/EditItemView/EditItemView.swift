@@ -65,7 +65,7 @@ struct EditItemView: View {
                     RDButton(style: .red, size: .default, leadingIcon: "trash", label: "Delete Item", fullWidth: false) {
                         showDeleteAlert = true
                     }
-                    .disabled(!viewModel.canDelete)
+                    .disabled(!viewModel.originalItem.canDelete)
                     .alert("Confirm Delete", isPresented: $showDeleteAlert) {
                         Button(role: .destructive) {
                             deleteItem()
@@ -85,11 +85,7 @@ struct EditItemView: View {
             .scrollDismissesKeyboard(.automatic)
 
             if viewModel.isLoading {
-                Color.black.opacity(0.3).ignoresSafeArea()
-                ProgressView("Saving Item...")
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
-                    .shadow(radius: 10)
+                FullScreenProgressView(label: viewModel.isDeleting ? "Deleting Item..." : "Saving Item...")
             }
         }
         .task {

@@ -59,6 +59,11 @@ struct PullListRoomDetailsView: View {
             
         }
         .frameHorizontalPadding()
+        .overlay {
+            if viewModel.isDeleting {
+                FullScreenProgressView(label: "Deleting Room...")
+            }
+        }
         .sheet(isPresented: $showAddItemsSheet) {
             AddItemsToRoomSheet
         }
@@ -159,7 +164,7 @@ struct PullListRoomDetailsView: View {
             Button("Delete Room", systemImage: SFSymbols.trash, role: .destructive) {
                 showDeleteConfirmation = true
             }
-            .disabled(!viewModel.canDelete)
+            .disabled(!viewModel.roomState.canDelete)
         } label: {
             RDButton(style: .red, size: .icon, leadingIcon: SFSymbols.ellipsis, fullWidth: false) { }
                 .clipShape(Circle())

@@ -115,6 +115,14 @@ extension UninstallInstalledListSheetViewModel {
             didCommit = true
             installedListState.uninstalled = true
             return true
+        } catch UninstallCommitError.existingListMissing {
+            // The commit already unassigned the affected items; the session
+            // listener delivers that. Drop the stale list the sheet resolved.
+            existingPullList = nil
+            clearSelection()
+            alertMessage = UninstallCommitError.existingListMissing.localizedDescription
+            showAlert = true
+            return false
         } catch {
             // If the session already vanished, that message is more useful than
             // the underlying "document not found" this throws.

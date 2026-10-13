@@ -125,6 +125,18 @@ struct ItemV2: RDDocument {
     }
 }
 
+// MARK: - Delete
+
+extension ItemV2 {
+    var deleteErrorReason: ItemDeleteError? {
+        if !location.status.isAvailable { return .assignedToList }
+        if essentialGroupId != nil { return .inEssentialsGroup }
+        return nil
+    }
+
+    var canDelete: Bool { deleteErrorReason == nil }
+}
+
 enum ItemType: String, Filterable, CaseIterable {
     case bed = "Bed"
     case boxspring = "Boxspring"

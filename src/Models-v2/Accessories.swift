@@ -84,3 +84,15 @@ struct Accessories: RDDocument {
         case essentialsGroupId = "essentials_group_id"
     }
 }
+
+// MARK: - Delete
+
+extension Accessories {
+    var deleteBlocker: AccessoriesDeleteError? {
+        if essentialsGroupId != nil { return .inEssentialsGroup }
+        if !location.status.isAvailable { return .assignedToList }
+        return nil
+    }
+
+    var canDelete: Bool { deleteBlocker == nil }
+}

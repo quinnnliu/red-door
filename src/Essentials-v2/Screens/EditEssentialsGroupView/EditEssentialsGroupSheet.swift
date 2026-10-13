@@ -58,7 +58,7 @@ struct EditEssentialsGroupSheet: View {
                     ) {
                         deleteGroup()
                     }
-                    .disabled(!originalGroup.itemIds.isEmpty)
+                    .disabled(!originalGroup.canDelete)
 
                     RDButton(
                         style: .red,
@@ -76,14 +76,14 @@ struct EditEssentialsGroupSheet: View {
             .frameHorizontalPadding()
 
             if viewModel.isLoading {
-                Color.black.opacity(0.3).ignoresSafeArea()
-                ProgressView("Saving...")
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
-                    .shadow(radius: 10)
+                FullScreenProgressView(label: viewModel.isDeleting ? "Deleting..." : "Saving...")
             }
         }
         .presentationDetents([.medium])
+        .interactiveDismissDisabled(viewModel.isLoading)
+        .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
+            Button("OK", role: .cancel) {}
+        }
         .sheet(isPresented: $viewModel.showGroupTypePicker) {
             SelectDocumentSheet(
                 title: "Select Group Type",
@@ -152,17 +152,10 @@ struct EditEssentialsGroupSheet: View {
     // MARK: - Delete
 
     private func deleteGroup() {
-        guard originalGroup.itemIds.isEmpty else { return }
         Task {
-            viewModel.isLoading = true
-            do {
-                try await essentialsRepo.delete(id: editingGroup.id)
-                viewModel.isLoading = false
+            if await viewModel.deleteGroup(originalGroup) {
                 dismiss()
                 onDelete()
-            } catch {
-                viewModel.isLoading = false
-                print("Error deleting essentials group: \(error)")
             }
         }
     }

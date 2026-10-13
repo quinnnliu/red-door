@@ -61,6 +61,11 @@ struct PullListDetailsViewV2: View {
         .frameHorizontalPadding()
         .frameBottomPadding()
         .toolbar(.hidden)
+        .overlay {
+            if viewModel.isDeleting {
+                FullScreenProgressView(label: "Deleting Pull List...")
+            }
+        }
         .task {
             await viewModel.startListening()
         }
@@ -91,7 +96,7 @@ struct PullListDetailsViewV2: View {
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("This permanently deletes the list and its image.")
+            Text("This permanently deletes the list, its image, and any install session for it. This can't be undone.")
         }
         .sheet(isPresented: $showAddRoomsSheet) {
             EditRoomV2Sheet { newRoomName, squareFootage in
@@ -179,9 +184,9 @@ private extension PullListDetailsViewV2 {
                 Button("Delete", systemImage: SFSymbols.trash, role: .destructive) {
                     showDeleteConfirmation = true
                 }
-                .disabled(!viewModel.canDelete)
+                .disabled(!viewModel.pullListState.canDelete)
 
-                if !viewModel.canDelete {
+                if !viewModel.pullListState.canDelete {
                     Text("Remove all rooms and items first")
                 }
             }

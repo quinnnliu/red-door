@@ -89,7 +89,7 @@ struct UninstallDestinationSheet: View {
         .frameTop()
         .frameHorizontalPadding()
         .frameBottomPadding()
-        .presentationDetents([.medium, .large])
+        .navigationBarHidden(true)
         .task(id: segment) {
             guard segment == .existing, !didLoadPullLists else { return }
             didLoadPullLists = true

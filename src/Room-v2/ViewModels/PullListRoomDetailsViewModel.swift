@@ -18,6 +18,7 @@ final class PullListRoomDetailsViewModel {
     var items: [ItemV2]
     var storageLocations: [StorageLocation] = []
     var isLoading: Bool = false
+    var isDeleting: Bool = false
     var showAlert: Bool = false
     var alertMessage: String = ""
 
@@ -160,16 +161,17 @@ extension PullListRoomDetailsViewModel {
 
     // MARK: - deleteRoom
     
-    var canDelete: Bool { roomState.itemIds.isEmpty }
-
     @MainActor
     func deleteRoom() async -> Bool {
-        guard canDelete else {
+        guard roomState.canDelete else {
             alertMessage = RoomDeleteError.notEmpty.localizedDescription
             showAlert = true
             return false
         }
+        guard !isDeleting else { return false }
 
+        isDeleting = true
+        defer { isDeleting = false }
         do {
             try await roomRepo.deleteRoom(id: roomState.id)
             return true
