@@ -7,6 +7,17 @@
 
 import Firebase
 
+enum UninstallCommitError: LocalizedError {
+    case existingListMissing
+
+    var errorDescription: String? {
+        switch self {
+        case .existingListMissing:
+            "The existing pull list you chose no longer exists. Its items are unassigned again. Choose a new destination for them."
+        }
+    }
+}
+
 extension UninstallSessionRepository {
 
     /// Applies an entire uninstall plan in one transaction, then retires the
@@ -14,6 +25,11 @@ extension UninstallSessionRepository {
     ///
     /// Throws if the session was already committed, which is how a second
     /// caller racing the same commit is rejected.
+    ///
+    /// If the existing pull list the plan routes to was deleted since it was
+    /// chosen, nothing is uninstalled. The transaction instead unassigns
+    /// everything routed to that list and clears the choice, then throws
+    /// `UninstallCommitError.existingListMissing` so the user can re-decide.
     func commit(
         installedList: InstalledListV2,
         rooms: [RoomV2],
@@ -28,11 +44,32 @@ extension UninstallSessionRepository {
 
         let uninstalledDate = ISO8601DateFormatter().string(from: Date())
 
-        _ = try await db.runTransaction { transaction, errorPointer -> Any? in
+        let aborted = try await db.runTransaction { transaction, errorPointer -> Any? in
             do {
                 let session = try self.get(id: installedListId, transaction: transaction)
 
                 guard !session.uninstalled else { throw RepositoryError.sessionComplete }
+
+                // 0. Reads come first: a transaction can't read after it has
+                //    written. A deleted target list can't receive anything, and
+                //    updating it would fail the whole commit, so back the plan
+                //    out to "unassigned" instead and let the user re-route.
+                if let existingId = session.existingPullListId {
+                    let existingRef = pullListRepo.collectionRef.document(existingId)
+                    if !(try transaction.getDocument(existingRef)).exists {
+                        var fields: [String: Any] = [
+                            UninstallSession.CodingKeys.existingPullListId.stringValue: FieldValue.delete()
+                        ]
+                        for itemId in session.itemIds(for: .existingList) {
+                            fields["\(UninstallSession.itemDestinationsField).\(itemId)"] = FieldValue.delete()
+                        }
+                        if session.essentialsDestination?.type == .existingList {
+                            fields[UninstallSession.CodingKeys.essentialsDestination.stringValue] = FieldValue.delete()
+                        }
+                        self.update(id: installedListId, fields: fields, transaction: transaction)
+                        return true
+                    }
+                }
 
                 // 1. Move every individually assigned item.
                 for (itemId, destination) in session.itemDestinations {
@@ -114,11 +151,15 @@ extension UninstallSessionRepository {
                 }
                 self.update(id: installedListId, fields: sessionFields, transaction: transaction)
 
-                return nil
+                return false
             } catch {
                 errorPointer?.pointee = error as NSError
                 return nil
             }
+        }
+
+        if (aborted as? Bool) == true {
+            throw UninstallCommitError.existingListMissing
         }
     }
 

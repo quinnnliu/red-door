@@ -27,14 +27,19 @@ struct AccessoriesViewFactory {
 
     func makeEditAccessoriesSheet(
         accessories: Accessories,
-        onSave: @escaping (Accessories) -> Void
+        onSave: @escaping (Accessories) -> Void,
+        onDelete: @escaping () -> Void = {}
     ) -> EditAccessoriesSheet {
-        let vm = EditAccessoriesViewModel(accessoriesTypeRepo: accessoriesTypeRepo)
+        let vm = EditAccessoriesViewModel(
+            accessoriesRepo: accessoriesRepo,
+            accessoriesTypeRepo: accessoriesTypeRepo
+        )
         return EditAccessoriesSheet(
             accessories: accessories,
             viewModel: vm,
             accessoriesRepo: accessoriesRepo,
-            onSave: onSave
+            onSave: onSave,
+            onDelete: onDelete
         )
     }
 }

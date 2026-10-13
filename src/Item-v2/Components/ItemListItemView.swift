@@ -49,7 +49,7 @@ struct ItemListItemView: View {
     var body: some View {
         Group {
             switch style {
-            case .inventoryList, .addToDocument, .display:
+            case .inventoryList, .addToDocument, .display, .listRoom:
                 Button {
                     if let action = action {
                         action(ItemListItemAction.navigate(item))

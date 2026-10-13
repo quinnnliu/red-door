@@ -96,3 +96,16 @@ extension EssentialsGroup {
         "\(emoji) • \(itemIds.count) \(itemIds.count == 1 ? "item" : "items")"
     }
 }
+
+// MARK: - Delete
+
+extension EssentialsGroup {
+    var deleteErrorReason: EssentialsGroupDeleteError? {
+        if !itemIds.isEmpty { return .hasItems }
+        if accessoriesId != nil { return .hasAccessories }
+        if !location.status.isAvailable { return .assignedToList }
+        return nil
+    }
+
+    var canDelete: Bool { deleteErrorReason == nil }
+}

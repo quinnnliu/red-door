@@ -20,16 +20,39 @@ final class PullListRepository: GenericRepository<PullListV2> {
 
 // MARK: - Delete
 
-extension PullListRepository {
+enum PullListDeleteError: LocalizedError {
+    case notEmpty
 
-    /// Deletes an empty pull list and its image.
-    ///
-    /// Deleting is not a relocation: callers must empty the list first, since
-    /// there is nowhere for leftover rooms or items to go. See
-    /// `PullListDetailsViewModelV2.canDelete`.
+    var errorDescription: String? {
+        switch self {
+        case .notEmpty: "Remove all rooms, items and any essentials group before deleting this pull list."
+        }
+    }
+}
+
+extension PullListRepository {
     func delete(_ listId: String) async throws {
-        let list = try await get(id: listId)
-        try await delete(id: listId)
+        let roomRepo = RoomRepository<PullListV2>(listId: listId)
+        let roomRefs = try await roomRepo.collectionRef.getDocuments().documents.map(\.reference)
+        let sessionRef = db.collection(InstallSession.collectionPath).document(listId)
+
+        let deleted = try await db.runTransaction { transaction, errorPointer -> Any? in
+            do {
+                let list = try self.get(id: listId, transaction: transaction)
+                guard list.canDelete else { throw PullListDeleteError.notEmpty }
+
+                for ref in roomRefs {
+                    transaction.deleteDocument(ref)
+                }
+                transaction.deleteDocument(sessionRef)
+                self.delete(id: listId, transaction: transaction)
+                return list
+            } catch {
+                errorPointer?.pointee = error as NSError
+                return nil
+            }
+        }
+        guard let list = deleted as? PullListV2 else { return }
 
         // Cleans by folder rather than by the stored image reference: a list
         // copied from an installed list inherits that list's reference, whose
@@ -47,10 +70,6 @@ extension PullListRepository {
 // MARK: - Unassigned items
 
 extension PullListRepository {
-
-    /// Moves items out of a list's unassigned pool and into storage.
-    /// Mirrors `RoomRepository.removeItem`, minus the room membership write:
-    /// unassigned items belong to no room.
     func storeUnassignedItems(
         _ itemIds: [String],
         fromListId listId: String,

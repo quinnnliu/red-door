@@ -9,6 +9,7 @@ import SwiftUI
 
 @Observable
 final class EditAccessoriesViewModel {
+    private let accessoriesRepo: AccessoriesRepository
     private let accessoriesTypeRepo: AccessoriesTypeRepository
     private let configService: ConfigurationService
 
@@ -22,11 +23,16 @@ final class EditAccessoriesViewModel {
     // MARK: - Loading
 
     var isLoading: Bool = false
+    var isDeleting: Bool = false
+    var showAlert: Bool = false
+    var alertMessage: String = ""
 
     init(
+        accessoriesRepo: AccessoriesRepository,
         accessoriesTypeRepo: AccessoriesTypeRepository,
         configService: ConfigurationService = .shared
     ) {
+        self.accessoriesRepo = accessoriesRepo
         self.accessoriesTypeRepo = accessoriesTypeRepo
         self.configService = configService
     }
@@ -62,6 +68,26 @@ final class EditAccessoriesViewModel {
         } catch {
             print("Error creating accessories type: \(error)")
             return nil
+        }
+    }
+
+    // MARK: - Delete
+    @MainActor
+    func deleteAccessories(_ accessories: Accessories) async -> Bool {
+        guard accessories.canDelete, !isLoading else { return false }
+        isLoading = true
+        isDeleting = true
+        defer {
+            isLoading = false
+            isDeleting = false
+        }
+        do {
+            try await accessoriesRepo.deleteAccessories(id: accessories.id)
+            return true
+        } catch {
+            alertMessage = error.localizedDescription
+            showAlert = true
+            return false
         }
     }
 }

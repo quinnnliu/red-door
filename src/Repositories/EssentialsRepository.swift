@@ -9,6 +9,20 @@ import Firebase
 
 final class EssentialsGroupTypeRepository: GenericRepository<EssentialsGroupType> {}
 
+enum EssentialsGroupDeleteError: LocalizedError {
+    case hasItems
+    case hasAccessories
+    case assignedToList
+
+    var errorDescription: String? {
+        switch self {
+        case .hasItems: "Remove all items from this group before deleting it."
+        case .hasAccessories: "Remove the accessories from this group before deleting it."
+        case .assignedToList: "Remove this group from its list before deleting it."
+        }
+    }
+}
+
 final class EssentialsRepository: GenericRepository<EssentialsGroup> {
     func addItem(_ itemId: String, toGroup groupId: String) async throws {
         try await update(id: groupId, fields: [
@@ -94,6 +108,22 @@ extension EssentialsRepository {
                     )
                 }
 
+                return nil
+            } catch {
+                errorPointer?.pointee = error as NSError
+                return nil
+            }
+        }
+    }
+
+    // MARK: - Delete
+    func deleteGroup(id groupId: String) async throws {
+        _ = try await db.runTransaction { transaction, errorPointer -> Any? in
+            do {
+                let group = try self.get(id: groupId, transaction: transaction)
+                if let blocker = group.deleteErrorReason { throw blocker }
+
+                self.delete(id: groupId, transaction: transaction)
                 return nil
             } catch {
                 errorPointer?.pointee = error as NSError

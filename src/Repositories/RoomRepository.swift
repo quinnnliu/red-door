@@ -302,7 +302,7 @@ extension RoomRepository where Parent == PullListV2 {
         let deleted = try await db.runTransaction { transaction, errorPointer -> Any? in
             do {
                 let room = try self.get(id: roomId, transaction: transaction)
-                guard room.itemIds.isEmpty else { throw RoomDeleteError.notEmpty }
+                guard room.canDelete else { throw RoomDeleteError.notEmpty }
 
                 self.delete(id: roomId, transaction: transaction)
                 transaction.updateData(

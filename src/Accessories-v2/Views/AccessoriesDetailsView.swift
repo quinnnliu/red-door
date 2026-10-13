@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct AccessoriesDetailsView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var accessories: Accessories
     @State private var showEditSheet: Bool = false
 
@@ -35,9 +36,11 @@ struct AccessoriesDetailsView: View {
         .toolbar(.hidden)
         .frameTop()
         .sheet(isPresented: $showEditSheet) {
-            AccessoriesViewFactory().makeEditAccessoriesSheet(accessories: accessories) { updated in
-                accessories = updated
-            }
+            AccessoriesViewFactory().makeEditAccessoriesSheet(
+                accessories: accessories,
+                onSave: { updated in accessories = updated },
+                onDelete: { dismiss() }
+            )
         }
     }
 }

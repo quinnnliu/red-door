@@ -14,6 +14,8 @@ struct EditAccessoriesSheet: View {
     private let accessoriesRepo: AccessoriesRepository
     private let originalTypeId: String
     private let onSave: (Accessories) -> Void
+    private let onDelete: () -> Void
+    private let originalAccessories: Accessories
 
     @State private var editingAccessory: Accessories
 
@@ -21,8 +23,11 @@ struct EditAccessoriesSheet: View {
         accessories: Accessories,
         viewModel: EditAccessoriesViewModel,
         accessoriesRepo: AccessoriesRepository,
-        onSave: @escaping (Accessories) -> Void
+        onSave: @escaping (Accessories) -> Void,
+        onDelete: @escaping () -> Void = {}
     ) {
+        self.originalAccessories = accessories
+        self.onDelete = onDelete
         self.originalTypeId = accessories.accessoriesTypeId
         self._editingAccessory = State(initialValue: accessories)
         self._viewModel = State(initialValue: viewModel)
@@ -48,14 +53,27 @@ struct EditAccessoriesSheet: View {
 
                 Spacer()
 
-                RDButton(
-                    style: .red,
-                    size: .default,
-                    leadingIcon: "checkmark",
-                    label: "Save",
-                    fullWidth: false
-                ) {
-                    saveAccessory()
+                HStack(spacing: 12) {
+                    RDButton(
+                        style: .default,
+                        size: .default,
+                        leadingIcon: "trash",
+                        label: "Delete",
+                        fullWidth: false
+                    ) {
+                        deleteAccessories()
+                    }
+                    .disabled(!originalAccessories.canDelete)
+
+                    RDButton(
+                        style: .red,
+                        size: .default,
+                        leadingIcon: "checkmark",
+                        label: "Save",
+                        fullWidth: false
+                    ) {
+                        saveAccessory()
+                    }
                 }
             }
             .toolbar(.hidden)
@@ -63,14 +81,14 @@ struct EditAccessoriesSheet: View {
             .frameHorizontalPadding()
 
             if viewModel.isLoading {
-                Color.black.opacity(0.3).ignoresSafeArea()
-                ProgressView("Saving...")
-                    .padding()
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(.systemBackground)))
-                    .shadow(radius: 10)
+                FullScreenProgressView(label: viewModel.isDeleting ? "Deleting..." : "Saving...")
             }
         }
         .presentationDetents([.large])
+        .interactiveDismissDisabled(viewModel.isLoading)
+        .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
+            Button("OK", role: .cancel) {}
+        }
         .sheet(isPresented: $viewModel.showSelectTypeSheet) {
             SelectAccessoriesTypeSheet
         }
@@ -108,6 +126,17 @@ struct EditAccessoriesSheet: View {
         editingAccessory.accessoriesTypeId = type.id
         editingAccessory.baseName = type.displayName
         editingAccessory.baseNameLowercased = type.displayName.lowercased()
+    }
+
+    // MARK: - Delete
+
+    private func deleteAccessories() {
+        Task {
+            if await viewModel.deleteAccessories(originalAccessories) {
+                dismiss()
+                onDelete()
+            }
+        }
     }
 
     // MARK: - Save

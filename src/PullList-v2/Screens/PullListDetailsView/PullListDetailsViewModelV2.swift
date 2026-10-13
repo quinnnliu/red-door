@@ -16,6 +16,7 @@ final class PullListDetailsViewModelV2 {
     var unassignedItems: Set<ItemV2> = []
     var selectedUnassignedItems: Set<ItemV2> = []
     var isLoading: Bool = false
+    var isDeleting: Bool = false
     private let loader: ItemsListLoader
 
     var essentialsGroupState: EssentialsGroup? = nil
@@ -316,23 +317,17 @@ final class PullListDetailsViewModelV2 {
 
     // MARK: deletePullList
 
-    /// A list can only be deleted once it holds nothing. There must be no rooms, no unassigned items, and
-    /// no essentials group.
-    var canDelete: Bool {
-        rooms.isEmpty
-            && pullListState.roomIds.isEmpty
-            && pullListState.unassignedItemIds.isEmpty
-            && pullListState.essentialGroupId == nil
-    }
-
     @MainActor
     func deletePullList() async -> Bool {
-        guard canDelete else {
-            alertMessage = "Remove all rooms, items and any essentials group before deleting this pull list."
+        guard pullListState.canDelete else {
+            alertMessage = PullListDeleteError.notEmpty.localizedDescription
             showAlert = true
             return false
         }
+        guard !isDeleting else { return false }
 
+        isDeleting = true
+        defer { isDeleting = false }
         do {
             try await pullListRepo.delete(pullListState.id)
             return true

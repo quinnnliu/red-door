@@ -9,6 +9,7 @@ import SwiftUI
 
 @Observable
 final class EditEssentialsGroupViewModel {
+    private let essentialsRepo: EssentialsRepository
     private let essentialsGroupTypeRepo: EssentialsGroupTypeRepository
     private let configService: ConfigurationService
 
@@ -28,11 +29,16 @@ final class EditEssentialsGroupViewModel {
     // MARK: - Loading
 
     var isLoading: Bool = false
+    var isDeleting: Bool = false
+    var showAlert: Bool = false
+    var alertMessage: String = ""
 
     init(
+        essentialsRepo: EssentialsRepository,
         essentialsGroupTypeRepo: EssentialsGroupTypeRepository,
         configService: ConfigurationService = .shared
     ) {
+        self.essentialsRepo = essentialsRepo
         self.essentialsGroupTypeRepo = essentialsGroupTypeRepo
         self.configService = configService
     }
@@ -67,6 +73,27 @@ final class EditEssentialsGroupViewModel {
         } catch {
             print("Error creating group type: \(error)")
             return nil
+        }
+    }
+
+    // MARK: - Delete
+
+    @MainActor
+    func deleteGroup(_ group: EssentialsGroup) async -> Bool {
+        guard group.canDelete, !isLoading else { return false }
+        isLoading = true
+        isDeleting = true
+        defer {
+            isLoading = false
+            isDeleting = false
+        }
+        do {
+            try await essentialsRepo.deleteGroup(id: group.id)
+            return true
+        } catch {
+            alertMessage = error.localizedDescription
+            showAlert = true
+            return false
         }
     }
 }

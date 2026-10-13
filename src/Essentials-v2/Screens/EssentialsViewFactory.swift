@@ -25,6 +25,7 @@ struct EssentialsViewFactory {
 
     func makeEditEssentialsGroupSheet(group: EssentialsGroup, onDelete: @escaping () -> Void = {}) -> EditEssentialsGroupSheet {
         let vm = EditEssentialsGroupViewModel(
+            essentialsRepo: essentialsRepo,
             essentialsGroupTypeRepo: essentialsGroupTypeRepo
         )
         return EditEssentialsGroupSheet(group: group, viewModel: vm, essentialsRepo: essentialsRepo, onDelete: onDelete)

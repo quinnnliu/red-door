@@ -15,7 +15,7 @@ struct InstallItemListItemView: View {
     let action: (Any?) -> Void
 
     var body: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 2) {
             ItemListItemView(item: item, style: .installation(room: room))
                 .frame(maxWidth: .infinity)
 
@@ -34,7 +34,8 @@ struct InstallItemListItemView: View {
                         .lineLimit(1)
                 }
             }
-            .padding(8)
+            .padding(.vertical, 8)
+            .padding(.trailing, 8)
         }
         .background(Color(.systemGray5))
         .cornerRadius(Constants.CornerRadius.large)

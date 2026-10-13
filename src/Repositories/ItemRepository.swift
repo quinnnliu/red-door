@@ -7,6 +7,18 @@
 
 import Firebase
 
+enum ItemDeleteError: LocalizedError {
+    case assignedToList
+    case inEssentialsGroup
+
+    var errorDescription: String? {
+        switch self {
+        case .assignedToList: "Return this item to storage before deleting it."
+        case .inEssentialsGroup: "Remove this item from its essentials group before deleting it."
+        }
+    }
+}
+
 final class ItemRepository: GenericRepository<ItemV2> {
     
     // MARK: maxItemNumber
@@ -64,5 +76,31 @@ extension ItemRepository {
             ],
             transaction: transaction
         )
+    }
+}
+
+// MARK: - Delete
+
+extension ItemRepository {
+    func deleteItem(id itemId: String) async throws {
+        let deleted = try await db.runTransaction { transaction, errorPointer -> Any? in
+            do {
+                let item = try self.get(id: itemId, transaction: transaction)
+                if let blocker = item.deleteErrorReason { throw blocker }
+
+                self.delete(id: itemId, transaction: transaction)
+                return item
+            } catch {
+                errorPointer?.pointee = error as NSError
+                return nil
+            }
+        }
+        guard let item = deleted as? ItemV2 else { return }
+
+        do {
+            try await FirebaseImageManager.shared.deleteDocumentImages(document: item, imageType: .item)
+        } catch {
+            print("[WARN]: Deleted item \(itemId) but failed to clean up its images: \(error.localizedDescription)")
+        }
     }
 }
