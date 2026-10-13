@@ -21,7 +21,7 @@ struct ItemDetailsViewV2: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            VStack(spacing: 4) {
+            VStack(spacing: 2) {
                 TopBar()
                 if let nickname = viewModel.itemState.nickname {
                     Text("Nickname: \(nickname)")

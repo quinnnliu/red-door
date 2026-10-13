@@ -247,28 +247,28 @@ struct EditItemDetailSection: View {
                     HStack {
                         Text("Length:")
                             .frame(width: 110, alignment: .leading)
-                        TextField("0 (optional)", text: dimensionsBinding.length)
+                        TextField("0 (optional)", text: dimensionBinding(\.length))
                             .keyboardType(.decimalPad)
                     }
                     
                     HStack {
                         Text("Width:")
                             .frame(width: 110, alignment: .leading)
-                        TextField("0 (optional)", text: dimensionsBinding.width)
+                        TextField("0 (optional)", text: dimensionBinding(\.width))
                             .keyboardType(.decimalPad)
                     }
                     
                     HStack {
                         Text("Height:")
                             .frame(width: 110, alignment: .leading)
-                        TextField("0 (optional)", text: dimensionsBinding.height)
+                        TextField("0 (optional)", text: dimensionBinding(\.height))
                             .keyboardType(.decimalPad)
                     }
                     
                     HStack {
                         Text("Unit:")
                             .frame(width: 110, alignment: .leading)
-                        Picker("Unit", selection: dimensionsBinding.unit) {
+                        Picker("Unit", selection: unitBinding) {
                             ForEach(ItemDimensions.UnitType.allCases, id: \.self) { unit in
                                 Text(unit.rawValue.capitalized)
                             }
@@ -362,14 +362,24 @@ struct EditItemDetailSection: View {
     }
     
     // MARK: Dimensions Binding
-    private var dimensionsBinding: Binding<ItemDimensions> {
+    private func dimensionBinding(_ keyPath: WritableKeyPath<ItemDimensions, String>) -> Binding<String> {
         Binding(
-            get: {
-                guard let dimensions = dimensions else { return ItemDimensions(length: "0", width: "0", height: "0", unit: .imperial) }
-                return dimensions
-            },
-            set: { newDimensions in
-                dimensions = newDimensions
+            get: { dimensions?[keyPath: keyPath] ?? "" },
+            set: { newValue in
+                var current = dimensions ?? ItemDimensions(length: "", width: "", height: "", unit: .imperial)
+                current[keyPath: keyPath] = newValue
+                dimensions = current
+            }
+        )
+    }
+
+    private var unitBinding: Binding<ItemDimensions.UnitType> {
+        Binding(
+            get: { dimensions?.unit ?? .imperial },
+            set: { newUnit in
+                var current = dimensions ?? ItemDimensions(length: "", width: "", height: "", unit: .imperial)
+                current.unit = newUnit
+                dimensions = current
             }
         )
     }
