@@ -136,10 +136,15 @@ struct EditItemView: View {
     }
     
     var NicknameEntry: some View {
-        TextField("Nickname (optional)", text: Binding(
-            get: { viewModel.updatedItem.nickname ?? "" },
-            set: { viewModel.updatedItem.nickname = $0.isEmpty ? nil : $0 }
-        ))
+        HStack(spacing: 4) {
+            if viewModel.updatedItem.nickname == nil {
+                Text("Nickname (optional):")
+            }
+            TextField("Enter nickname here", text: Binding(
+                get: { viewModel.updatedItem.nickname ?? "" },
+                set: { viewModel.updatedItem.nickname = $0.isEmpty ? nil : $0 }
+            ))
+        }
         .font(.caption)
         .foregroundStyle(.secondary)
         .multilineTextAlignment(.center)

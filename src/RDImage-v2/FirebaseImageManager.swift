@@ -71,9 +71,9 @@ final class FirebaseImageManager {
         return (uiImage, storagePath, documentId)
     }
 
-    private static let fullMaxDimension: CGFloat = 1000
-    private static let thumbMaxDimension: CGFloat = 250
-    private static let jpegCompressionQuality: CGFloat = 0.55
+    private static let fullMaxDimension: CGFloat = 800
+    private static let thumbMaxDimension: CGFloat = 200
+    private static let jpegCompressionQuality: CGFloat = 0.50
 
     // MARK: uploadImage()
 
