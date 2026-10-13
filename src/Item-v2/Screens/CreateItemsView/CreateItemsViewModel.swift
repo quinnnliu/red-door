@@ -46,10 +46,6 @@ final class CreateItemsViewModel {
     
     var itemCount: Int // Separate from ModelV2 — a create-only input that produces itemIds at commit time
     var isLoading: Bool
-
-    // Image Overlay
-    var selectedRDImage: RDImage?
-    var isImageSelected: Bool
     
     init(
         template: ItemV2? = nil,
@@ -73,8 +69,6 @@ final class CreateItemsViewModel {
             description: ""
         )
         self.itemCount = 1
-        self.selectedRDImage = nil
-        self.isImageSelected = false
         self.isLoading = false
     }
 

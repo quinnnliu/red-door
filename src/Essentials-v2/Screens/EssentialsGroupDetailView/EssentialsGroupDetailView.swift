@@ -177,6 +177,7 @@ private extension EssentialsGroupDetailView {
                             VStack(spacing: 8) {
                                 ForEach(group.items, id: \.id) { item in
                                     ItemListItemView(item: item, style: .essentialsGroup, action: handleAction(_:))
+                                        .disabled(!item.location.status.isAvailable)
                                 }
                             }
                         }

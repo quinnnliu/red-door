@@ -9,7 +9,6 @@ import Foundation
 
 /// Item cache plus fetch-by-document, shared by every screen that renders the
 /// contents of an `ItemsListableDocument` (a room or an essentials group).
-/// Extracted because seven ViewModels carried near-identical copies of this.
 ///
 /// Safe to call from any thread. It has to be: a ViewModel invalidates right
 /// after a write completes, while the listener that write triggered is already
@@ -30,15 +29,6 @@ final class ItemsListLoader {
 
     /// Fetches any of `ids` that aren't cached yet, then returns every item
     /// that resolved, sorted by display name.
-    ///
-    /// Takes raw IDs rather than a document so that item collections which
-    /// aren't an `ItemsListableDocument` can share the cache — a pull list's
-    /// unassigned pool is a plain `[String]` on the list, and the list itself
-    /// can't conform, since its items also live across rooms and an
-    /// essentials group.
-    ///
-    /// `Collection` rather than `Sequence`: `ids` is traversed twice, and a
-    /// single-pass sequence would be consumed by the cache check.
     func items(ids: some Collection<String>) async throws -> [ItemV2] {
         let uncachedIds = lock.withLock {
             ids.filter { cache[$0] == nil }

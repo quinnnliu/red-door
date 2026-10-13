@@ -24,14 +24,12 @@ final class EssentialsGroupDetailViewModel {
     var alertMessage: String = ""
 
     private var groupListener: ListenerRegistration? = nil
-    private let loader = ItemsListLoader()
+    private let itemsLoader = ItemsListLoader()
 
     init(group: EssentialsGroup) {
         self.groupState = group
     }
 
-    /// Detaches only: `deinit` can run on any thread, while the rest of
-    /// `stopListening()` mutates state the UI reads on the main thread.
     deinit {
         groupListener?.remove()
     }
@@ -57,7 +55,7 @@ final class EssentialsGroupDetailViewModel {
     func stopListening() {
         groupListener?.remove()
         groupListener = nil
-        loader.invalidate()
+        itemsLoader.invalidate()
     }
 
     @MainActor
@@ -65,7 +63,7 @@ final class EssentialsGroupDetailViewModel {
         isLoading = false
         groupState = snapshot
         do {
-            items = try await loader.items(for: snapshot)
+            items = try await itemsLoader.items(for: snapshot)
         } catch {
             alertMessage = "Failed to load items: \(error.localizedDescription)"
             showAlert = true
@@ -186,6 +184,7 @@ final class EssentialsGroupDetailViewModel {
         for itemId in groupState.itemIds {
             itemRepo.update(id: itemId, fields: locationFields, inBatch: batch)
         }
+        itemsLoader.invalidate(groupState.itemIds)
 
         if let accessoriesId = groupState.accessoriesId {
             accessoriesRepo.update(id: accessoriesId, fields: locationFields, inBatch: batch)
@@ -238,7 +237,7 @@ final class EssentialsGroupDetailViewModel {
                 inBatch: batch
             )
             try await batch.commit()
-            loader.invalidate([item.id])
+            itemsLoader.invalidate([item.id])
         } catch {
             alertMessage = "Failed to remove \(item.displayName): \(error.localizedDescription)"
             showAlert = true

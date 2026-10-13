@@ -492,6 +492,7 @@ private extension PullListDetailsViewV2 {
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(.red, lineWidth: 4)
             )
+            .tint(.none)
         }
         
     }
@@ -563,6 +564,12 @@ private extension PullListDetailsViewV2 {
                 withAnimation(Constants.Animation.snappy) {
                     viewModel.deselectUnassigned(item)
                 }
+            case .navigate(let item): // intercepts the navigate action and reroutes as multiselect
+                handleAction(
+                    viewModel.isUnassignedSelected(item) ?
+                    ItemListItemAction.multiSelectDeselection(item)
+                    : ItemListItemAction.multiSelectSelection(item)
+                )
             default:
                 break
             }

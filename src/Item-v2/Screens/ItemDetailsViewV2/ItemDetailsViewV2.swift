@@ -21,7 +21,7 @@ struct ItemDetailsViewV2: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            VStack(spacing: 6) {
+            VStack(spacing: 4) {
                 TopBar()
                 if let nickname = viewModel.itemState.nickname {
                     Text("Nickname: \(nickname)")
@@ -70,7 +70,7 @@ struct ItemDetailsViewV2: View {
                     Text("Item:")
                         .bold()
                         .foregroundStyle(.red)
-                    Text(viewModel.itemState.displayName)
+                    Text(viewModel.itemState.baseName)
                 }
             },
             trailingView: {

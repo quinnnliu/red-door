@@ -55,8 +55,6 @@ struct NavigationDestinationsModifierV2: ViewModifier {
                         PullListItemDetailsView(item: item, room: room)
                     case .installedListItemDetailView(let item, let room, let uninstalled):
                         InstalledListViewFactory().makeItemDetailsView(item: item, room: room, uninstalled: uninstalled)
-                    case .addItemToRoomDetailView(let item, let room):
-                        AddItemToRoomDetailView(item: item, room: room)
                     case .installedListDetailView(let list):
                         InstalledListViewFactory().makeDetailsView(list: list)
                     case .installedListRoomDetailView(let items, let room, let uninstalled):
