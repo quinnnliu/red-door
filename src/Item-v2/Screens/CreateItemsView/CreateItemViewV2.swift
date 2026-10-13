@@ -80,10 +80,6 @@ struct CreateItemViewV2: View {
             await viewModel.loadGroups()
             await viewModel.loadStorageLocations()
         }
-        .overlay(
-            ModelRDImageOverlay(selectedRDImage: viewModel.selectedRDImage, isImageSelected: $viewModel.isImageSelected)
-                .animation(Constants.Animation.snappy, value: viewModel.isImageSelected)
-        )
     }
     
     // MARK: - Top Bar
@@ -112,7 +108,6 @@ struct CreateItemViewV2: View {
         TextField("Item Name", text: $viewModel.itemState.baseName)
             .foregroundStyle(fromTemplate ? .gray : .primary)
             .padding(6)
-            .background(viewModel.isImageSelected ? Color.clear : Color(.systemGray5))
             .cornerRadius(Constants.CornerRadius.medium)
             .multilineTextAlignment(.center)
             .disabled(viewModel.templateState != nil)

@@ -18,9 +18,6 @@ struct CreatePullListViewV2: View {
     @State private var address: String = ""
     
     @State private var showCreateRoomSheet: Bool = false
-    private var rooms: [Room]?
-    
-    
     
     // MARK: Body
     

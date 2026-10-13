@@ -17,17 +17,6 @@ struct OptionsViewV2: View {
             TopBar()
 
             StorageLocationOptionsView()
-
-            Spacer()
-
-            Link("Suggest a Feature", destination: URL(string: "https://docs.google.com/document/d/19aw0hf8dCUa8ycFY7alWmv5hmq79pkwnndopVsu-IEE/edit?usp=sharing")!)
-                .padding(12)
-                .frame(maxWidth: .infinity)
-                .background(Color(.systemGray5))
-                .cornerRadius(Constants.CornerRadius.medium)
-                .bold()
-                .foregroundColor(.red)
-
         }
         .frameTop()
         .frameHorizontalPadding()
@@ -38,7 +27,7 @@ struct OptionsViewV2: View {
         }
     }
 
-        // MARK: Top Bar
+    // MARK: Top Bar
     @ViewBuilder
     private func TopBar() -> some View {
         TopAppBar(leadingView: {
@@ -53,7 +42,7 @@ struct OptionsViewV2: View {
         })
     }
 
-        // MARK: Profile Image
+    // MARK: Profile Image
     @ViewBuilder
     private func ProfileImage() -> some View {
         Button {
@@ -65,7 +54,7 @@ struct OptionsViewV2: View {
         }
     }
 
-        // MARK: Profile Sheet
+    // MARK: Profile Sheet
     @ViewBuilder
     private func ProfileSheet() -> some View {
         VStack(spacing: 12) {
@@ -78,8 +67,4 @@ struct OptionsViewV2: View {
                 .foregroundColor(.secondary)
         }
     }
-}
-
-#Preview {
-    OptionsView()
 }

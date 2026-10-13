@@ -13,6 +13,7 @@ enum ItemListItemStyle {
     case essentialsGroup
     case display
     case installation(room: RoomV2)
+    case listRoom
 }
 
 enum ItemListItemAction {
@@ -86,33 +87,14 @@ struct ItemListItemView: View {
 // MARK: - BodyContent
 private extension ItemListItemView {
     var BodyContent: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 4) {
                 Text(item.displayName)
                     .font(.callout)
                     .bold()
                     .foregroundStyle(.primary)
                 
-                switch style {
-                case .installation(let room):
-                    SmallCTA(
-                        isButton: false,
-                        type: .outline,
-                        size: .small,
-                        leadingIcon: SFSymbols.houseFill,
-                        text: room.displayName,
-                        semibold: false
-                    )
-                default:
-                    SmallCTA(
-                        isButton: false,
-                        type: item.location.status.isAvailable ? .outline: .red,
-                        size: .small,
-                        leadingIcon: item.location.status.icon,
-                        text: item.location.status.displayTitle,
-                        semibold: false
-                    )
-                }
+                StatusCTA
             }
 
             HStack(spacing: 4) {
@@ -139,6 +121,31 @@ private extension ItemListItemView {
     }
 }
 
+private extension ItemListItemView {
+    var StatusCTA: some View {
+        switch style {
+        case .installation(let room):
+            SmallCTA(
+                isButton: false,
+                type: .outline,
+                size: .small,
+                leadingIcon: SFSymbols.houseFill,
+                text: room.displayName,
+                semibold: false
+            )
+        default:
+            SmallCTA(
+                isButton: false,
+                type: item.location.status.isAvailable ? .outline: .red,
+                size: .small,
+                leadingIcon: item.location.status.icon,
+                text: item.location.status.displayTitle,
+                semibold: false
+            )
+        }
+    }
+}
+
 // MARK: - LeadingContent
 
 private extension ItemListItemView {
@@ -153,11 +160,10 @@ private extension ItemListItemView {
 
 private extension ItemListItemView {
     var TrailingContent: some View {
-        HStack(spacing: 12) {
-            
+        HStack(spacing: 4) {
             if let _ = item.essentialGroupId {
                 Text(essentialsEmoji)
-                    .font(.caption)
+                    .font(.caption2)
             }
             
             if let action {
@@ -171,8 +177,7 @@ private extension ItemListItemView {
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
-                case .essentialsGroup:
-                    if item.location.status.isAvailable {
+                case .essentialsGroup, .listRoom:
                         Button {
                             action(ItemListItemAction.removeItem(item))
                         } label: {
@@ -181,7 +186,6 @@ private extension ItemListItemView {
                                 .foregroundStyle(.secondary)
                         }
                         .buttonStyle(.plain)
-                    }
                 case .addToDocument, .installation:
                     Button {
                         action(
