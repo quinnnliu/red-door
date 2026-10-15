@@ -82,6 +82,7 @@ enum SFSymbols {
     static let bedDoubleFill = "bed.double.fill"
     static let sunLefthalfFilled = "sun.lefthalf.filled"
     static let chairLoungeFill = "chair.lounge.fill"
+    static let cabinetFill = "cabinet.fill"
     static let rectangle = "rectangle"
     static let noSign = "nosign"
     static let xmark = "xmark"

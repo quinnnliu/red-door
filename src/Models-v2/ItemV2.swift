@@ -138,35 +138,38 @@ extension ItemV2 {
 }
 
 enum ItemType: String, Filterable, CaseIterable {
+    case accentChair = "Accent Chair"
+    case barCart = "Bar Cart"
     case bed = "Bed"
+    case bench = "Bench"
     case boxspring = "Boxspring"
-    case topper = "Topper"
-    case diningTable = "Dining Table"
     case coffeeTable = "Coffee Table"
     case console = "Console"
-    case endTable = "End Table"
-    case nightstand = "Nightstand"
-    case barCart = "Bar Cart"
-    case outdoorFurniture = "Outdoor Furniture"
-    case sofa = "Sofa"
-    case desk = "Desk"
     case dayBed = "Day Bed"
-    case stool = "Stool"
+    case decor = "Decor"
+    case desk = "Desk"
     case deskChair = "Desk Chair"
     case diningChair = "Dining Chair"
-    case accentChair = "Accent Chair"
-    case bench = "Bench"
-    case ottoman = "Ottoman"
-    case lamp = "Lamp"
-    case rug = "Rug"
+    case diningTable = "Dining Table"
+    case dresser = "Dresser"
+    case endTable = "End Table"
     case framedArt = "Framed Art"
+    case lamp = "Lamp"
+    case nightstand = "Nightstand"
+    case ottoman = "Ottoman"
+    case outdoorFurniture = "Outdoor Furniture"
+    case rug = "Rug"
+    case sofa = "Sofa"
+    case stool = "Stool"
+    case topper = "Topper"
     case unframedArt = "Unframed Art"
-    case decor = "Decor"
     case misc = "Miscellaneous"
 
     var title: String { rawValue }
     var icon: String? {
         switch self {
+        case .dresser:
+            SFSymbols.cabinetFill
         case .diningTable, .coffeeTable, .console, .endTable, .nightstand, .barCart, .desk:
             SFSymbols.tableFill
         case .sofa:
@@ -201,6 +204,7 @@ enum ItemColor: String, Filterable {
     case blue = "Blue"
     case brass = "Brass"
     case brown = "Brown"
+    case clear = "Clear"
     case cyan = "Cyan"
     case gray = "Gray"
     case green = "Green"
@@ -211,10 +215,10 @@ enum ItemColor: String, Filterable {
     case purple = "Purple"
     case red = "Red"
     case silver = "Silver"
+    case tan = "Tan"
     case teal = "Teal"
     case white = "White"
     case yellow = "Yellow"
-    case clear = "Clear"
 
     var title: String { rawValue }
     var color: Color? {
@@ -223,6 +227,7 @@ enum ItemColor: String, Filterable {
         case .blue: return .blue
         case .brass: return Color(red: 0.71, green: 0.65, blue: 0.26)
         case .brown: return .brown
+        case .clear: return .clear
         case .cyan: return .cyan
         case .gray: return .gray
         case .green: return .green
@@ -233,10 +238,10 @@ enum ItemColor: String, Filterable {
         case .purple: return .purple
         case .red: return .red
         case .silver: return Color(red: 0.75, green: 0.75, blue: 0.75)
+        case .tan: return Color(red: 0.82, green: 0.71, blue: 0.55)
         case .teal: return .teal
         case .white: return .white
         case .yellow: return .yellow
-        case .clear: return .clear
         }
     }
     var icon: String? { nil }
