@@ -28,9 +28,12 @@ struct StorageLocationPicker: View {
 
     var body: some View {
         HStack {
-            Text("Storage Location:")
-                .foregroundStyle(.red)
-                .bold()
+            HStack(spacing: 6) {
+                Image(systemName: SFSymbols.shippingboxFill)
+                Text("Storage Location:")
+            }
+            .foregroundStyle(.red)
+            .bold()
             
             Spacer(minLength: .zero)
             

@@ -40,7 +40,7 @@ struct ItemDetailSection: View {
             if let dimensions = item.dimensions {
                 DimensionsSection(dimensions)
             }
-            
+
             IdRow
         }
         .padding(8)
@@ -107,8 +107,7 @@ struct ItemDetailSection: View {
 
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
-                    Text("Type:")
-                        .frame(width: labelWidth, alignment: .leading)
+                    RowLabel("Type:", icon: SFSymbols.chairLoungeFill)
                     Spacer()
                     ValuePill {
                         Image(systemName: item.type.icon ?? SFSymbols.ellipsis)
@@ -118,8 +117,7 @@ struct ItemDetailSection: View {
 
                 if let color = item.color.color {
                     HStack {
-                        Text("Color:")
-                            .frame(width: labelWidth, alignment: .leading)
+                        RowLabel("Color:", icon: SFSymbols.paintpaletteFill)
                         Spacer()
                         ValuePill {
                             Image(systemName: SFSymbols.circleFill)
@@ -130,8 +128,7 @@ struct ItemDetailSection: View {
                 }
 
                 HStack {
-                    Text("Material:")
-                        .frame(width: labelWidth, alignment: .leading)
+                    RowLabel("Material:", icon: SFSymbols.squareFilledOnSquare)
                     Spacer()
                     ValuePill {
                         Text(item.material.title)
@@ -140,8 +137,7 @@ struct ItemDetailSection: View {
 
                 if let essentialsGroup {
                     HStack {
-                        Text("Essential:")
-                            .frame(width: labelWidth, alignment: .leading)
+                        RowLabel("Essential:", icon: SFSymbols.starFill)
                         Spacer()
                         ValuePill {
                             Text("\(essentialsGroup.emoji) \(essentialsGroup.displayName)")
@@ -161,9 +157,12 @@ struct ItemDetailSection: View {
 
     private var LocationRow: some View {
         HStack(spacing: .zero) {
-            Text("Location:")
-                .foregroundColor(.red)
-                .bold()
+            HStack(spacing: 6) {
+                Image(systemName: SFSymbols.shippingboxFill)
+                Text("Location:")
+            }
+            .foregroundColor(.red)
+            .bold()
 
             Spacer(minLength: .zero)
 
@@ -185,7 +184,7 @@ struct ItemDetailSection: View {
     }
 
     private var PurchaseInfoSection: some View {
-        CollapsibleSection(title: "Purchase Info:", isExpanded: $showPurchaseInfo) {
+        CollapsibleSection(title: "Purchase Info:", icon: SFSymbols.storefrontFill, isExpanded: $showPurchaseInfo) {
             if let value = item.value {
                 InfoRow("Value ($):", String(format: "%.2f", value))
             }
@@ -204,7 +203,7 @@ struct ItemDetailSection: View {
     // MARK: Dimensions
 
     private func DimensionsSection(_ dimensions: ItemDimensions) -> some View {
-        CollapsibleSection(title: "Dimensions:", isExpanded: $showDimensions) {
+        CollapsibleSection(title: "Dimensions:", icon: SFSymbols.pencilAndRulerFill, isExpanded: $showDimensions) {
             if !dimensions.length.isEmpty {
                 InfoRow("Length:", dimensions.length)
             }
@@ -225,11 +224,24 @@ struct ItemDetailSection: View {
 
     private let labelWidth: CGFloat = 110
 
-    private func SectionLabel(_ title: String) -> some View {
-        Text(title)
-            .font(.headline)
-            .foregroundColor(.red)
-            .bold()
+    private func SectionLabel(_ title: String, icon: String? = nil) -> some View {
+        HStack(spacing: 6) {
+            if let icon {
+                Image(systemName: icon)
+            }
+            Text(title)
+                .font(.headline)
+                .bold()
+        }
+        .foregroundColor(.red)
+    }
+
+    private func RowLabel(_ title: String, icon: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+            Text(title)
+        }
+        .frame(width: labelWidth, alignment: .leading)
     }
 
     private func InfoRow(_ label: String, _ value: String) -> some View {
@@ -251,6 +263,7 @@ struct ItemDetailSection: View {
 
     private func CollapsibleSection<Content: View>(
         title: String,
+        icon: String? = nil,
         isExpanded: Binding<Bool>,
         @ViewBuilder content: () -> Content
     ) -> some View {
@@ -261,7 +274,7 @@ struct ItemDetailSection: View {
                 }
             } label: {
                 HStack {
-                    SectionLabel(title)
+                    SectionLabel(title, icon: icon)
 
                     Spacer()
 

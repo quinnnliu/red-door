@@ -117,9 +117,12 @@ struct EditItemDetailSection: View {
                 }
             } label: {
                 HStack(spacing: 6) {
-                    Text("Type:")
-                        .foregroundColor(.red)
-                        .bold()
+                    HStack(spacing: 6) {
+                        Image(systemName: SFSymbols.chairLoungeFill)
+                        Text("Type:")
+                    }
+                    .foregroundColor(.red)
+                    .bold()
 
                     Spacer(minLength: .zero)
                     HStack {
@@ -159,7 +162,7 @@ struct EditItemDetailSection: View {
                 }
             } label: {
                 HStack {
-                    SectionTitle("Purchase Info:")
+                    SectionTitle("Purchase Info:", icon: SFSymbols.storefrontFill)
 
                     Spacer()
                     
@@ -234,7 +237,7 @@ struct EditItemDetailSection: View {
                 }
             } label: {
                 HStack {
-                    SectionTitle("Dimensions:")
+                    SectionTitle("Dimensions:", icon: SFSymbols.pencilAndRulerFill)
 
                     Spacer()
                     
@@ -293,11 +296,16 @@ struct EditItemDetailSection: View {
     
     // MARK: Section Title
     
-    func SectionTitle(_ title: String) -> some View {
-        Text(title)
-            .font(.headline)
-            .foregroundStyle(.red)
-            .bold()
+    func SectionTitle(_ title: String, icon: String? = nil) -> some View {
+        HStack(spacing: 6) {
+            if let icon {
+                Image(systemName: icon)
+            }
+            Text(title)
+                .font(.footnote)
+                .bold()
+        }
+        .foregroundStyle(.red)
     }
     
     // MARK: MaterialPickerToggle
@@ -312,13 +320,14 @@ struct EditItemDetailSection: View {
             }
         } label: {
             HStack(spacing: 6) {
-                SectionTitle("Material:")
+                SectionTitle("Material:", icon: SFSymbols.squareFilledOnSquare)
                 
                 Text(selectedMaterial.title)
                     .frame(maxWidth: .infinity)
                     .font(.caption2)
                     .foregroundColor(.gray)
-                    .padding(8)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 4)
                     .background(Color(.systemGray4))
                     .cornerRadius(Constants.CornerRadius.small)
             }
@@ -337,13 +346,14 @@ struct EditItemDetailSection: View {
             }
         } label: {
             HStack(spacing: 6) {
-                SectionTitle("Color:")
+                SectionTitle("Color:", icon: SFSymbols.paintpaletteFill)
                 
                 Text(selectedColor.title)
                     .frame(maxWidth: .infinity)
                     .font(.caption2)
                     .foregroundColor(selectedColor.color == .white || selectedColor.color == .clear ? .black : .white)
-                    .padding(8)
+                    .padding(.vertical, 8)
+                    .padding(.horizontal, 4)
                     .background(selectedColor.color)
                     .cornerRadius(Constants.CornerRadius.small)
             }

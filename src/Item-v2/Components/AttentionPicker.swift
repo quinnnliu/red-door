@@ -17,9 +17,12 @@ struct AttentionPicker: View {
 
     var body: some View {
         HStack(spacing: .zero) {
-            Text("Attention:")
-                .foregroundColor(.red)
-                .bold()
+            HStack(spacing: 6) {
+                Image(systemName: SFSymbols.exclamationmarkTriangleFill)
+                Text("Attention:")
+            }
+            .foregroundColor(.red)
+            .bold()
 
             Spacer(minLength: .zero)
 
