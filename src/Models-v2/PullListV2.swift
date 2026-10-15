@@ -44,15 +44,12 @@ struct PullListV2: RDDocument {
 
     init(
         id: String = UUID().uuidString,
-
         address: Address,
-
         createdDate: Date,
         installDate: Date,
         uninstallDate: Date,
         clientId: String,
         squareFootage: String? = nil,
-
         roomIds: [String] = [],
         unassignedItemIds: [String] = [],
         essentialGroupId: String? = nil,
@@ -110,8 +107,9 @@ struct PullListV2: RDDocument {
         self.roomIds = roomIds
         self.unassignedItemIds = unassignedItemIds
         self.essentialGroupId = essentialGroupId
-        // Copied, not shared: the new list uploads its own file under `id`.
-        self.image = installedList.image?.copy(to: id)
+        // Starts with no image, like copied rooms: the installed list's photo
+        // belongs to that list, and the copy gets its own once one is picked.
+        self.image = nil
         self.copiedFromInstalledListId = installedList.id
         self.copiedFromDisplayName = installedList.displayName
     }

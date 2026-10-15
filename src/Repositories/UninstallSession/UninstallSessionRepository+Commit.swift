@@ -44,148 +44,123 @@ extension UninstallSessionRepository {
 
         let uninstalledDate = ISO8601DateFormatter().string(from: Date())
 
-        // Storage can't be written inside a transaction, so the copy list's image
-        // is uploaded first and removed again if the transaction doesn't commit.
-        let plannedSession = try await self.get(id: installedListId)
-        var copiedImage: RDImage?
-        if let copyId = plannedSession.copyPullListId, plannedSession.targetsCopy {
-            copiedImage = try await FirebaseImageManager.shared.resolve(
-                original: nil,
-                updated: installedList.image?.copy(to: copyId),
-                type: .listV2
-            ).persist
-        }
+        let aborted = try await db.runTransaction { transaction, errorPointer -> Any? in
+            do {
+                let session = try self.get(id: installedListId, transaction: transaction)
 
-        let aborted: Any?
-        do {
-            aborted = try await db.runTransaction { transaction, errorPointer -> Any? in
-                do {
-                    let session = try self.get(id: installedListId, transaction: transaction)
+                guard !session.uninstalled else { throw RepositoryError.sessionComplete }
 
-                    guard !session.uninstalled else { throw RepositoryError.sessionComplete }
-
-                    // 0. Reads come first: a transaction can't read after it has
-                    //    written. A deleted target list can't receive anything, and
-                    //    updating it would fail the whole commit, so back the plan
-                    //    out to "unassigned" instead and let the user re-route.
-                    if let existingId = session.existingPullListId {
-                        let existingRef = pullListRepo.collectionRef.document(existingId)
-                        if !(try transaction.getDocument(existingRef)).exists {
-                            var fields: [String: Any] = [
-                                UninstallSession.CodingKeys.existingPullListId.stringValue: FieldValue.delete()
-                            ]
-                            for itemId in session.itemIds(for: .existingList) {
-                                fields["\(UninstallSession.itemDestinationsField).\(itemId)"] = FieldValue.delete()
-                            }
-                            if session.essentialsDestination?.type == .existingList {
-                                fields[UninstallSession.CodingKeys.essentialsDestination.stringValue] = FieldValue.delete()
-                            }
-                            self.update(id: installedListId, fields: fields, transaction: transaction)
-                            return true
+                // 0. Reads come first: a transaction can't read after it has
+                //    written. A deleted target list can't receive anything, and
+                //    updating it would fail the whole commit, so back the plan
+                //    out to "unassigned" instead and let the user re-route.
+                if let existingId = session.existingPullListId {
+                    let existingRef = pullListRepo.collectionRef.document(existingId)
+                    if !(try transaction.getDocument(existingRef)).exists {
+                        var fields: [String: Any] = [
+                            UninstallSession.CodingKeys.existingPullListId.stringValue: FieldValue.delete()
+                        ]
+                        for itemId in session.itemIds(for: .existingList) {
+                            fields["\(UninstallSession.itemDestinationsField).\(itemId)"] = FieldValue.delete()
                         }
+                        if session.essentialsDestination?.type == .existingList {
+                            fields[UninstallSession.CodingKeys.essentialsDestination.stringValue] = FieldValue.delete()
+                        }
+                        self.update(id: installedListId, fields: fields, transaction: transaction)
+                        return true
                     }
+                }
 
-                    // 1. Move every individually assigned item.
-                    for (itemId, destination) in session.itemDestinations {
-                        itemRepo.update(
-                            id: itemId,
-                            fields: destination.documentLocation.firebaseUpdateFields,
-                            transaction: transaction
-                        )
-                    }
-
-                    // 2. Move the essentials group as one unit: the group document,
-                    //    every item in it, and its accessories.
-                    if let group = essentialsGroup, let destination = session.essentialsDestination {
-                        let fields = destination.documentLocation.firebaseUpdateFields
-                        for itemId in group.itemIds {
-                            itemRepo.update(id: itemId, fields: fields, transaction: transaction)
-                        }
-                        essentialsRepo.update(id: group.id, fields: fields, transaction: transaction)
-                        if let accessoriesId = group.accessoriesId {
-                            accessoriesRepo.update(id: accessoriesId, fields: fields, transaction: transaction)
-                        }
-                    }
-
-                    // 3. Create the copy pull list, if anything is headed there.
-                    //    Deferred to commit so an abandoned session leaves no
-                    //    orphaned list behind.
-                    if let copyId = session.copyPullListId, session.targetsCopy {
-                        try self.createCopyPullList(
-                            copyId: copyId,
-                            session: session,
-                            installedList: installedList,
-                            rooms: rooms,
-                            essentialsGroup: essentialsGroup,
-                            pullListRepo: pullListRepo,
-                            copiedImage: copiedImage,
-                            transaction: transaction
-                        )
-                    }
-
-                    // 4. Hand anything routed to an existing list over to it. Items
-                    //    arrive unassigned; whoever works that list places them.
-                    if let existingId = session.existingPullListId {
-                        var itemIds = session.itemIds(for: .existingList)
-                        var fields: [String: Any] = [:]
-
-                        // Group members go into the unassigned pool too — linking
-                        // the group alone leaves them unreachable, since a pull
-                        // list renders essentials as a name, not as its items.
-                        if session.essentialsDestination?.type == .existingList, let group = essentialsGroup {
-                            itemIds += group.itemIds
-                            fields[PullListV2.CodingKeys.essentialGroupId.stringValue] = group.id
-                        }
-                        if !itemIds.isEmpty {
-                            fields[PullListV2.CodingKeys.unassignedItemIds.stringValue] =
-                                FieldValue.arrayUnion(itemIds)
-                        }
-                        if !fields.isEmpty {
-                            pullListRepo.update(id: existingId, fields: fields, transaction: transaction)
-                        }
-                    }
-
-                    // 5. Mark the list uninstalled. Rooms and their itemIds are
-                    //    deliberately left intact as the historical record of what
-                    //    was installed where.
-                    installedListRepo.update(
-                        id: installedListId,
-                        fields: [InstalledListV2.CodingKeys.uninstalled.stringValue: true],
+                // 1. Move every individually assigned item.
+                for (itemId, destination) in session.itemDestinations {
+                    itemRepo.update(
+                        id: itemId,
+                        fields: destination.documentLocation.firebaseUpdateFields,
                         transaction: transaction
                     )
-
-                    // 6. Retire the session in place: it stops being a plan and
-                    //    becomes the permanent record of where everything went.
-                    var sessionFields: [String: Any] = [
-                        UninstallSession.CodingKeys.uninstalled.stringValue: true,
-                        UninstallSession.CodingKeys.uninstalledDate.stringValue: uninstalledDate
-                    ]
-                    if let group = essentialsGroup {
-                        sessionFields[UninstallSession.CodingKeys.essentialsGroupId.stringValue] = group.id
-                        sessionFields[UninstallSession.CodingKeys.essentialsItemIds.stringValue] = Array(group.itemIds)
-                    }
-                    self.update(id: installedListId, fields: sessionFields, transaction: transaction)
-
-                    return false
-                } catch {
-                    errorPointer?.pointee = error as NSError
-                    return nil
                 }
+
+                // 2. Move the essentials group as one unit: the group document,
+                //    every item in it, and its accessories.
+                if let group = essentialsGroup, let destination = session.essentialsDestination {
+                    let fields = destination.documentLocation.firebaseUpdateFields
+                    for itemId in group.itemIds {
+                        itemRepo.update(id: itemId, fields: fields, transaction: transaction)
+                    }
+                    essentialsRepo.update(id: group.id, fields: fields, transaction: transaction)
+                    if let accessoriesId = group.accessoriesId {
+                        accessoriesRepo.update(id: accessoriesId, fields: fields, transaction: transaction)
+                    }
+                }
+
+                // 3. Create the copy pull list, if anything is headed there.
+                //    Deferred to commit so an abandoned session leaves no
+                //    orphaned list behind.
+                if let copyId = session.copyPullListId, session.targetsCopy {
+                    try self.createCopyPullList(
+                        copyId: copyId,
+                        session: session,
+                        installedList: installedList,
+                        rooms: rooms,
+                        essentialsGroup: essentialsGroup,
+                        pullListRepo: pullListRepo,
+                        transaction: transaction
+                    )
+                }
+
+                // 4. Hand anything routed to an existing list over to it. Items
+                //    arrive unassigned; whoever works that list places them.
+                if let existingId = session.existingPullListId {
+                    var itemIds = session.itemIds(for: .existingList)
+                    var fields: [String: Any] = [:]
+
+                    // Group members go into the unassigned pool too — linking
+                    // the group alone leaves them unreachable, since a pull
+                    // list renders essentials as a name, not as its items.
+                    if session.essentialsDestination?.type == .existingList, let group = essentialsGroup {
+                        itemIds += group.itemIds
+                        fields[PullListV2.CodingKeys.essentialGroupId.stringValue] = group.id
+                    }
+                    if !itemIds.isEmpty {
+                        fields[PullListV2.CodingKeys.unassignedItemIds.stringValue] =
+                            FieldValue.arrayUnion(itemIds)
+                    }
+                    if !fields.isEmpty {
+                        pullListRepo.update(id: existingId, fields: fields, transaction: transaction)
+                    }
+                }
+
+                // 5. Mark the list uninstalled. Rooms and their itemIds are
+                //    deliberately left intact as the historical record of what
+                //    was installed where.
+                installedListRepo.update(
+                    id: installedListId,
+                    fields: [InstalledListV2.CodingKeys.uninstalled.stringValue: true],
+                    transaction: transaction
+                )
+
+                // 6. Retire the session in place: it stops being a plan and
+                //    becomes the permanent record of where everything went.
+                var sessionFields: [String: Any] = [
+                    UninstallSession.CodingKeys.uninstalled.stringValue: true,
+                    UninstallSession.CodingKeys.uninstalledDate.stringValue: uninstalledDate
+                ]
+                if let group = essentialsGroup {
+                    sessionFields[UninstallSession.CodingKeys.essentialsGroupId.stringValue] = group.id
+                    sessionFields[UninstallSession.CodingKeys.essentialsItemIds.stringValue] = Array(group.itemIds)
+                }
+                self.update(id: installedListId, fields: sessionFields, transaction: transaction)
+
+                return false
+            } catch {
+                errorPointer?.pointee = error as NSError
+                return nil
             }
-        } catch {
-            await discardCopiedImage(copiedImage)
-            throw error
         }
 
         if (aborted as? Bool) == true {
-            await discardCopiedImage(copiedImage)
             throw UninstallCommitError.existingListMissing
         }
-    }
-
-    private func discardCopiedImage(_ image: RDImage?) async {
-        guard let image else { return }
-        try? await FirebaseImageManager.shared.delete(image, type: .listV2)
     }
 
     // MARK: - createCopyPullList
@@ -197,7 +172,6 @@ extension UninstallSessionRepository {
         rooms: [RoomV2],
         essentialsGroup: EssentialsGroup?,
         pullListRepo: PullListRepository,
-        copiedImage: RDImage?,
         transaction: Transaction
     ) throws {
         // The address is chosen during the flow, never inherited. Failing here
@@ -208,7 +182,7 @@ extension UninstallSessionRepository {
 
         // Assigned items land in their original rooms, but group members have
         // no per-item destination, so they arrive unassigned for re-placing.
-        var copyList = PullListV2(
+        let copyList = PullListV2(
             from: installedList,
             id: copyId,
             address: address,
@@ -216,9 +190,6 @@ extension UninstallSessionRepository {
             unassignedItemIds: essentialsHeadedHere ? Array(essentialsGroup?.itemIds ?? []) : [],
             essentialGroupId: essentialsHeadedHere ? essentialsGroup?.id : nil
         )
-        // The `from:` init only queues the image for upload; the copy was
-        // already uploaded before the transaction.
-        copyList.image = copiedImage
         try pullListRepo.set(document: copyList, id: copyId, transaction: transaction)
 
         let copyRoomRepo = RoomRepository<PullListV2>(listId: copyId)

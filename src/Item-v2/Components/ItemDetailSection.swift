@@ -214,6 +214,9 @@ struct ItemDetailSection: View {
             if !dimensions.height.isEmpty {
                 InfoRow("Height:", dimensions.height)
             }
+            if let depth = dimensions.depth, !depth.isEmpty {
+                InfoRow("Depth:", depth)
+            }
             InfoRow("Unit:", dimensions.unit.rawValue.capitalized)
         }
     }
