@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import Firebase
 
 @Observable
 final class InstalledListItemDetailsViewModel {
@@ -32,6 +33,7 @@ final class InstalledListItemDetailsViewModel {
     private let roomRepo: RoomRepository<InstalledListV2>
     private let itemRepo: ItemRepository = ItemRepository()
     private let essentialsRepo: EssentialsRepository = .init()
+    private var listListener: ListenerRegistration? = nil
 
     // MARK: - Initialization
 
@@ -45,6 +47,30 @@ final class InstalledListItemDetailsViewModel {
         self.room = room
         self.uninstalled = uninstalled
         self.roomRepo = roomRepo
+    }
+
+    deinit {
+        listListener?.remove()
+    }
+
+    // MARK: - Listeners
+
+    /// An uninstall flips `uninstalled` on the list document only, so this
+    /// screen has to watch the list to leave its editable state.
+    func startListening() {
+        guard listListener == nil else { return }
+        listListener = installedListRepo.addDocumentListener(id: room.listId) { [weak self] result in
+            Task { @MainActor in
+                if case .success(let list) = result {
+                    self?.uninstalled = list.uninstalled
+                }
+            }
+        }
+    }
+
+    func stopListening() {
+        listListener?.remove()
+        listListener = nil
     }
 
     // MARK: - loadEssentialsGroup
