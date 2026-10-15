@@ -53,6 +53,16 @@ final class EditItemViewModel {
         }
     }
 
+    // MARK: - Image
+
+    func setPrimaryImage(_ uiImage: UIImage) {
+        updatedItem.primaryImage = RDImage(uiImage: uiImage, documentId: originalItem.id)
+    }
+
+    func clearPrimaryImage() {
+        updatedItem.primaryImage = .empty(for: originalItem.id)
+    }
+
     // MARK: - save
 
     /// Writes `updatedItem` to the original item's document. Returns `true` on success.
@@ -64,14 +74,12 @@ final class EditItemViewModel {
             item.essentialGroupId = selectedGroup?.id
             item.baseNameLowercased = item.baseName.lowercased()
 
-            if let uploadedImage = try await FirebaseImageManager.shared.updateImage(
-                item.primaryImage,
-                resultImageType: .item
-            ) {
-                item.primaryImage = uploadedImage
-            } else {
-                item.primaryImage = RDImage()
-            }
+            let (persistedImage, cleanup) = try await FirebaseImageManager.shared.resolve(
+                original: originalItem.primaryImage,
+                updated: item.primaryImage,
+                type: .item
+            )
+            item.primaryImage = persistedImage ?? .empty(for: originalItem.id)
 
             let batch = itemRepo.newBatch()
             try itemRepo.set(document: item, id: originalItem.id, inBatch: batch)
@@ -89,6 +97,10 @@ final class EditItemViewModel {
             try await batch.commit()
 
             updatedItem = item
+
+            if let cleanup, cleanup.documentId == originalItem.id {
+                try? await FirebaseImageManager.shared.delete(cleanup, type: .item)
+            }
             return true
         } catch {
             showError(error)

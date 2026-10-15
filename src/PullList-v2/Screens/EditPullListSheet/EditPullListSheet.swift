@@ -125,10 +125,9 @@ private extension EditPullListSheet {
         guard let action = actionArgument as? ImageEditorAction else { return }
         switch action {
         case .newImage(let image):
-            viewModel.draft.image = image
+            viewModel.setImage(image)
         case .deleteImage:
-            // Storage is only touched on Save, so Cancel leaves it alone.
-            viewModel.draft.image = nil
+            viewModel.clearImage()
         }
     }
 }

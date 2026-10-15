@@ -164,6 +164,7 @@
 			);
 			inputPaths = (
 				"$(SRCROOT)/dev/GoogleService-Info.plist",
+				"$(SRCROOT)/src/GoogleService-Info.plist",
 			);
 			name = "Select Dev Firebase Script";
 			outputFileListPaths = (
@@ -172,7 +173,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# Use dev Firebase in Debug, production in Release\nif [ \"$CONFIGURATION\" = \"Debug\" ]; then\n  cp \"${SRCROOT}/dev/GoogleService-Info.plist\" \"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/GoogleService-Info.plist\"\nfi\n";
+			shellScript = "# Debug: bundle both configs (switchable in Options) and default to dev; Release: production only\nif [ \"$CONFIGURATION\" = \"Debug\" ]; then\n  DEST=\"${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}\"\n  cp \"${SRCROOT}/dev/GoogleService-Info.plist\" \"${DEST}/GoogleService-Info-Dev.plist\"\n  cp \"${SRCROOT}/src/GoogleService-Info.plist\" \"${DEST}/GoogleService-Info-Prod.plist\"\n  cp \"${SRCROOT}/dev/GoogleService-Info.plist\" \"${DEST}/GoogleService-Info.plist\"\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */

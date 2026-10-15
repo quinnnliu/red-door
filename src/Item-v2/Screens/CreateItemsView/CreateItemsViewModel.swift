@@ -56,11 +56,12 @@ final class CreateItemsViewModel {
         self.configService = configService
         self.modelUUID = UUID().uuidString
         self.templateState = template
+        let newItemId = UUID().uuidString
         self.itemState = template.map { ItemV2(item: $0) } ?? ItemV2(
-            id: UUID().uuidString,
+            id: newItemId,
             modelId: "",
             baseName: "",
-            primaryImage: RDImage(),
+            primaryImage: .empty(for: newItemId),
             type: .misc,
             color: .black,
             material: .none,
@@ -70,6 +71,16 @@ final class CreateItemsViewModel {
         )
         self.itemCount = 1
         self.isLoading = false
+    }
+
+    // MARK: Image
+
+    func setPrimaryImage(_ uiImage: UIImage) {
+        itemState.primaryImage = RDImage(uiImage: uiImage, documentId: itemState.id)
+    }
+
+    func clearPrimaryImage() {
+        itemState.primaryImage = .empty(for: itemState.id)
     }
 
     func loadGroups() async {
@@ -116,7 +127,6 @@ final class CreateItemsViewModel {
                 var newItem = ItemV2(item: itemState)
                 newItem.modelId = resolvedModelId
                 newItem.itemNumber = startingNumber + i + 1
-                newItem.primaryImage.documentId = newItem.id
                 items.append(newItem)
             }
         } catch {
@@ -128,12 +138,20 @@ final class CreateItemsViewModel {
             let updatedItems: [ItemV2] = try await withThrowingTaskGroup(of: ItemV2.self) { taskGroup in
                 for item in items {
                     taskGroup.addTask {
+                        // Each item uploads its own copy of the image.
                         var updated = item
-                        if let uploadedImage = try await FirebaseImageManager.shared.updateImage(
-                            item.primaryImage,
-                            resultImageType: .item
-                        ) {
-                            updated.primaryImage = uploadedImage
+                        let images = FirebaseImageManager.shared
+                        let primary = try await images.resolve(original: nil, updated: item.primaryImage, type: .item)
+                        updated.primaryImage = primary.persist ?? .empty(for: item.id)
+
+                        if let secondaryImages = item.secondaryImages {
+                            var resolved: [RDImage] = []
+                            for image in secondaryImages {
+                                if let persisted = try await images.resolve(original: nil, updated: image, type: .item).persist {
+                                    resolved.append(persisted)
+                                }
+                            }
+                            updated.secondaryImages = resolved
                         }
                         return updated
                     }

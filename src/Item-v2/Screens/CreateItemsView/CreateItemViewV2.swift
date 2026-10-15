@@ -178,10 +178,9 @@ struct CreateItemViewV2: View {
         guard let action = actionArg as? ImageEditorAction else { return }
         switch action {
         case .newImage(let image):
-            viewModel.itemState.primaryImage = image
+            viewModel.setPrimaryImage(image)
         case .deleteImage:
-            // Nothing is uploaded yet when creating, so just reset instead of keeping a `.delete` image
-            viewModel.itemState.primaryImage = RDImage()
+            viewModel.clearPrimaryImage()
         }
     }
 }

@@ -83,14 +83,16 @@ struct ItemV2: RDDocument {
         self.dimensions = dimensions
     }
 
+    // Init for copying an item from another
     init(item: ItemV2) {
-        self.id = UUID().uuidString
+        let newId = UUID().uuidString
+        self.id = newId
         self.modelId = item.modelId
         self.groupId = item.groupId
         self.baseName = item.baseName
         self.baseNameLowercased = item.baseNameLowercased
-        self.primaryImage = item.primaryImage
-        self.secondaryImages = item.secondaryImages
+        self.primaryImage = item.primaryImage.copy(to: newId) ?? .empty(for: newId)
+        self.secondaryImages = item.secondaryImages?.compactMap { $0.copy(to: newId) }
         self.type = item.type
         self.color = item.color
         self.material = item.material

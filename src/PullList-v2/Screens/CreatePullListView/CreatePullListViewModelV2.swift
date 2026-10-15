@@ -5,7 +5,7 @@
 //  Created by Quinn Liu on 5/16/26.
 //
 
-import Foundation
+import SwiftUI
 
 @Observable
 final class CreatePullListViewModelV2 {
@@ -36,16 +36,26 @@ final class CreatePullListViewModelV2 {
         self.rooms = []
     }
     
+    // MARK: Image
+
+    func setImage(_ uiImage: UIImage) {
+        pullListState.image = RDImage(uiImage: uiImage, documentId: pullListState.id)
+    }
+
+    func clearImage() {
+        pullListState.image = nil
+    }
+
     // MARK: createPullList
     func createPullList() async {
         isLoading = true
         defer { isLoading = false }
         do {
-            if let image = pullListState.image {
-                var imageToUpload = image
-                imageToUpload.documentId = pullListState.id
-                pullListState.image = try await FirebaseImageManager.shared.updateImage(imageToUpload, resultImageType: .listV2)
-            }
+            pullListState.image = try await FirebaseImageManager.shared.resolve(
+                original: nil,
+                updated: pullListState.image,
+                type: .listV2
+            ).persist
 
             var updatedPullList = pullListState
             updatedPullList.address.town = pullListState.address.town.lowercased()

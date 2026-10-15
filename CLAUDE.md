@@ -40,7 +40,12 @@ The protocol extension provides `displayName { nickname ?? baseName }` and defau
 
 Concrete repositories subclass and add only collection-specific logic (e.g., `PullListRepository`, `ItemRepository`). Repositories are plain `class`, not `actor` — they hold no mutable state.
 
-**`FirebaseImageActor`** (`src/Services/FirebaseImageManager.swift`) — standalone `actor` (not a `GenericRepository` subclass — actors cannot inherit from classes). Caches `UIImage` via `NSCache` keyed by storage path to avoid redundant Storage downloads.
+**`RDImage` / `FirebaseImageManager`** (`src/Models-v2/RDImage.swift`, `src/RDImage-v2/FirebaseImageManager.swift`) — every image is owned by exactly one document:
+- `RDImage.documentId` (non-optional) is the owning document's id and the storage folder (`{storagePath}/{documentId}/{imageId}`). Files are never shared between documents. For rooms the owner is `RoomV2.imageOwnerId` (`"{listId}_{roomId}"`), because a copied room keeps its id.
+- A picked image is `RDImage(uiImage:documentId:)`; "no image" is `RDImage.empty(for:)` (or `nil` where the model's image is optional). Pickers and `PrimaryImageEditor` only emit a `UIImage` / `.deleteImage` — the screen's ViewModel builds the `RDImage` because only it knows the owner.
+- `dirtyContentSource` (`.picked(UIImage)` / `.copy(from: URL)`, never persisted) marks an image that still needs uploading; `isDirty` is derived from it. Creating a document from another one (`ItemV2(item:)`, `PullListV2(from: installedList)`) calls `RDImage.copy(to:)` so the new document uploads its own file.
+- Save pattern: `resolve(original:updated:type:)` → write `persist` to Firestore → commit → `delete(cleanup, type:)`. Storage deletes happen *after* the document write. Inside Firestore transactions, upload first (Storage can't join a transaction) and delete the upload if the transaction fails.
+- `deleteDocumentImages(ownerId:imageType:)` removes an owner's whole folder when its document is deleted.
 
 **Error handling**: there is no `AppError` type. Firebase/decoding errors propagate as raw `Error` (Firestore `NSError`, `DecodingError`, or `RepositoryError.decodeFailure` for a missing/undecodable snapshot from a listener). ViewModels catch at the call site and set `showAlert: Bool` + `alertMessage: String` (sometimes `alertText`) from `error.localizedDescription`. V2 ViewModels do `import Firebase` directly — the "never import Firebase in ViewModels" boundary is aspirational, not current practice.
 
@@ -96,7 +101,7 @@ All navigation types live in `src/Navigation-v2/`, not `src/Navigation/`:
 ### Firestore Conventions
 
 - Collection names: snake_case, lowercase (e.g., `pull_list_v2`, `installed_list_v2`, `items_v2`, `rooms`) — not `pull_list_V2`
-- Document IDs: UUID strings, except `RoomV2` uses a lowercased hyphenated room name
+- Document IDs: UUID strings (`RoomV2` also stores a name-derived `nameId`; its `id` is a UUID that stays the same when the room is copied to another list)
 - Subcollections: rooms live under `pull_list_v2/{listId}/rooms` or `installed_list_v2/{listId}/rooms`, per `RoomRepository`'s `init(list:)` / `init(parentCollectionName:listId:)`
 - CodingKeys: snake_case Firestore fields mapped to camelCase Swift properties
 - `ConfigurationOption` documents (warehouses, essentials types, accessories types) nest under `app_configuration/{configurationType}/{collectionName}` and are fetched/cached via `ConfigurationService.shared.getAll(using: someRepo)` (15 min TTL)
