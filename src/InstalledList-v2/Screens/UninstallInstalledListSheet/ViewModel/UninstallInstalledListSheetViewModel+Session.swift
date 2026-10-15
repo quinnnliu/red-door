@@ -87,7 +87,7 @@ extension UninstallInstalledListSheetViewModel {
                 // Distinguish "not created yet" from "was here and is now gone".
                 // Without `didObserveSession` every user would be alerted on
                 // open, since the first snapshot precedes session creation.
-                if didObserveSession, !didCommit {
+                if didObserveSession, !didCommit, !isCommitting {
                     sessionEndedByOtherUser = true
                     alertMessage = "This uninstall was completed by another user."
                     showAlert = true
@@ -100,7 +100,7 @@ extension UninstallInstalledListSheetViewModel {
 
             if session.uninstalled {
                 clearSelection()
-                if !didCommit {
+                if !didCommit, !isCommitting {
                     sessionEndedByOtherUser = true
                     alertMessage = "This uninstall was completed by another user."
                     showAlert = true

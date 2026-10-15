@@ -19,8 +19,27 @@ extension InstallPullListSheetViewModel {
         for room in self.rooms {
             await fetchItemsForRoom(room)
         }
+    }
 
-        await fetchEssentialsGroup()
+    // MARK: handleListSnapshot
+
+    /// The essentials group is refetched only when the list's group id changes
+    /// (or on the first snapshot), not on every room or item write.
+    @MainActor
+    func handleListSnapshot(_ list: PullListV2) async {
+        let isFirstSnapshot = !didApplyFirstListSnapshot
+        didApplyFirstListSnapshot = true
+
+        let essentialsChanged = isFirstSnapshot
+            || list.essentialGroupId != pullListState.essentialGroupId
+
+        pullListState = list
+
+        if essentialsChanged { await fetchEssentialsGroup() }
+    }
+
+    var allRoomsLoaded: Bool {
+        rooms.allSatisfy { itemsByRoom[$0.id] != nil }
     }
 
     @MainActor

@@ -12,6 +12,7 @@ import Firebase
 final class InstalledListRoomDetailsViewModel {
     private let roomRepo: RoomRepository<InstalledListV2>
     private let itemRepo: ItemRepository
+    private let installedListRepo: InstalledListRepository
 
     var roomState: RoomV2
     var items: [ItemV2]
@@ -22,16 +23,19 @@ final class InstalledListRoomDetailsViewModel {
     var uninstalled: Bool
 
     private var roomListener: ListenerRegistration? = nil
+    private var listListener: ListenerRegistration? = nil
     private let loader: ItemsListLoader
 
     init(
         room: RoomV2,
         roomRepo: RoomRepository<InstalledListV2>,
+        installedListRepo: InstalledListRepository,
         items: [ItemV2] = [],
         uninstalled: Bool = false
     ) {
         self.roomRepo = roomRepo
         self.itemRepo = ItemRepository()
+        self.installedListRepo = installedListRepo
         self.roomState = room
         self.items = items
         self.uninstalled = uninstalled
@@ -42,6 +46,7 @@ final class InstalledListRoomDetailsViewModel {
     /// `stopListening()` mutates state the UI reads on the main thread.
     deinit {
         roomListener?.remove()
+        listListener?.remove()
     }
 
     // MARK: - Listeners
@@ -60,11 +65,26 @@ final class InstalledListRoomDetailsViewModel {
                 }
             }
         }
+
+        // An uninstall flips `uninstalled` on the list document without touching
+        // the room, so the room listener alone never sees it.
+        listListener = installedListRepo.addDocumentListener(id: roomState.listId) { [weak self] result in
+            Task { @MainActor in
+                switch result {
+                case .success(let list):
+                    self?.uninstalled = list.uninstalled
+                case .failure(let error):
+                    await self?.handleListenerError(error)
+                }
+            }
+        }
     }
 
     func stopListening() {
         roomListener?.remove()
         roomListener = nil
+        listListener?.remove()
+        listListener = nil
         loader.invalidate()
     }
 

@@ -23,32 +23,64 @@ extension UninstallSessionRepository {
     /// Applies an entire uninstall plan in one transaction, then retires the
     /// session document into a permanent record of what it did.
     ///
+    /// The list, its rooms and its essentials group are re-read inside the
+    /// transaction rather than trusted from the sheet, so a list edited while
+    /// the sheet was open can't be uninstalled from a stale copy.
+    ///
     /// Throws if the session was already committed, which is how a second
-    /// caller racing the same commit is rejected.
+    /// caller racing the same commit is rejected. Throws a `ListCommitError`,
+    /// with nothing written, if the lock was taken over, the essentials group
+    /// changed, or any item still in the list has no destination.
     ///
     /// If the existing pull list the plan routes to was deleted since it was
     /// chosen, nothing is uninstalled. The transaction instead unassigns
     /// everything routed to that list and clears the choice, then throws
     /// `UninstallCommitError.existingListMissing` so the user can re-decide.
     func commit(
-        installedList: InstalledListV2,
-        rooms: [RoomV2],
-        essentialsGroup: EssentialsGroup?,
+        installedListId: String,
+        expectedGeneration: Int,
+        reviewedEssentialsGroupId: String?,
         itemRepo: ItemRepository,
         installedListRepo: InstalledListRepository,
+        installedRoomRepo: RoomRepository<InstalledListV2>,
         pullListRepo: PullListRepository,
         essentialsRepo: EssentialsRepository,
         accessoriesRepo: AccessoriesRepository
     ) async throws {
-        let installedListId = installedList.id
-
         let uninstalledDate = ISO8601DateFormatter().string(from: Date())
 
         let aborted = try await db.runTransaction { transaction, errorPointer -> Any? in
             do {
-                let session = try self.get(id: installedListId, transaction: transaction)
+                let session = try self.ownedSession(
+                    id: installedListId,
+                    generation: expectedGeneration,
+                    transaction: transaction
+                )
 
                 guard !session.uninstalled else { throw RepositoryError.sessionComplete }
+
+                let installedList = try installedListRepo.get(id: installedListId, transaction: transaction)
+                let rooms = try installedRoomRepo.get(ids: installedList.roomIds, transaction: transaction)
+
+                var essentialsGroup: EssentialsGroup? = nil
+                if let groupId = installedList.essentialGroupId {
+                    essentialsGroup = try essentialsRepo.get(id: groupId, transaction: transaction)
+                }
+
+                // Group members have no per-item destination; they move with
+                // the group, so they're excluded from the per-item check.
+                guard installedList.essentialGroupId == reviewedEssentialsGroupId else {
+                    throw ListCommitError.essentialsChanged
+                }
+                if essentialsGroup != nil, session.essentialsDestination == nil {
+                    throw ListCommitError.essentialsChanged
+                }
+                let roomItemIds = Set(rooms.flatMap(\.itemIds))
+                    .subtracting(essentialsGroup?.itemIds ?? [])
+                let unrouted = roomItemIds.filter { session.itemDestinations[$0] == nil }
+                guard unrouted.isEmpty else {
+                    throw ListCommitError.unroutedItems(count: unrouted.count)
+                }
 
                 // 0. Reads come first: a transaction can't read after it has
                 //    written. A deleted target list can't receive anything, and
@@ -71,8 +103,10 @@ extension UninstallSessionRepository {
                     }
                 }
 
-                // 1. Move every individually assigned item.
-                for (itemId, destination) in session.itemDestinations {
+                // 1. Move every individually assigned item still in the list. A
+                //    destination for an item that has since left the list is
+                //    ignored so it can't be pulled back out of wherever it went.
+                for (itemId, destination) in session.itemDestinations where roomItemIds.contains(itemId) {
                     itemRepo.update(
                         id: itemId,
                         fields: destination.documentLocation.firebaseUpdateFields,
@@ -111,7 +145,7 @@ extension UninstallSessionRepository {
                 // 4. Hand anything routed to an existing list over to it. Items
                 //    arrive unassigned; whoever works that list places them.
                 if let existingId = session.existingPullListId {
-                    var itemIds = session.itemIds(for: .existingList)
+                    var itemIds = session.itemIds(for: .existingList).filter { roomItemIds.contains($0) }
                     var fields: [String: Any] = [:]
 
                     // Group members go into the unassigned pool too — linking

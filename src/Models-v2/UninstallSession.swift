@@ -24,7 +24,7 @@ struct UninstallSession: ListSessionDocument {
 
     /// Fencing token. Bumped on every takeover. A client holding a lower
     /// generation than this has been displaced and is read-only.
-    /// Written from the start; enforced in the UI later.
+    /// Enforced at commit via `ListSessionRepository.ownedSession`.
     var lockGeneration: Int
 
     var copyPullListId: String?

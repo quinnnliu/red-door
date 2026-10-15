@@ -75,6 +75,7 @@ struct InstalledListItemDetailsView: View {
             .frameTop()
             .frameBottomPadding()
             .toolbar(.hidden)
+            .onAppear { viewModel.startListening() }
             .fullScreenCover(isPresented: $viewModel.showQRCode) {
                 ItemViewFactory().makePDFView(item: viewModel.itemState)
             }

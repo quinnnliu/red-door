@@ -30,6 +30,7 @@ struct InstalledListViewFactory {
         let vm = InstalledListRoomDetailsViewModel(
             room: room,
             roomRepo: RoomRepository<InstalledListV2>(listId: room.listId),
+            installedListRepo: installedListRepo,
             items: items,
             uninstalled: uninstalled
         )

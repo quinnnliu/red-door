@@ -27,6 +27,10 @@ struct InstallPullListSheet: View {
                 ReadOnlyBanner
             }
 
+            if viewModel.isOwner, !viewModel.pullListState.unassignedItemIds.isEmpty {
+                UnassignedBanner
+            }
+
             RoomList
 
             Spacer()
@@ -41,6 +45,7 @@ struct InstallPullListSheet: View {
                 ) {
                     viewModel.showConfirmSheet = true
                 }
+                .disabled(!viewModel.canInstall)
             }
         }
         .frameTop()
@@ -109,6 +114,22 @@ extension InstallPullListSheet {
             RDButton(style: .red, size: .sm, label: "Take Over") {
                 Task { await viewModel.takeoverSession() }
             }
+        }
+    }
+
+    // MARK: UnassignedBanner
+
+    var UnassignedBanner: some View {
+        let count = viewModel.pullListState.unassignedItemIds.count
+        return HStack(spacing: 8) {
+            Image(systemName: SFSymbols.infoCircleFill)
+                .foregroundStyle(.red)
+
+            Text("\(count) unassigned \(count == 1 ? "item" : "items") — assign \(count == 1 ? "it" : "them") before installing")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            Spacer(minLength: 0)
         }
     }
 

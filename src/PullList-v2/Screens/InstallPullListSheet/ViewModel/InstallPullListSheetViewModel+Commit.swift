@@ -34,21 +34,36 @@ extension InstallPullListSheetViewModel {
         )
     }
 
+    /// Mirrors what the commit enforces, so the button is only offered when it
+    /// can succeed. The transaction re-checks all of it.
+    var canInstall: Bool {
+        isOwner
+            && !isLoading
+            && allRoomsLoaded
+            && pullListState.unassignedItemIds.isEmpty
+            && (pullListState.essentialGroupId == nil || essentialsGroupState != nil)
+    }
+
     // MARK: createInstalledList
 
     /// Applies the whole plan. The transaction lives on
     /// `InstallSessionRepository` — this only handles the surrounding state.
     @MainActor
     func createInstalledList() async -> InstalledListV2? {
-        guard isOwner else { return nil }
+        guard isOwner, let generation = myGeneration else { return nil }
         isLoading = true
-        defer { isLoading = false }
+        isCommitting = true
+        defer {
+            isLoading = false
+            isCommitting = false
+        }
 
         do {
             let installedList = try await sessionRepo.commit(
-                pullList: pullListState,
-                rooms: rooms,
-                essentialsGroup: essentialsGroupState,
+                pullListId: pullListState.id,
+                expectedGeneration: generation,
+                reviewedItemIds: Set(rooms.flatMap(\.itemIds)),
+                reviewedEssentialsGroupId: essentialsGroupState?.id,
                 itemRepo: itemRepo,
                 roomRepo: roomRepo,
                 pullListRepo: pullListRepo,
@@ -59,6 +74,12 @@ extension InstallPullListSheetViewModel {
             )
             didCommit = true
             return installedList
+        } catch let error as ListCommitError {
+            // The listeners have already refreshed the sheet; the alert says why
+            // the commit was refused and the user can review and confirm again.
+            alertText = error.localizedDescription
+            showAlert = true
+            return nil
         } catch {
             // If the session already vanished, that message is more useful than
             // the underlying "document not found" this throws.

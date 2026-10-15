@@ -37,7 +37,12 @@ final class InstallPullListSheetViewModel {
     var myGeneration: Int? = nil
     var didObserveSession: Bool = false
     var didCommit: Bool = false
+    /// True while the commit transaction is in flight. Set *before* the call so
+    /// the session snapshot the commit itself triggers isn't mistaken for
+    /// another user finishing the install.
+    var isCommitting: Bool = false
     var sessionEndedByOtherUser: Bool = false
+    var didApplyFirstListSnapshot: Bool = false
 
     // MARK: - Collaborators
 
@@ -54,6 +59,7 @@ final class InstallPullListSheetViewModel {
     let configService: ConfigurationService
 
     private var roomsListener: ListenerRegistration? = nil
+    private var listListener: ListenerRegistration? = nil
     private var sessionListener: ListenerRegistration? = nil
 
     // MARK: - init
@@ -84,6 +90,7 @@ final class InstallPullListSheetViewModel {
     /// `stopListening()` mutates state the UI reads on the main thread.
     deinit {
         roomsListener?.remove()
+        listListener?.remove()
         sessionListener?.remove()
     }
 
@@ -106,6 +113,19 @@ final class InstallPullListSheetViewModel {
             }
         }
 
+        listListener = pullListRepo.addDocumentListener(id: pullListState.id) { [weak self] result in
+            Task { @MainActor in
+                switch result {
+                case .success(let list):
+                    await self?.handleListSnapshot(list)
+                case .failure(let error):
+                    // Committing the install deletes this list; nothing to report.
+                    guard !RepositoryError.isDocumentNotFound(error) else { return }
+                    self?.handleListenerError(error)
+                }
+            }
+        }
+
         sessionListener = sessionRepo.addSessionListener(id: pullListState.id) { [weak self] result in
             Task { @MainActor in
                 self?.handleSessionSnapshot(result)
@@ -119,6 +139,9 @@ final class InstallPullListSheetViewModel {
     func stopListening() {
         roomsListener?.remove()
         roomsListener = nil
+        listListener?.remove()
+        listListener = nil
+        didApplyFirstListSnapshot = false
         sessionListener?.remove()
         sessionListener = nil
         loader.invalidate()

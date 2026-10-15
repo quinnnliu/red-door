@@ -54,11 +54,10 @@ extension PullListRepository {
         }
         guard let list = deleted as? PullListV2 else { return }
 
-        // Cleans by folder rather than by the stored image reference: a list
-        // copied from an installed list inherits that list's reference, whose
-        // files live in another folder and must survive this delete. The
-        // document is already gone, so a failure here only orphans files and
-        // isn't worth reporting as a failed delete.
+        // Cleans by folder rather than by the stored image reference, so only
+        // files this list owns are removed. The document is already gone, so a
+        // failure here only orphans files and isn't worth reporting as a
+        // failed delete.
         do {
             try await FirebaseImageManager.shared.deleteDocumentImages(ownerId: list.id, imageType: .listV2)
         } catch {
