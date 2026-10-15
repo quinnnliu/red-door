@@ -62,7 +62,7 @@ extension InstallPullListSheetViewModel {
                 // Distinguish "not created yet" from "was here and is now gone".
                 // Without `didObserveSession` every user would be alerted on
                 // open, since the first snapshot precedes session creation.
-                if didObserveSession, !didCommit {
+                if didObserveSession, !didCommit, !isCommitting {
                     sessionEndedByOtherUser = true
                     alertText = "This pull list was installed by another user."
                     showAlert = true

@@ -53,6 +53,13 @@ final class UninstallInstalledListSheetViewModel {
 
     var didCommit: Bool = false
 
+    /// True while the commit transaction is in flight. Set *before* the call so
+    /// the session snapshot the commit itself triggers isn't mistaken for
+    /// another user finishing the uninstall.
+    var isCommitting: Bool = false
+
+    var didApplyFirstListSnapshot: Bool = false
+
     var sessionEndedByOtherUser: Bool = false
 
     // MARK: - Collaborators
@@ -67,8 +74,9 @@ final class UninstallInstalledListSheetViewModel {
     let storageLocationRepo: StorageLocationRepository
     let configService: ConfigurationService
 
-    private let installedRoomRepo: RoomRepository<InstalledListV2>
+    let installedRoomRepo: RoomRepository<InstalledListV2>
     private var roomsListener: ListenerRegistration? = nil
+    private var listListener: ListenerRegistration? = nil
     private var sessionListener: ListenerRegistration? = nil
 
     // MARK: - init
@@ -102,6 +110,7 @@ final class UninstallInstalledListSheetViewModel {
     /// `stopListening()` mutates state the UI reads on the main thread.
     deinit {
         roomsListener?.remove()
+        listListener?.remove()
         sessionListener?.remove()
     }
 
@@ -124,6 +133,18 @@ final class UninstallInstalledListSheetViewModel {
             }
         }
 
+        listListener = installedListRepo.addDocumentListener(id: installedListState.id) { [weak self] result in
+            Task { @MainActor in
+                switch result {
+                case .success(let list):
+                    await self?.handleListSnapshot(list)
+                case .failure(let error):
+                    guard !RepositoryError.isDocumentNotFound(error) else { return }
+                    self?.handleListenerError(error)
+                }
+            }
+        }
+
         sessionListener = sessionRepo.addSessionListener(id: installedListState.id) { [weak self] result in
             Task { @MainActor in
                 self?.handleSessionSnapshot(result)
@@ -132,12 +153,14 @@ final class UninstallInstalledListSheetViewModel {
 
         await joinOrCreateSession()
         await loadStorageLocations()
-        await loadEssentialsGroup()
     }
 
     func stopListening() {
         roomsListener?.remove()
         roomsListener = nil
+        listListener?.remove()
+        listListener = nil
+        didApplyFirstListSnapshot = false
         sessionListener?.remove()
         sessionListener = nil
         loader.invalidate()

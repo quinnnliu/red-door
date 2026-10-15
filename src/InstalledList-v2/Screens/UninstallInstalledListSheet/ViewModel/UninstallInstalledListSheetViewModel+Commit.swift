@@ -27,7 +27,9 @@ extension UninstallInstalledListSheetViewModel {
     var allAssigned: Bool {
         guard isOwner, !isLoading, allRoomsLoaded, let session = sessionState else { return false }
         let itemsAssigned = allRoomItems.allSatisfy { session.itemDestinations[$0.item.id] != nil }
-        let essentialsAssigned = essentialsGroupState == nil || session.essentialsDestination != nil
+        // A group that failed to load blocks the commit rather than being skipped.
+        let essentialsAssigned = installedListState.essentialGroupId == nil
+            || (essentialsGroupState != nil && session.essentialsDestination != nil)
         // Commit refuses to build a copy with no address, so don't offer it.
         let copyAddressed = !session.targetsCopy || session.copyListAddress != nil
         return itemsAssigned && essentialsAssigned && copyAddressed
@@ -97,17 +99,22 @@ extension UninstallInstalledListSheetViewModel {
     /// handles the surrounding view state.
     @MainActor
     func commitUninstall() async -> Bool {
-        guard isOwner else { return false }
+        guard isOwner, let generation = myGeneration else { return false }
         isLoading = true
-        defer { isLoading = false }
+        isCommitting = true
+        defer {
+            isLoading = false
+            isCommitting = false
+        }
 
         do {
             try await sessionRepo.commit(
-                installedList: installedListState,
-                rooms: rooms,
-                essentialsGroup: essentialsGroupState,
+                installedListId: installedListState.id,
+                expectedGeneration: generation,
+                reviewedEssentialsGroupId: essentialsGroupState?.id,
                 itemRepo: itemRepo,
                 installedListRepo: installedListRepo,
+                installedRoomRepo: installedRoomRepo,
                 pullListRepo: pullListRepo,
                 essentialsRepo: essentialsRepo,
                 accessoriesRepo: accessoriesRepo
@@ -121,6 +128,12 @@ extension UninstallInstalledListSheetViewModel {
             existingPullList = nil
             clearSelection()
             alertMessage = UninstallCommitError.existingListMissing.localizedDescription
+            showAlert = true
+            return false
+        } catch let error as ListCommitError {
+            // The listeners have already refreshed the sheet; the alert says why
+            // the commit was refused and the user can review and confirm again.
+            alertMessage = error.localizedDescription
             showAlert = true
             return false
         } catch {

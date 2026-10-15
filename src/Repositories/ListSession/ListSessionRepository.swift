@@ -90,6 +90,21 @@ class ListSessionRepository<T: ListSessionDocument>: GenericRepository<T> {
         return generation
     }
 
+    // MARK: - Commit guard
+
+    /// Reads the session inside a commit transaction and throws unless the
+    /// caller still holds the lock. The UI's `isOwner` only reflects the last
+    /// snapshot this device received, so it can't be trusted at commit time.
+    func ownedSession(
+        id: String,
+        generation: Int,
+        transaction: Transaction
+    ) throws -> T {
+        let session = try get(id: id, transaction: transaction)
+        guard session.lockGeneration == generation else { throw ListCommitError.notOwner }
+        return session
+    }
+
     // MARK: - Assignment writes
     func assign(
         sessionId: String,

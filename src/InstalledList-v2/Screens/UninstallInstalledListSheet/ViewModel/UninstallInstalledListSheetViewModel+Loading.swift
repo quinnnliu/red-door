@@ -29,6 +29,23 @@ extension UninstallInstalledListSheetViewModel {
         present(error)
     }
 
+    // MARK: handleListSnapshot
+
+    /// The essentials group is reloaded only when the list's group id changes
+    /// (or on the first snapshot), not on every room or item write.
+    @MainActor
+    func handleListSnapshot(_ list: InstalledListV2) async {
+        let isFirstSnapshot = !didApplyFirstListSnapshot
+        didApplyFirstListSnapshot = true
+
+        let essentialsChanged = isFirstSnapshot
+            || list.essentialGroupId != installedListState.essentialGroupId
+
+        installedListState = list
+
+        if essentialsChanged { await loadEssentialsGroup() }
+    }
+
     // MARK: fetchItemsForRoom
 
     /// Only publishes a room once every one of its items resolved, so the UI
