@@ -24,7 +24,11 @@ struct RedDoorApp: App {
     @State private var isReady = false
 
     init() {
+        #if DEBUG
+        FirebaseEnvironment.configure()
+        #else
         FirebaseApp.configure()
+        #endif
         UITabBar.appearance().tintColor = UIColor.red
         configureImageCache()
     }
