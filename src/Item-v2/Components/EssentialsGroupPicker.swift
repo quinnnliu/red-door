@@ -17,9 +17,12 @@ struct EssentialsGroupPicker: View {
 
     var body: some View {
         HStack(spacing: .zero) {
-            Text("Essential Group:")
-                .foregroundColor(.red)
-                .bold()
+            HStack(spacing: 6) {
+                Image(systemName: SFSymbols.starFill)
+                Text("Essential Group:")
+            }
+            .foregroundColor(.red)
+            .bold()
 
             Spacer(minLength: .zero)
 

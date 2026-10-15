@@ -99,4 +99,10 @@ enum SFSymbols {
     static let infoCircleFill = "info.circle.fill"
     static let docOnDoc = "doc.on.doc"
     static let sparkles = "sparkles"
+    static let storefrontFill = "storefront.fill"
+    static let pencilAndRulerFill = "pencil.and.ruler.fill"
+    static let starFill = "star.fill"
+    static let shippingboxFill = "shippingbox.fill"
+    static let paintpaletteFill = "paintpalette.fill"
+    static let squareFilledOnSquare = "square.filled.on.square"
 }
