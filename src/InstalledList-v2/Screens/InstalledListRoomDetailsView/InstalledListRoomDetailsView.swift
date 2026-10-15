@@ -167,14 +167,8 @@ struct InstalledListRoomDetailsView: View {
         guard let action = actionArgument else { return }
         switch action {
         case let imageAction as ImageEditorAction:
-            if case .newImage(let image) = imageAction {
-                Task {
-                    await viewModel.updateRoomImage(image, isBefore: isBefore)
-                }
-            } else if case .deleteImage(let deletedImage) = imageAction {
-                Task {
-                    await viewModel.updateRoomImage(deletedImage, isBefore: isBefore)
-                }
+            Task {
+                await viewModel.updateRoomImage(imageAction, isBefore: isBefore)
             }
         default:
             print("[ERROR] Untracked Action in InstalledListRoomDetailsView: \(action)")

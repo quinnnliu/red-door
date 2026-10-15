@@ -110,7 +110,8 @@ struct PullListV2: RDDocument {
         self.roomIds = roomIds
         self.unassignedItemIds = unassignedItemIds
         self.essentialGroupId = essentialGroupId
-        self.image = installedList.image
+        // Copied, not shared: the new list uploads its own file under `id`.
+        self.image = installedList.image?.copy(to: id)
         self.copiedFromInstalledListId = installedList.id
         self.copiedFromDisplayName = installedList.displayName
     }

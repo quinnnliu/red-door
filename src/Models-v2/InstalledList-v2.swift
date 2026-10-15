@@ -44,6 +44,7 @@ struct InstalledListV2: RDDocument {
         self.roomIds = pullList.roomIds
         self.essentialGroupId = pullList.essentialGroupId
         self.uninstalled = false
+        // Same `id` as the pull list, so this is a move: the image keeps its owner.
         self.image = pullList.image
     }
 

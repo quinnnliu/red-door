@@ -40,9 +40,7 @@ struct PrimaryImageView: View {
         Group {
             if isExpandable {
                 Button {
-                    if let uiImage = image?.uiImage {
-                        expandedImage = RDImage(uiImage: uiImage)
-                    } else if image?.imageURL != nil {
+                    if image?.imageExists == true {
                         expandedImage = image
                     }
                 } label: {
@@ -65,9 +63,11 @@ struct PrimaryImageView: View {
 
 // MARK: - ImageEditorAction
 
+/// The editor only reports what the user did. The screen's ViewModel decides what
+/// that means for its document, since it owns the image's `documentId`.
 enum ImageEditorAction {
-    case newImage(_ image: RDImage)
-    case deleteImage(_ image: RDImage)
+    case newImage(_ image: UIImage)
+    case deleteImage
 }
 
 // MARK: - ItemImageEditor
@@ -79,8 +79,6 @@ struct PrimaryImageEditor: View {
 
     @State private var showEditAlert = false
     @State private var activeSheet: ImageSourceEnum?
-    @State private var showAlert: Bool = false
-    @State private var alertText: String = ""
     
     var body: some View {
         Button {
@@ -89,7 +87,6 @@ struct PrimaryImageEditor: View {
             PrimaryImageContent(image, editable: true, size: size)
         }
         .tint(.gray)
-        .alert(alertText, isPresented: $showAlert, actions: { })
         .alert(
             (image?.imageExists ?? false) ? "Update Image" : "Upload Image",
             isPresented: $showEditAlert
@@ -97,14 +94,7 @@ struct PrimaryImageEditor: View {
             Button("Library") { activeSheet = .library }
             Button("Camera")  { activeSheet = .camera }
             Button("Delete", role: .destructive) {
-                guard var deletedImage = image else {
-                    showEditAlert = false
-                    alertText = "Error deleting image, please try again"
-                    showAlert = true
-                    return
-                }
-                deletedImage.imageType = .delete
-                action(ImageEditorAction.deleteImage(deletedImage))
+                action(ImageEditorAction.deleteImage)
             }
             Button("Cancel", role: .cancel) {}
         }
@@ -120,14 +110,12 @@ struct PrimaryImageEditor: View {
         .contentShape(Rectangle())
     }
 
-    private func handleResult(_ result: RDImage?) {
+    private func handleResult(_ result: UIImage?) {
         if let image = result {
             action(ImageEditorAction.newImage(image))
         }
         activeSheet = nil
     }
-    
-    
 }
 
 // MARK: - ItemImageContent (shared rendering)
@@ -185,7 +173,7 @@ private struct ExpandImageOverlayModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .overlay(alignment: .topTrailing) {
-                if image != nil, isEnabled {
+                if image?.imageExists == true, isEnabled {
                     Button {
                         showImageOverlay = true
                     } label: {

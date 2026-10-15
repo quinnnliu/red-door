@@ -60,7 +60,7 @@ extension PullListRepository {
         // document is already gone, so a failure here only orphans files and
         // isn't worth reporting as a failed delete.
         do {
-            try await FirebaseImageManager.shared.deleteDocumentImages(document: list, imageType: .listV2)
+            try await FirebaseImageManager.shared.deleteDocumentImages(ownerId: list.id, imageType: .listV2)
         } catch {
             print("[WARN]: Deleted pull list \(listId) but failed to clean up its images: \(error.localizedDescription)")
         }

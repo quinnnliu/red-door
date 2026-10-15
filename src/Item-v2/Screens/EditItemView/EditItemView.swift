@@ -152,9 +152,9 @@ struct EditItemView: View {
         guard let action = actionArg as? ImageEditorAction else { return }
         switch action {
         case .newImage(let image):
-            viewModel.updatedItem.primaryImage = image
-        case .deleteImage(let deletedImage):
-            viewModel.updatedItem.primaryImage = deletedImage
+            viewModel.setPrimaryImage(image)
+        case .deleteImage:
+            viewModel.clearPrimaryImage()
         }
     }
 

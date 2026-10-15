@@ -14,6 +14,8 @@ final class CreateAccessoriesViewModel {
     private let storageLocationRepo: StorageLocationRepository
     private let configService: ConfigurationService
 
+    private let accessoryId: String
+
     init(
         accessoriesRepo: AccessoriesRepository,
         accessoriesTypeRepo: AccessoriesTypeRepository,
@@ -24,6 +26,9 @@ final class CreateAccessoriesViewModel {
         self.accessoriesTypeRepo = accessoriesTypeRepo
         self.storageLocationRepo = storageLocationRepo
         self.configService = configService
+        let accessoryId = UUID().uuidString
+        self.accessoryId = accessoryId
+        self.primaryImage = .empty(for: accessoryId)
     }
 
     // MARK: - Type
@@ -45,7 +50,17 @@ final class CreateAccessoriesViewModel {
 
     var nickname: String = ""
     var description: String = ""
-    var primaryImage: RDImage? = RDImage()
+    var primaryImage: RDImage
+
+    // MARK: - Image
+
+    func setPrimaryImage(_ uiImage: UIImage) {
+        primaryImage = RDImage(uiImage: uiImage, documentId: accessoryId)
+    }
+
+    func clearPrimaryImage() {
+        primaryImage = .empty(for: accessoryId)
+    }
 
     // MARK: - State
 
@@ -107,7 +122,6 @@ final class CreateAccessoriesViewModel {
 
     func createAccessories() async -> Bool {
         guard let type = selectedType,
-              let image = primaryImage,
               let storageLocation = selectedStorageLocation else { return false }
 
         isLoading = true
@@ -115,23 +129,21 @@ final class CreateAccessoriesViewModel {
 
         do {
             let maxNumber = await accessoriesRepo.maxAccessoriesNumber(forTypeId: type.id)
-            var newAccessory = Accessories(
+            let (persistedImage, _) = try await FirebaseImageManager.shared.resolve(
+                original: nil,
+                updated: primaryImage,
+                type: .accessory
+            )
+            let newAccessory = Accessories(
+                id: accessoryId,
                 baseName: type.displayName,
                 accessoriesTypeId: type.id,
-                primaryImage: image,
+                primaryImage: persistedImage ?? .empty(for: accessoryId),
                 location: DocumentLocation(status: .inStorage, locationId: storageLocation.id),
                 description: description,
                 accessoriesNumber: maxNumber + 1,
                 nickname: nickname.isEmpty ? nil : nickname
             )
-            newAccessory.primaryImage.documentId = newAccessory.id
-
-            if let uploadedImage = try await FirebaseImageManager.shared.updateImage(
-                newAccessory.primaryImage,
-                resultImageType: .accessory
-            ) {
-                newAccessory.primaryImage = uploadedImage
-            }
 
             try accessoriesRepo.set(document: newAccessory)
             return true

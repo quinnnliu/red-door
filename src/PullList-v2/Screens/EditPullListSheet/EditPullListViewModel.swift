@@ -5,7 +5,7 @@
 //  Created by Quinn Liu on 10/1/26.
 //
 
-import Foundation
+import SwiftUI
 import Firebase
 
 @Observable
@@ -58,11 +58,20 @@ final class EditPullListViewModel {
             fields[PullListV2.CodingKeys.clientId.stringValue] = draft.clientId
             fields[PullListV2.CodingKeys.squareFootage.stringValue] = (draft.squareFootage?.trimmedOrNil as Any?) ?? FieldValue.delete()
 
-            if let imageField = try await resolveImageField() {
+            let (imageField, imageCleanup) = try await resolveImageField()
+            if let imageField {
                 fields[PullListV2.CodingKeys.image.stringValue] = imageField
             }
 
             try await pullListRepo.update(id: draft.id, fields: fields)
+
+            // After the write, so a failed save never points the list at a
+            // deleted file. A list copied from an installed list before images
+            // were copied can still reference that list's file, so only files
+            // this list owns are deleted.
+            if let imageCleanup, imageCleanup.documentId == draft.id {
+                try? await FirebaseImageManager.shared.delete(imageCleanup, type: .listV2)
+            }
             return true
         } catch {
             alertText = "[ERROR] Failed updating pull list: \(error.localizedDescription)"
@@ -73,32 +82,30 @@ final class EditPullListViewModel {
 
     // MARK: resolveImageField
 
-    /// nil means the image is unchanged and shouldn't be written.
-    ///
-    /// Storage is only touched for images this list owns. A list copied from an
-    /// installed list inherits that list's image reference, so deleting it here
-    /// would delete the source's file.
+    /// `field` is nil when the image is unchanged and shouldn't be written.
+    /// `cleanup` is the replaced or removed image to delete once the write commits.
     @MainActor
-    private func resolveImageField() async throws -> Any? {
-        let owned = original.image?.documentId == original.id
+    private func resolveImageField() async throws -> (field: Any?, cleanup: RDImage?) {
+        let (persisted, cleanup) = try await FirebaseImageManager.shared.resolve(
+            original: original.image,
+            updated: draft.image,
+            type: .listV2
+        )
+        guard persisted?.id != original.image?.id else { return (nil, nil) }
 
-        if var newImage = draft.image, newImage.imageType == .dirty {
-            newImage.documentId = draft.id
-            let uploaded = try await FirebaseImageManager.shared.uploadImage(newImage, uploadImageType: .listV2)
-            if owned, let old = original.image {
-                try? await FirebaseImageManager.shared.deleteImage(old, deletedImageType: .listV2)
-            }
-            draft.image = uploaded
-            return try Firestore.Encoder().encode(uploaded)
-        }
+        draft.image = persisted
+        guard let persisted else { return (FieldValue.delete(), cleanup) }
+        return (try Firestore.Encoder().encode(persisted), cleanup)
+    }
 
-        if draft.image == nil, let old = original.image {
-            if owned {
-                try? await FirebaseImageManager.shared.deleteImage(old, deletedImageType: .listV2)
-            }
-            return FieldValue.delete()
-        }
+    // MARK: Image
 
-        return nil
+    func setImage(_ uiImage: UIImage) {
+        draft.image = RDImage(uiImage: uiImage, documentId: draft.id)
+    }
+
+    /// Storage is only touched on save, so cancelling leaves it alone.
+    func clearImage() {
+        draft.image = nil
     }
 }

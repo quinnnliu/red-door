@@ -85,9 +85,9 @@ struct CreateAccessoriesView: View {
         case let imageAction as ImageEditorAction:
             switch imageAction {
             case .newImage(let image):
-                viewModel.primaryImage = image
+                viewModel.setPrimaryImage(image)
             case .deleteImage:
-                viewModel.primaryImage = nil
+                viewModel.clearPrimaryImage()
             }
 
         default:

@@ -10,8 +10,10 @@ import Foundation
 import PhotosUI
 import SwiftUI
 
+/// Pickers hand back the raw `UIImage`. The screen's ViewModel wraps it in an
+/// `RDImage`, since only it knows which document will own the image.
 struct SingleCameraPickerV2: UIViewControllerRepresentable {
-    var action: (RDImage?) -> Void
+    var action: (UIImage?) -> Void
 
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
@@ -35,8 +37,7 @@ struct SingleCameraPickerV2: UIViewControllerRepresentable {
 
         func imagePickerController(_: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
             if let image = info[.originalImage] as? UIImage {
-                let newRDImage = RDImage(uiImage: image)
-                parent.action(newRDImage)
+                parent.action(image)
             }
         }
 
@@ -47,7 +48,7 @@ struct SingleCameraPickerV2: UIViewControllerRepresentable {
 }
 
 struct SingleLibraryPickerV2: UIViewControllerRepresentable {
-    var action: (RDImage?) -> Void
+    var action: (UIImage?) -> Void
 
     func makeUIViewController(context: Context) -> UIViewController {
         var configuration = PHPickerConfiguration(photoLibrary: .shared())
@@ -87,8 +88,8 @@ struct SingleLibraryPickerV2: UIViewControllerRepresentable {
 
             provider.loadObject(ofClass: UIImage.self) { image, _ in
                 DispatchQueue.main.async {
-                    let newRDImage = RDImage(uiImage: image as? UIImage)
-                    self.parent.action(newRDImage)
+                    // A failed load counts as a cancel rather than an image with no content.
+                    self.parent.action(image as? UIImage)
                 }
             }
         }

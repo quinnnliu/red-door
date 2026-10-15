@@ -203,39 +203,38 @@ extension PullListRoomDetailsViewModel {
 extension PullListRoomDetailsViewModel {
         
     @MainActor
-    func updateRoomImage(_ updatedImage: RDImage, isBefore: Bool) async {
+    func updateRoomImage(_ action: ImageEditorAction, isBefore: Bool) async {
         isLoading = true
         defer { isLoading = false }
 
-        var imageToUpdate = updatedImage
-        imageToUpdate.documentId = roomState.id
-        
+        let original = isBefore ? roomState.beforeImage : roomState.afterImage
+        let updated: RDImage?
+        switch action {
+        case .newImage(let uiImage):
+            updated = RDImage(uiImage: uiImage, documentId: roomState.imageOwnerId)
+        case .deleteImage:
+            updated = nil
+        }
+
         let imageField = isBefore ? RoomV2.CodingKeys.beforeImage.stringValue : RoomV2.CodingKeys.afterImage.stringValue
-        
+        let imageType: RDImageType = isBefore ? .roomBefore : .roomAfter
+
         do {
-            let imageType: RDImageType = isBefore ? .roomBefore : .roomAfter
-            if let updatedImage = try await FirebaseImageManager.shared.updateImage(imageToUpdate, resultImageType: imageType) {
-                try await roomRepo.update(id: roomState.id, fields: [
-                    imageField: encodeRDImage(updatedImage)
-                ])
-            } else {
-                try await roomRepo.update(id: roomState.id, fields: [
-                    imageField: NSNull()
-                ])
+            let (persisted, cleanup) = try await FirebaseImageManager.shared.resolve(
+                original: original,
+                updated: updated,
+                type: imageType
+            )
+            let value: Any = try persisted.map { try Firestore.Encoder().encode($0) } ?? NSNull()
+            try await roomRepo.update(id: roomState.id, fields: [imageField: value])
+
+            // After the write, so a failed save never points the room at a deleted file.
+            if let cleanup {
+                try? await FirebaseImageManager.shared.delete(cleanup, type: imageType)
             }
         } catch {
             alertMessage = "Failed to update \(isBefore ? "before" : "after") image: \(error.localizedDescription)"
             showAlert = true
         }
-    }
-
-    private func encodeRDImage(_ image: RDImage) -> [String: AnyHashable] {
-        var dict: [String: AnyHashable] = [
-            "id": image.id,
-            "imageType": image.imageType.rawValue
-        ]
-        if let documentId = image.documentId { dict["document_id"] = documentId }
-        if let url = image.imageURL { dict["imageURL"] = url.absoluteString }
-        return dict
     }
 }

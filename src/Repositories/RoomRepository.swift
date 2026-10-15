@@ -317,13 +317,14 @@ extension RoomRepository where Parent == PullListV2 {
         }
         guard let room = deleted as? RoomV2 else { return }
 
-        // Cleans by folder: before and after images share `rooms_images/{roomId}`,
-        // and a room copied from an installed list starts with no images, so
-        // nothing here is shared with another room. The document is already
-        // gone, so a failure only orphans files and isn't a failed delete.
+        // Cleans by folder: before and after images share
+        // `rooms_images/{listId}_{roomId}`. The key includes the list because a
+        // copied room keeps its id, so the folder is never shared with another
+        // list's room. The document is already gone, so a failure only orphans
+        // files and isn't a failed delete.
         do {
             try await FirebaseImageManager.shared.deleteDocumentImages(
-                document: room,
+                ownerId: room.imageOwnerId,
                 imageType: .roomBefore
             )
         } catch {

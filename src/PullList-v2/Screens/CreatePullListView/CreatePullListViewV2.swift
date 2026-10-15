@@ -211,9 +211,9 @@ extension CreatePullListViewV2 {
         guard let action = actionArgument as? ImageEditorAction else { return }
         switch action {
         case .newImage(let image):
-            viewModel.pullListState.image = image
+            viewModel.setImage(image)
         case .deleteImage:
-            viewModel.pullListState.image = nil
+            viewModel.clearImage()
         }
     }
 }

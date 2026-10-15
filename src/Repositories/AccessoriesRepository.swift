@@ -63,7 +63,7 @@ extension AccessoriesRepository {
         // The document is already gone, so a failure here only orphans files
         // and isn't a failed delete.
         do {
-            try await FirebaseImageManager.shared.deleteDocumentImages(document: accessories, imageType: .accessory)
+            try await FirebaseImageManager.shared.deleteDocumentImages(ownerId: accessories.id, imageType: .accessory)
         } catch {
             print("[WARN]: Deleted accessories \(accessoriesId) but failed to clean up its images: \(error.localizedDescription)")
         }

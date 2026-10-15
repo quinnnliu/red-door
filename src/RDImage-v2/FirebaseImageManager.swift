@@ -13,80 +13,65 @@ final class FirebaseImageManager {
     static let shared = FirebaseImageManager()
     static let storageRef = Storage.storage().reference()
 
+    /// Source images downloaded for `.copy` uploads, so creating N copies of one
+    /// image downloads it once.
+    private let copySourceCache = NSCache<NSURL, UIImage>()
+
     private init() {}
 
-    // MARK: - Update Images
+    // MARK: - Resolve
 
-    // MARK: updateImage()
-
-    func updateImage(_ rdImage: RDImage, resultImageType: RDImageType) async throws -> RDImage? {
-        switch rdImage.imageType {
-        case .dirty:
-            return try await uploadImage(rdImage, uploadImageType: resultImageType)
-        case .delete:
-            try await deleteImage(rdImage, deletedImageType: resultImageType)
-            return nil
-        default:
-            return rdImage
-        }
-    }
-
-    // MARK: updateImages()
-
-    func updateImages(_ images: [RDImage], resultImageType: RDImageType) async throws -> [RDImage] {
-        let clean = images.filter { $0.imageType != .dirty && $0.imageType != .delete }
-
-        let updated = try await withThrowingTaskGroup(of: RDImage?.self) { group in
-            for image in images where image.imageType == .dirty || image.imageType == .delete {
-                group.addTask {
-                    try await self.updateImage(image, resultImageType: resultImageType)
-                }
-            }
-
-            var updated: [RDImage] = []
-            for try await result in group {
-                if let image = result {
-                    updated.append(image)
-                }
-            }
-
-            return updated
+    /// Brings an image up to date for a save.
+    ///
+    /// - `persist` is what the document should store: `updated`, uploaded first if it's dirty.
+    /// - `cleanup` is the original's stored file when `updated` no longer points at it
+    ///   (replaced or cleared). Delete it with `delete(_:type:)` only *after* the
+    ///   document write commits, so a failed write never leaves the document pointing
+    ///   at a deleted file.
+    func resolve(
+        original: RDImage?,
+        updated: RDImage?,
+        type: RDImageType
+    ) async throws -> (persist: RDImage?, cleanup: RDImage?) {
+        let persist: RDImage?
+        if let updated, updated.isDirty {
+            persist = try await upload(updated, type: type)
+        } else {
+            persist = updated
         }
 
-        return clean + updated
+        var cleanup: RDImage?
+        if let original, original.hasStoredFile, original.id != updated?.id {
+            cleanup = original
+        }
+
+        return (persist, cleanup)
     }
 
     // MARK: - Uploading
 
     enum ImageUploadError: Error {
-        case notDirty, invalidType, noUIImage, cannotCompress, missingDocumentId
-    }
-
-    private func validateUploadRDImage(_ rdImage: RDImage, uploadImageType: RDImageType) throws -> (uiImage: UIImage, storagePath: String, documentId: String) {
-        guard rdImage.imageType == .dirty else { throw ImageUploadError.notDirty }
-        guard let storagePath = uploadImageType.storagePath else { throw ImageUploadError.invalidType }
-        guard let uiImage = rdImage.uiImage else { throw ImageUploadError.noUIImage }
-        guard let documentId = rdImage.documentId else { throw ImageUploadError.missingDocumentId }
-
-        return (uiImage, storagePath, documentId)
+        case cannotCompress, cannotLoadSource
     }
 
     private static let fullMaxDimension: CGFloat = 800
     private static let thumbMaxDimension: CGFloat = 200
     private static let jpegCompressionQuality: CGFloat = 0.50
 
-    // MARK: uploadImage()
+    // MARK: upload()
 
-    func uploadImage(_ rdImage: RDImage, uploadImageType: RDImageType) async throws -> RDImage {
-        let (uiImage, storagePath, documentId): (UIImage, String, String)
-
-        do {
-            (uiImage, storagePath, documentId) = try validateUploadRDImage(rdImage, uploadImageType: uploadImageType)
-        } catch {
-            print("Upload skipped: \(error)")
+    /// Uploads a dirty image's content into `rdImage.documentId`'s folder under
+    /// `type`'s storage path. Returns the image with its URLs filled in and no longer dirty.
+    func upload(_ rdImage: RDImage, type: RDImageType) async throws -> RDImage {
+        guard let source = rdImage.dirtyContentSource else { return rdImage }
+        guard let storagePath = type.storagePath else {
+            print("Upload skipped: \(type) has no storage path")
             return rdImage
         }
 
+        let uiImage = try await loadUIImage(from: source)
+
+        let documentId = rdImage.documentId
         let fullRef = FirebaseImageManager.storageRef.child(storagePath).child(documentId).child(rdImage.id)
         let thumbRef = FirebaseImageManager.storageRef.child(storagePath).child(documentId).child("\(rdImage.id)_thumb")
 
@@ -109,36 +94,43 @@ final class FirebaseImageManager {
         var updated = rdImage
         updated.imageURL = resolvedFullURL
         updated.thumbnailURL = resolvedThumbURL
-        updated.imageType = uploadImageType
-        updated.uiImage = nil
+        updated.imageType = type
+        updated.dirtyContentSource = nil
         return updated
+    }
+
+    private func loadUIImage(from source: RDImage.DirtyContentSource) async throws -> UIImage {
+        switch source {
+        case .picked(let uiImage):
+            return uiImage
+        case .copy(let url):
+            if let cached = copySourceCache.object(forKey: url as NSURL) { return cached }
+
+            let (data, response) = try await URLSession.shared.data(from: url)
+            guard (response as? HTTPURLResponse)?.statusCode == 200,
+                  let uiImage = UIImage(data: data) else {
+                throw ImageUploadError.cannotLoadSource
+            }
+            copySourceCache.setObject(uiImage, forKey: url as NSURL)
+            return uiImage
+        }
     }
 
     // MARK: - Delete Images
 
     enum ImageDeleteError: Error {
-        case getStoragePathError, missingDocumentId
+        case getStoragePathError
     }
 
-    private func validateDeleteRDImage(_ rdImage: RDImage, deletedImageType: RDImageType) throws -> (documentId: String, storagePath: String) {
-        guard let documentId = rdImage.documentId else { throw ImageDeleteError.missingDocumentId }
-        guard let storagePath = deletedImageType.storagePath else { throw ImageDeleteError.getStoragePathError }
+    // MARK: delete()
 
-        return (documentId, storagePath)
-    }
-
-    // MARK: deleteImage()
-
-    func deleteImage(_ rdImage: RDImage, deletedImageType: RDImageType) async throws {
-        let (documentId, storagePath): (String, String)
-
-        do {
-            (documentId, storagePath) = try validateDeleteRDImage(rdImage, deletedImageType: deletedImageType)
-        } catch {
-            print("Delete skipped: \(error)")
-            throw error
+    func delete(_ rdImage: RDImage, type: RDImageType) async throws {
+        guard let storagePath = type.storagePath else {
+            print("Delete skipped: \(type) has no storage path")
+            throw ImageDeleteError.getStoragePathError
         }
 
+        let documentId = rdImage.documentId
         let fullRef = FirebaseImageManager.storageRef.child(storagePath).child(documentId).child(rdImage.id)
         let thumbRef = FirebaseImageManager.storageRef.child(storagePath).child(documentId).child("\(rdImage.id)_thumb")
 
@@ -155,9 +147,11 @@ final class FirebaseImageManager {
 
     // MARK: deleteDocumentImages()
 
-    func deleteDocumentImages(document: any RDDocument, imageType: RDImageType) async throws {
+    /// Deletes every file in an owner's folder. `ownerId` is the same value images
+    /// carry as `documentId` (for rooms, `RoomV2.imageOwnerId`).
+    func deleteDocumentImages(ownerId: String, imageType: RDImageType) async throws {
         guard let storagePath = imageType.storagePath else { throw ImageDeleteError.getStoragePathError }
-        let folderRef = FirebaseImageManager.storageRef.child(storagePath).child(document.id)
+        let folderRef = FirebaseImageManager.storageRef.child(storagePath).child(ownerId)
         let result = try await folderRef.listAll()
         try await withThrowingTaskGroup(of: Void.self) { group in
             for item in result.items {

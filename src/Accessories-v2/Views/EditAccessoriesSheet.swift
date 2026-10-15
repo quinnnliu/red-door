@@ -113,9 +113,9 @@ struct EditAccessoriesSheet: View {
         case let imageAction as ImageEditorAction:
             switch imageAction {
             case .newImage(let image):
-                editingAccessory.primaryImage = image
-            case .deleteImage(let image):
-                editingAccessory.primaryImage = image
+                editingAccessory.primaryImage = RDImage(uiImage: image, documentId: editingAccessory.id)
+            case .deleteImage:
+                editingAccessory.primaryImage = .empty(for: editingAccessory.id)
             }
         default:
             break
@@ -152,19 +152,30 @@ struct EditAccessoriesSheet: View {
                 accessoryToSave.accessoriesNumber = maxNumber + 1
             }
 
-            let imageNeedsUpdate = accessoryToSave.primaryImage.uiImage != nil
-                || accessoryToSave.primaryImage.imageType == .delete
-            if imageNeedsUpdate {
-                accessoryToSave.primaryImage.documentId = accessoryToSave.id
-                if let updatedImage = try? await FirebaseImageManager.shared.updateImage(
-                    accessoryToSave.primaryImage,
-                    resultImageType: .accessory
-                ) {
-                    accessoryToSave.primaryImage = updatedImage
-                }
+            let cleanup: RDImage?
+            do {
+                let resolved = try await FirebaseImageManager.shared.resolve(
+                    original: originalAccessories.primaryImage,
+                    updated: accessoryToSave.primaryImage,
+                    type: .accessory
+                )
+                accessoryToSave.primaryImage = resolved.persist ?? .empty(for: accessoryToSave.id)
+                cleanup = resolved.cleanup
+            } catch {
+                // Saving anyway would store an image that never uploaded.
+                viewModel.isLoading = false
+                viewModel.alertMessage = "Failed to save image: \(error.localizedDescription)"
+                viewModel.showAlert = true
+                return
             }
 
             try? accessoriesRepo.set(document: accessoryToSave)
+
+            // After the write, so a failed save never points the document at a
+            // deleted file. Only files this accessory owns are deleted.
+            if let cleanup, cleanup.documentId == accessoryToSave.id {
+                try? await FirebaseImageManager.shared.delete(cleanup, type: .accessory)
+            }
 
             viewModel.isLoading = false
             onSave(accessoryToSave)

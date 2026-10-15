@@ -39,6 +39,12 @@ struct RoomV2: ItemsListableDocument {
         self.afterImage = afterimage
     }
     
+    /// Owner key for this room's images (`RDImage.documentId`, and the folder under
+    /// `rooms_images`). A room keeps its `id` when it's copied to another list, so
+    /// `id` alone isn't unique across lists; scoping by `listId` keeps copies from
+    /// sharing, or deleting, each other's images.
+    var imageOwnerId: String { "\(listId)_\(id)" }
+
     enum CodingKeys: String, CodingKey {
         case id
         case itemIds = "item_ids"

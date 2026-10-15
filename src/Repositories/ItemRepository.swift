@@ -98,7 +98,7 @@ extension ItemRepository {
         guard let item = deleted as? ItemV2 else { return }
 
         do {
-            try await FirebaseImageManager.shared.deleteDocumentImages(document: item, imageType: .item)
+            try await FirebaseImageManager.shared.deleteDocumentImages(ownerId: item.id, imageType: .item)
         } catch {
             print("[WARN]: Deleted item \(itemId) but failed to clean up its images: \(error.localizedDescription)")
         }
