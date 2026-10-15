@@ -264,7 +264,14 @@ struct EditItemDetailSection: View {
                         TextField("0 (optional)", text: dimensionBinding(\.height))
                             .keyboardType(.decimalPad)
                     }
-                    
+
+                    HStack {
+                        Text("Depth:")
+                            .frame(width: 110, alignment: .leading)
+                        TextField("0 (optional)", text: depthBinding)
+                            .keyboardType(.decimalPad)
+                    }
+
                     HStack {
                         Text("Unit:")
                             .frame(width: 110, alignment: .leading)
@@ -368,6 +375,18 @@ struct EditItemDetailSection: View {
             set: { newValue in
                 var current = dimensions ?? ItemDimensions(length: "", width: "", height: "", unit: .imperial)
                 current[keyPath: keyPath] = newValue
+                dimensions = current
+            }
+        )
+    }
+
+    /// Depth is optional, so an empty field is stored as nil.
+    private var depthBinding: Binding<String> {
+        Binding(
+            get: { dimensions?.depth ?? "" },
+            set: { newValue in
+                var current = dimensions ?? ItemDimensions(length: "", width: "", height: "", unit: .imperial)
+                current.depth = newValue.isEmpty ? nil : newValue
                 dimensions = current
             }
         )
