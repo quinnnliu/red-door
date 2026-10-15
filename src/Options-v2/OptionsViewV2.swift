@@ -11,12 +11,20 @@ struct OptionsViewV2: View {
     @Environment(NavigationCoordinator.self) var coordinator
 
     @State private var showProfileSheet: Bool = false
+    #if DEBUG
+    @State private var showEnvironmentAlert: Bool = false
+    #endif
 
     var body: some View {
         VStack(spacing: 16) {
             TopBar()
 
             StorageLocationOptionsView()
+
+            #if DEBUG
+            Spacer()
+            DebugEnvironmentToggle()
+            #endif
         }
         .frameTop()
         .frameHorizontalPadding()
@@ -25,6 +33,19 @@ struct OptionsViewV2: View {
         .sheet(isPresented: $showProfileSheet) {
             ProfileSheet()
         }
+        #if DEBUG
+        .alert("Switch to \(targetEnvironment.displayName)?", isPresented: $showEnvironmentAlert) {
+            Button("Cancel", role: .cancel) {}
+            Button("Switch and Quit", role: targetEnvironment == .prod ? .destructive : nil) {
+                FirebaseEnvironment.selected = targetEnvironment
+                exit(0)
+            }
+        } message: {
+            Text(targetEnvironment == .prod
+                ? "This will point the app at the PRODUCTION database. Changes you make will affect real data. The app will quit; relaunch it to apply."
+                : "The app will quit; relaunch it to use the development database.")
+        }
+        #endif
     }
 
     // MARK: Top Bar
@@ -67,4 +88,26 @@ struct OptionsViewV2: View {
                 .foregroundColor(.secondary)
         }
     }
+
+    #if DEBUG
+    // MARK: Debug Environment Toggle
+    private var targetEnvironment: FirebaseEnvironment {
+        FirebaseEnvironment.active == .dev ? .prod : .dev
+    }
+
+    @ViewBuilder
+    private func DebugEnvironmentToggle() -> some View {
+        VStack(spacing: 8) {
+            Text("Debug: \(FirebaseEnvironment.active.displayName) database")
+                .font(.footnote)
+                .foregroundColor(FirebaseEnvironment.active == .prod ? .red : .secondary)
+
+            Button("Switch to \(targetEnvironment.displayName)") {
+                showEnvironmentAlert = true
+            }
+            .buttonStyle(.bordered)
+            .tint(.red)
+        }
+    }
+    #endif
 }
