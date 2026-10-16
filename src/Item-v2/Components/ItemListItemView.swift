@@ -65,12 +65,12 @@ struct ItemListItemView: View {
     }
 
     private var ListItemContent: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: .zero) {
             LeadingContent
             
             BodyContent
 
-            Spacer()
+            Spacer(minLength: 4)
 
             TrailingContent
         }
@@ -99,15 +99,19 @@ private extension ItemListItemView {
 
             HStack(spacing: 4) {
                 Image(systemName: item.type.icon ?? SFSymbols.ellipsis)
+                Text(item.type.title)
                 Text("•")
                 Text(item.material.title)
                 if let color = item.color.color {
                     Text("•")
                     Image(systemName: SFSymbols.circleFill)
                         .foregroundStyle(color)
+                    Text(item.color.title)
                 }
             }
-            .font(.footnote)
+            .font(.caption2)
+            .lineLimit(1)
+            .minimumScaleFactor(0.8)
             .foregroundStyle(.secondary)
         }
     }
@@ -144,9 +148,10 @@ private extension ItemListItemView {
 
 private extension ItemListItemView {
     var LeadingContent: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: .zero) {
             ItemImage
         }
+        .padding(.trailing, 8)
     }
 }
 

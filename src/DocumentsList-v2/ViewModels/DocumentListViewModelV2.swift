@@ -169,6 +169,13 @@ final class DocumentListViewModelV2<T: RDDocument> {
             if key == T.searchField, let text = value as? String {
                 q = q.whereField(key, isGreaterThanOrEqualTo: text)
                      .whereField(key, isLessThan: text + "\u{f8ff}")
+            } else if let values = value.base as? [AnyHashable] {
+                // Multi-select. Empty means no filter (`in: []` throws).
+                switch values.count {
+                case 0:  continue
+                case 1:  q = q.whereField(key, isEqualTo: values[0].base)
+                default: q = q.whereField(key, in: values.map(\.base))
+                }
             } else {
                 q = q.whereField(key, isEqualTo: value.base)
             }

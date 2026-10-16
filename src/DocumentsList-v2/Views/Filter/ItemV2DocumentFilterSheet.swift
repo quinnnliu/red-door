@@ -13,9 +13,9 @@ struct ItemV2DocumentFilterSheet: View {
 
     // MARK: - Filter State
 
-    @State private var selectedType: ItemType?
-    @State private var selectedColor: ItemColor?
-    @State private var selectedMaterial: ItemMaterial?
+    @State private var selectedTypes: Set<ItemType> = []
+    @State private var selectedColors: Set<ItemColor> = []
+    @State private var selectedMaterials: Set<ItemMaterial> = []
     @State private var selectedStatus: LocationStatus?
     @State private var selectedAttention: Bool?
     @State private var selectedGroup: EssentialsGroup?
@@ -45,13 +45,25 @@ struct ItemV2DocumentFilterSheet: View {
         self.action = action
         self.availableGroups = availableGroups
         self.lockedFilterKeys = lockedFilterKeys
-        _selectedType      = State(initialValue: (initialFilters[Self.typeKey] as? String).flatMap(ItemType.init(rawValue:)))
-        _selectedColor     = State(initialValue: (initialFilters[Self.colorKey] as? String).flatMap(ItemColor.init(rawValue:)))
-        _selectedMaterial  = State(initialValue: (initialFilters[Self.materialKey] as? String).flatMap(ItemMaterial.init(rawValue:)))
+        _selectedTypes     = State(initialValue: Self.decode(initialFilters[Self.typeKey]))
+        _selectedColors    = State(initialValue: Self.decode(initialFilters[Self.colorKey]))
+        _selectedMaterials = State(initialValue: Self.decode(initialFilters[Self.materialKey]))
         _selectedStatus    = State(initialValue: (initialFilters[Self.statusKey] as? String).flatMap(LocationStatus.init(rawValue:)))
         _selectedAttention = State(initialValue: initialFilters[Self.attentionKey] as? Bool)
         let groupId = initialFilters[Self.groupKey] as? String
         _selectedGroup     = State(initialValue: availableGroups.first { $0.id == groupId })
+    }
+
+    /// Accepts an array (multi-select) or a single string (the inventory chip bar writes a scalar `type`).
+    private static func decode<T: RawRepresentable>(_ value: AnyHashable?) -> Set<T> where T.RawValue == String {
+        let cap = MultiFilterEnumGridPicker<ItemType>.maxSelections
+        if let raws = value?.base as? [String] {
+            return Set(raws.compactMap(T.init(rawValue:)).prefix(cap))
+        }
+        if let raw = value?.base as? String, let item = T(rawValue: raw) {
+            return [item]
+        }
+        return []
     }
 
     // MARK: - Body
@@ -66,9 +78,9 @@ struct ItemV2DocumentFilterSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     if lockedFilterKeys.contains(Self.typeKey) {
-                        LockedFilterRow(title: "Type", value: selectedType?.title ?? "Any")
+                        LockedFilterRow(title: "Type", value: MultiFilterPickerRow.summary(for: selectedTypes))
                     } else {
-                        FilterPickerRow(selectedItem: $selectedType, items: ItemType.allCases, title: "Type")
+                        MultiFilterPickerRow(selectedItems: $selectedTypes, items: ItemType.allCases, title: "Type")
                     }
 
                     if lockedFilterKeys.contains(Self.statusKey) {
@@ -78,15 +90,15 @@ struct ItemV2DocumentFilterSheet: View {
                     }
 
                     if lockedFilterKeys.contains(Self.colorKey) {
-                        LockedFilterRow(title: "Color", value: selectedColor?.title ?? "Any")
+                        LockedFilterRow(title: "Color", value: MultiFilterPickerRow.summary(for: selectedColors))
                     } else {
-                        FilterPickerRow(selectedItem: $selectedColor, items: ItemColor.allCases, title: "Color")
+                        MultiFilterPickerRow(selectedItems: $selectedColors, items: ItemColor.allCases, title: "Color")
                     }
 
                     if lockedFilterKeys.contains(Self.materialKey) {
-                        LockedFilterRow(title: "Material", value: selectedMaterial?.title ?? "Any")
+                        LockedFilterRow(title: "Material", value: MultiFilterPickerRow.summary(for: selectedMaterials))
                     } else {
-                        FilterPickerRow(selectedItem: $selectedMaterial, items: ItemMaterial.allCases, title: "Material")
+                        MultiFilterPickerRow(selectedItems: $selectedMaterials, items: ItemMaterial.allCases, title: "Material")
                     }
 
                     if lockedFilterKeys.contains(Self.attentionKey) {
@@ -209,9 +221,9 @@ private struct LockedFilterRow: View {
 private extension ItemV2DocumentFilterSheet {
 
     var hasActiveFilters: Bool {
-        (selectedType != nil     && !lockedFilterKeys.contains(Self.typeKey))
-        || (selectedColor != nil    && !lockedFilterKeys.contains(Self.colorKey))
-        || (selectedMaterial != nil && !lockedFilterKeys.contains(Self.materialKey))
+        (!selectedTypes.isEmpty     && !lockedFilterKeys.contains(Self.typeKey))
+        || (!selectedColors.isEmpty    && !lockedFilterKeys.contains(Self.colorKey))
+        || (!selectedMaterials.isEmpty && !lockedFilterKeys.contains(Self.materialKey))
         || (selectedStatus != nil   && !lockedFilterKeys.contains(Self.statusKey))
         || (selectedAttention != nil && !lockedFilterKeys.contains(Self.attentionKey))
         || (selectedGroup != nil    && !lockedFilterKeys.contains(Self.groupKey))
@@ -219,13 +231,19 @@ private extension ItemV2DocumentFilterSheet {
 
     func buildFilterDictionary() -> [String: AnyHashable] {
         var filters: [String: AnyHashable] = [:]
-        if let type = selectedType,     !lockedFilterKeys.contains(Self.typeKey)      { filters[Self.typeKey] = type.rawValue }
-        if let color = selectedColor,   !lockedFilterKeys.contains(Self.colorKey)     { filters[Self.colorKey] = color.rawValue }
-        if let mat = selectedMaterial,  !lockedFilterKeys.contains(Self.materialKey)  { filters[Self.materialKey] = mat.rawValue }
+        addMultiSelect(selectedTypes, key: Self.typeKey, to: &filters)
+        addMultiSelect(selectedColors, key: Self.colorKey, to: &filters)
+        addMultiSelect(selectedMaterials, key: Self.materialKey, to: &filters)
         if let status = selectedStatus, !lockedFilterKeys.contains(Self.statusKey)    { filters[Self.statusKey] = status.rawValue }
         if let attention = selectedAttention, !lockedFilterKeys.contains(Self.attentionKey) { filters[Self.attentionKey] = attention }
         if let group = selectedGroup,   !lockedFilterKeys.contains(Self.groupKey)     { filters[Self.groupKey] = group.id }
         return filters
+    }
+
+    /// Stored sorted so identical selections compare equal regardless of tap order.
+    func addMultiSelect<T: RawRepresentable>(_ selection: Set<T>, key: String, to filters: inout [String: AnyHashable]) where T.RawValue == String {
+        guard !selection.isEmpty, !lockedFilterKeys.contains(key) else { return }
+        filters[key] = selection.map(\.rawValue).sorted()
     }
 
     func applyFilters() {
@@ -234,9 +252,9 @@ private extension ItemV2DocumentFilterSheet {
     }
 
     func resetFilters() {
-        if !lockedFilterKeys.contains(Self.typeKey)      { selectedType = nil }
-        if !lockedFilterKeys.contains(Self.colorKey)     { selectedColor = nil }
-        if !lockedFilterKeys.contains(Self.materialKey)  { selectedMaterial = nil }
+        if !lockedFilterKeys.contains(Self.typeKey)      { selectedTypes.removeAll() }
+        if !lockedFilterKeys.contains(Self.colorKey)     { selectedColors.removeAll() }
+        if !lockedFilterKeys.contains(Self.materialKey)  { selectedMaterials.removeAll() }
         if !lockedFilterKeys.contains(Self.statusKey)    { selectedStatus = nil }
         if !lockedFilterKeys.contains(Self.attentionKey) { selectedAttention = nil }
         if !lockedFilterKeys.contains(Self.groupKey)     { selectedGroup = nil }
