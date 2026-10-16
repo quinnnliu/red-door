@@ -202,25 +202,26 @@ enum ItemType: String, Filterable, CaseIterable {
 }
 
 enum ItemColor: String, Filterable {
-    case black = "Black"
-    case blue = "Blue"
-    case brass = "Brass"
-    case brown = "Brown"
-    case clear = "Clear"
-    case cyan = "Cyan"
-    case gray = "Gray"
-    case green = "Green"
-    case indigo = "Indigo"
-    case mint = "Mint"
-    case orange = "Orange"
-    case pink = "Pink"
-    case purple = "Purple"
+    // Declaration order is the display order (CaseIterable): rainbow first, then muted/neutral tones.
     case red = "Red"
-    case silver = "Silver"
-    case tan = "Tan"
-    case teal = "Teal"
-    case white = "White"
+    case orange = "Orange"
     case yellow = "Yellow"
+    case green = "Green"
+    case mint = "Mint"
+    case teal = "Teal"
+    case cyan = "Cyan"
+    case blue = "Blue"
+    case indigo = "Indigo"
+    case purple = "Purple"
+    case pink = "Pink"
+    case brown = "Brown"
+    case brass = "Brass"
+    case tan = "Tan"
+    case white = "White"
+    case clear = "Clear"
+    case silver = "Silver"
+    case gray = "Gray"
+    case black = "Black"
 
     var title: String { rawValue }
     var color: Color? {
