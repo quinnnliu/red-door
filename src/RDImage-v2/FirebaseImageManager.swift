@@ -55,7 +55,7 @@ final class FirebaseImageManager {
     }
 
     private static let fullMaxDimension: CGFloat = 800
-    private static let thumbMaxDimension: CGFloat = 200
+    private static let thumbMaxDimension: CGFloat = 150
     private static let jpegCompressionQuality: CGFloat = 0.50
 
     // MARK: upload()

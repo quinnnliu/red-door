@@ -17,7 +17,7 @@ enum Constants {
     }
     
     enum Image {
-        static let listItemDefault: CGFloat = 48
+        static let listItemDefault: CGFloat = 56
         static let listItemLarge: CGFloat = 80
         static let listItemMedium: CGFloat = 36
     }

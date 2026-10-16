@@ -158,11 +158,17 @@ private extension PullListDetailsViewV2 {
                 BackButton()
             },
             header: {
-                HStack {
-                    Image(systemName: SFSymbols.mapPinAndEllipse)
+                VStack(alignment: .center, spacing: 2) {
+                    Text("Pull List")
+                        .font(.caption)
                         .bold()
                         .foregroundStyle(.red)
-                    Text(viewModel.pullListState.address.getStreetAddress() ?? viewModel.pullListState.address.formattedAddress)
+                    HStack(spacing: 4) {
+                        Image(systemName: SFSymbols.mapPinAndEllipse)
+                            .bold()
+                            .foregroundStyle(.red)
+                        Text(viewModel.pullListState.address.getStreetAddress() ?? viewModel.pullListState.address.formattedAddress)
+                    }
                 }
             },
             trailingView: {

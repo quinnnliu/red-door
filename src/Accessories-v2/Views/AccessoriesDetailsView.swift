@@ -66,6 +66,10 @@ private extension AccessoriesDetailsView {
             },
             header: {
                 VStack(alignment: .center, spacing: 2) {
+                    Text("Accessories")
+                        .font(.footnote)
+                        .bold()
+                        .foregroundStyle(.red)
                     Text(accessories.baseName)
                         .font(.headline)
                         .bold()

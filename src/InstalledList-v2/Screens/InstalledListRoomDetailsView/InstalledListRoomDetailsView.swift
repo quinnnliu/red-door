@@ -81,17 +81,19 @@ struct InstalledListRoomDetailsView: View {
             leadingView: {
                 BackButton()
             }, header: {
-                (
-                    Text("Room: ")
+                VStack(alignment: .center, spacing: 2) {
+                    Text("Room")
+                        .font(.caption)
                         .foregroundColor(.red)
                         .bold()
-                    +
-                    Text(viewModel.roomState.displayName)
-                        .bold()
-                    +
-                    Text(viewModel.roomState.squareFootage.map { " · \($0) sq ft" } ?? "")
-                        .foregroundColor(.secondary)
-                )
+                    (
+                        Text(viewModel.roomState.displayName)
+                            .bold()
+                        +
+                        Text(viewModel.roomState.squareFootage.map { " · \($0) sq ft" } ?? "")
+                            .foregroundColor(.secondary)
+                    )
+                }
             }, trailingView: {
                 EmptyView()
             }

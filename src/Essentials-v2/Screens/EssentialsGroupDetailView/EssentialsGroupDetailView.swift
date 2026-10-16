@@ -115,14 +115,14 @@ private extension EssentialsGroupDetailView {
                 BackButton()
             },
             header: {
-                (
-                    Text("Essentials: ")
+                VStack(alignment: .center, spacing: 2) {
+                    Text("Essentials")
+                        .font(.footnote)
                         .bold()
                         .foregroundStyle(.red)
-                    +
                     Text("\(viewModel.groupState.emoji) \(viewModel.groupState.displayName)")
                         .bold()
-                )
+                }
             },
             trailingView: {
                 RDButton(style: .red, size: .icon, leadingIcon: SFSymbols.pencil) {
