@@ -62,6 +62,13 @@ struct EditItemView: View {
 
                     Spacer()
 
+                    if let reason = viewModel.originalItem.deleteErrorReason?.errorDescription {
+                        Text(reason)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+
                     RDButton(style: .red, size: .default, leadingIcon: "trash", label: "Delete Item", fullWidth: false) {
                         showDeleteAlert = true
                     }
