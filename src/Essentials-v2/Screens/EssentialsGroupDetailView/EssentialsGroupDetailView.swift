@@ -9,6 +9,7 @@ import SwiftUI
 
 struct EssentialsGroupDetailView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(NavigationCoordinator.self) private var coordinator
     @State private var viewModel: EssentialsGroupDetailViewModel
     @State private var showAddItemsSheet: Bool = false
     @State private var showEditSheet: Bool = false
@@ -17,9 +18,14 @@ struct EssentialsGroupDetailView: View {
     @State private var showSelectAccessoriesSheet: Bool = false
     @State private var showRemoveAccessoriesAlert: Bool = false
     @State private var showAssignToPullListSheet: Bool = false
+    @State private var locationNavigator = LocationNavigator()
+    /// `false` when pushed from a list's detail screen, so the location CTA
+    /// can't push that same list again.
+    private let locationNavigable: Bool
 
-    init(group: EssentialsGroup) {
+    init(group: EssentialsGroup, locationNavigable: Bool = true) {
         viewModel = EssentialsGroupDetailViewModel(group: group)
+        self.locationNavigable = locationNavigable
     }
 
     // MARK: - Body
@@ -69,6 +75,9 @@ struct EssentialsGroupDetailView: View {
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("OK") { }
         }
+        .alert(locationNavigator.alertMessage, isPresented: $locationNavigator.showAlert) {
+            Button("OK") { }
+        }
         .alert("Remove Accessories", isPresented: $showRemoveAccessoriesAlert) {
             Button("Remove", role: .destructive) {
                 Task { await viewModel.removeAccessories() }
@@ -93,8 +102,7 @@ struct EssentialsGroupDetailView: View {
         }
         .onAppear {
             viewModel.startListening()
-        }
-        .toolbar(.hidden)
+        }        .toolbar(.hidden)
     }
 }
 
@@ -137,13 +145,10 @@ private extension EssentialsGroupDetailView {
             
             Spacer()
             
-            SmallCTA(
-                isButton: false,
-                type: viewModel.groupState.location.status.isAvailable ? .outline: .red,
-                size: .small,
-                leadingIcon: viewModel.groupState.location.status.icon,
-                text: viewModel.groupState.location.status.displayTitle,
-                semibold: false
+            LocationStatusCTA(
+                location: viewModel.groupState.location,
+                isLoading: locationNavigator.isNavigating,
+                action: locationNavigable ? handleAction(_:) : nil
             )
         }
     }
@@ -220,6 +225,19 @@ private extension EssentialsGroupDetailView {
                 Task { await viewModel.assignToPullList(list) }
             default:
                 return
+            }
+        case let locationAction as LocationStatusCTAAction:
+            switch locationAction {
+            case .navigate(let location):
+                // The list's essentials row would push this group again.
+                Task {
+                    if let destination = await locationNavigator.destination(
+                        for: location,
+                        essentialsGroupNavigable: false
+                    ) {
+                        coordinator.appendToSelectedPath(destination)
+                    }
+                }
             }
         default:
             return

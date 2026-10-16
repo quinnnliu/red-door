@@ -9,11 +9,17 @@ import SwiftUI
 
 struct AccessoriesDetailsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(NavigationCoordinator.self) private var coordinator
     @State private var accessories: Accessories
     @State private var showEditSheet: Bool = false
+    @State private var locationNavigator = LocationNavigator()
+    /// `false` when pushed from a list's detail screen, so the location CTA
+    /// can't push that same list again.
+    private let locationNavigable: Bool
 
-    init(accessories: Accessories) {
+    init(accessories: Accessories, locationNavigable: Bool = true) {
         self._accessories = State(initialValue: accessories)
+        self.locationNavigable = locationNavigable
     }
 
     // MARK: - Body
@@ -28,13 +34,18 @@ struct AccessoriesDetailsView: View {
 
             ImageSection
 
+            LocationRow
+                .frameHorizontalPadding()
+
             DescriptionSection
                 .frameHorizontalPadding()
 
             Spacer()
         }
         .toolbar(.hidden)
-        .frameTop()
+        .frameTop()        .alert(locationNavigator.alertMessage, isPresented: $locationNavigator.showAlert) {
+            Button("OK") { }
+        }
         .sheet(isPresented: $showEditSheet) {
             AccessoriesViewFactory().makeEditAccessoriesSheet(
                 accessories: accessories,
@@ -90,6 +101,46 @@ private extension AccessoriesDetailsView {
 private extension AccessoriesDetailsView {
     var ImageSection: some View {
         PrimaryImageView(image: accessories.primaryImage)
+    }
+}
+
+// MARK: - Location Row
+
+private extension AccessoriesDetailsView {
+    var LocationRow: some View {
+        HStack {
+            Text("Location")
+                .bold()
+                .foregroundStyle(.red)
+
+            Spacer()
+
+            LocationStatusCTA(
+                location: accessories.location,
+                isLoading: locationNavigator.isNavigating,
+                action: locationNavigable ? handleAction(_:) : nil
+            )
+        }
+    }
+}
+
+// MARK: - Actions
+
+private extension AccessoriesDetailsView {
+    func handleAction(_ actionArgument: Any?) {
+        switch actionArgument {
+        case let locationAction as LocationStatusCTAAction:
+            switch locationAction {
+            case .navigate(let location):
+                Task {
+                    if let destination = await locationNavigator.destination(for: location) {
+                        coordinator.appendToSelectedPath(destination)
+                    }
+                }
+            }
+        default:
+            return
+        }
     }
 }
 

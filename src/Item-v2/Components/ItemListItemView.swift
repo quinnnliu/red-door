@@ -122,6 +122,7 @@ private extension ItemListItemView {
 }
 
 private extension ItemListItemView {
+    @ViewBuilder
     var StatusCTA: some View {
         switch style {
         case .installation(let room):
@@ -134,14 +135,7 @@ private extension ItemListItemView {
                 semibold: false
             )
         default:
-            SmallCTA(
-                isButton: false,
-                type: item.location.status.isAvailable ? .outline: .red,
-                size: .small,
-                leadingIcon: item.location.status.icon,
-                text: item.location.status.displayTitle,
-                semibold: false
-            )
+            LocationStatusCTA(location: item.location)
         }
     }
 }

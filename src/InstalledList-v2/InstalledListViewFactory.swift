@@ -76,7 +76,7 @@ struct InstalledListViewFactory {
         return PullListPDFViewV2(viewModel: vm)
     }
 
-    func makeDetailsView(list: InstalledListV2) -> InstalledListDetailsViewV2 {
+    func makeDetailsView(list: InstalledListV2, essentialsGroupNavigable: Bool = true) -> InstalledListDetailsViewV2 {
         let vm = InstalledListDetailsViewModelV2(
             list: list,
             installedListRepo: installedListRepo,
@@ -85,6 +85,6 @@ struct InstalledListViewFactory {
             essentialsRepo: essentialsRepo,
             accessoriesRepo: accessoriesRepo
         )
-        return InstalledListDetailsViewV2(viewModel: vm)
+        return InstalledListDetailsViewV2(viewModel: vm, essentialsGroupNavigable: essentialsGroupNavigable)
     }
 }

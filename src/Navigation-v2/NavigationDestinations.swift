@@ -20,20 +20,20 @@ enum NavigationDestination: Hashable {
     case installedListItemDetailView(item: ItemV2, room: RoomV2, uninstalled: Bool)
 
     // MARK: PullList
-    case pullListDetailView(_ list: PullListV2)
-    
+    case pullListDetailView(_ list: PullListV2, essentialsGroupNavigable: Bool = true)
+
     // MARK: InstalledList
-    case installedListDetailView(_ list: InstalledListV2)
+    case installedListDetailView(_ list: InstalledListV2, essentialsGroupNavigable: Bool = true)
 
     // MARK: Room
     case pulllistRoomDetailView(items: [ItemV2], room: RoomV2)
     case installedListRoomDetailView(items: [ItemV2], room: RoomV2, uninstalled: Bool)
 
     // MARK: EssentialsGroup
-    case essentialsGroupDetailView(_ group: EssentialsGroup)
+    case essentialsGroupDetailView(_ group: EssentialsGroup, locationNavigable: Bool = true)
 
     // MARK: Accessories
-    case accessoriesDetailView(_ accessories: Accessories)
+    case accessoriesDetailView(_ accessories: Accessories, locationNavigable: Bool = true)
 
     // MARK: Generic Add Item
     case addItemToDocumentDetailView(item: ItemV2, destination: AddItemsToListableDestination)

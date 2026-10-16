@@ -21,8 +21,8 @@ struct AccessoriesViewFactory {
         return CreateAccessoriesView(viewModel: vm)
     }
 
-    func makeAccessoriesDetailsView(accessories: Accessories) -> AccessoriesDetailsView {
-        AccessoriesDetailsView(accessories: accessories)
+    func makeAccessoriesDetailsView(accessories: Accessories, locationNavigable: Bool = true) -> AccessoriesDetailsView {
+        AccessoriesDetailsView(accessories: accessories, locationNavigable: locationNavigable)
     }
 
     func makeEditAccessoriesSheet(

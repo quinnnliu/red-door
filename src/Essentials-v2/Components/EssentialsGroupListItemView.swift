@@ -87,13 +87,6 @@ struct EssentialsGroupListItemView: View {
     
     // MARK: TrailingContent
     private var TrailingContent: some View {
-        SmallCTA(
-            isButton: false,
-            type: group.location.status.isAvailable ? .outline: .red,
-            size: .small,
-            leadingIcon: group.location.status.icon,
-            text: group.location.status.displayTitle,
-            semibold: false
-        )
+        LocationStatusCTA(location: group.location)
     }
 }
