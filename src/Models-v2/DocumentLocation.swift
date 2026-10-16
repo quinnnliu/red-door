@@ -24,6 +24,14 @@ extension DocumentLocation {
 }
 
 extension DocumentLocation {
+    /// Only pull lists and installed lists with a real id have a screen to
+    /// navigate to. Storage locations don't.
+    var isNavigable: Bool {
+        status != .inStorage && !locationId.isEmpty
+    }
+}
+
+extension DocumentLocation {
     /// Firestore dot-notation key for filtering documents by `location.status`.
     static let statusFilterKey = "location.\(CodingKeys.status.stringValue)"
 }

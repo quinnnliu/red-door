@@ -22,9 +22,13 @@ struct PullListDetailsViewV2: View {
     @State private var showSelectRoomForUnassignedSheet: Bool = false
     @State private var showStoreUnassignedItemSheet: Bool = false
     @State private var itemToStore: ItemV2? = nil
+    /// `false` when reached from an essentials group's location CTA, so the
+    /// essentials row can't push that group again.
+    private let essentialsGroupNavigable: Bool
 
-    init(viewModel: PullListDetailsViewModelV2) {
+    init(viewModel: PullListDetailsViewModelV2, essentialsGroupNavigable: Bool = true) {
         self.viewModel = viewModel
+        self.essentialsGroupNavigable = essentialsGroupNavigable
     }
 
     var body: some View {
@@ -274,7 +278,11 @@ private extension PullListDetailsViewV2 {
         if let group = viewModel.essentialsGroupState {
             LazyVStack(spacing: 8) {
                 HStack(spacing: 2) {
-                    EssentialsGroupListItemView(group: group, emoji: group.emoji, action: handleAction(_:))
+                    EssentialsGroupListItemView(
+                        group: group,
+                        emoji: group.emoji,
+                        action: essentialsGroupNavigable ? handleAction(_:) : nil
+                    )
 
                     Button {
                         showSelectStorageSheet = true
@@ -592,7 +600,7 @@ private extension PullListDetailsViewV2 {
         if let essentialsAction = actionArgument as? EssentialsGroupListItemAction {
             switch essentialsAction {
             case .navigate(let group):
-                coordinator.appendToSelectedPath(NavigationDestination.essentialsGroupDetailView(group))
+                coordinator.appendToSelectedPath(NavigationDestination.essentialsGroupDetailView(group, locationNavigable: false))
             }
         }
     }

@@ -16,9 +16,13 @@ struct InstalledListDetailsViewV2: View {
     @State private var showPDFSheet: Bool = false
     @State private var showUninstallListCover: Bool = false
     @State private var showUninstallRecordSheet: Bool = false
+    /// `false` when reached from an essentials group's location CTA, so the
+    /// essentials row can't push that group again.
+    private let essentialsGroupNavigable: Bool
 
-    init(viewModel: InstalledListDetailsViewModelV2) {
+    init(viewModel: InstalledListDetailsViewModelV2, essentialsGroupNavigable: Bool = true) {
         self.viewModel = viewModel
+        self.essentialsGroupNavigable = essentialsGroupNavigable
     }
 
     var body: some View {
@@ -198,7 +202,11 @@ private extension InstalledListDetailsViewV2 {
     var EssentialsGroupSectionContent: some View {
         if let group = viewModel.essentialsGroupState {
             LazyVStack(spacing: 8) {
-                EssentialsGroupListItemView(group: group, emoji: group.emoji, action: handleAction(_:))
+                EssentialsGroupListItemView(
+                    group: group,
+                    emoji: group.emoji,
+                    action: essentialsGroupNavigable ? handleAction(_:) : nil
+                )
 
                 if let accessories = viewModel.essentialsAccessories {
                     Text("Accessories")
@@ -365,7 +373,7 @@ private extension InstalledListDetailsViewV2 {
         if let essentialsAction = actionArgument as? EssentialsGroupListItemAction {
             switch essentialsAction {
             case .navigate(let group):
-                coordinator.appendToSelectedPath(NavigationDestination.essentialsGroupDetailView(group))
+                coordinator.appendToSelectedPath(NavigationDestination.essentialsGroupDetailView(group, locationNavigable: false))
             }
         }
     }

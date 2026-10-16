@@ -10,13 +10,23 @@ import SwiftUI
 struct ItemDetailSection: View {
     let item: ItemV2
     let essentialsGroup: EssentialsGroup?
+    /// Pass to make the location CTA navigable. Emits `LocationStatusCTAAction`.
+    private let locationAction: ((Any?) -> Void)?
+    private let isNavigatingToLocation: Bool
 
     @State private var showPurchaseInfo: Bool = false
     @State private var showDimensions: Bool = false
 
-    init(item: ItemV2, essentialsGroup: EssentialsGroup? = nil) {
+    init(
+        item: ItemV2,
+        essentialsGroup: EssentialsGroup? = nil,
+        isNavigatingToLocation: Bool = false,
+        locationAction: ((Any?) -> Void)? = nil
+    ) {
         self.item = item
         self.essentialsGroup = essentialsGroup
+        self.isNavigatingToLocation = isNavigatingToLocation
+        self.locationAction = locationAction
     }
 
     // MARK: Body
@@ -166,13 +176,10 @@ struct ItemDetailSection: View {
 
             Spacer(minLength: .zero)
 
-            SmallCTA(
-                isButton: false,
-                type: item.location.status.isAvailable ? .outline : .red,
-                size: .small,
-                leadingIcon: item.location.status.icon,
-                text: item.location.status.displayTitle,
-                semibold: false
+            LocationStatusCTA(
+                location: item.location,
+                isLoading: isNavigatingToLocation,
+                action: locationAction
             )
         }
     }

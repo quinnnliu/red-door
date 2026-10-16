@@ -135,6 +135,8 @@ struct SmallCTA: View {
 
     var fullWidth: Bool = false
     var semibold: Bool = true
+    /// Swaps the leading icon for a spinner and ignores taps.
+    var isLoading: Bool = false
     var action: () -> Void = {}
     
 
@@ -143,6 +145,7 @@ struct SmallCTA: View {
             Button(action: action) {
                 SmallCTAView()
             }
+            .allowsHitTesting(!isLoading)
         } else {
             SmallCTAView()
         }
@@ -151,7 +154,12 @@ struct SmallCTA: View {
     @ViewBuilder
     private func SmallCTAView() -> some View {
         HStack(spacing: 0) {
-            if let leadingIcon {
+            if isLoading {
+                ProgressView()
+                    .controlSize(.mini)
+                    .tint(leadingIconColor ?? textColor ?? type.foregroundColor)
+                    .padding(.trailing, 4)
+            } else if let leadingIcon {
                 Image(systemName: leadingIcon)
                     .foregroundStyle(leadingIconColor ?? textColor ?? type.foregroundColor)
                     .font(size.iconFont)
@@ -195,6 +203,7 @@ struct SmallCTA: View {
         SmallCTA(type: .secondary, leadingIcon: "plus", text: "Not Semibold", semibold: false, action: {})
         SmallCTA(type: .secondary, leadingIcon: "checkmark", leadingIconColor: .green, text: "Custom Icon Color", action: {})
         SmallCTA(type: .secondary, size: .small, leadingIcon: "plus", text: "Small", action: {})
+        SmallCTA(type: .outline, size: .small, leadingIcon: "plus", text: "Loading", isLoading: true, action: {})
     }
     .padding()
 }

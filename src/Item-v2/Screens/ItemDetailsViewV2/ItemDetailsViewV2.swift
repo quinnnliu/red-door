@@ -8,9 +8,11 @@
 import SwiftUI
 
 struct ItemDetailsViewV2: View {
+    @Environment(NavigationCoordinator.self) private var coordinator
     @State private var viewModel: ItemDetailViewModel
     @State private var showEditItem: Bool = false
     @State private var showQRCodeLabel: Bool = false
+    @State private var locationNavigator = LocationNavigator()
 
 
     init(viewModel: ItemDetailViewModel) {
@@ -54,6 +56,9 @@ struct ItemDetailsViewV2: View {
         }
         .fullScreenCover(isPresented: $showQRCodeLabel) {
             ItemViewFactory().makePDFView(item: viewModel.itemState)
+        }
+        .alert(locationNavigator.alertMessage, isPresented: $locationNavigator.showAlert) {
+            Button("OK") { }
         }
     }
 
@@ -107,8 +112,30 @@ private extension ItemDetailsViewV2 {
         VStack(spacing: 12) {
             ItemDetailSection(
                 item: viewModel.itemState,
-                essentialsGroup: viewModel.essentialsGroup
+                essentialsGroup: viewModel.essentialsGroup,
+                isNavigatingToLocation: locationNavigator.isNavigating,
+                locationAction: handleAction(_:)
             )
+        }
+    }
+}
+
+// MARK: - Actions
+
+private extension ItemDetailsViewV2 {
+    func handleAction(_ actionArgument: Any?) {
+        switch actionArgument {
+        case let locationAction as LocationStatusCTAAction:
+            switch locationAction {
+            case .navigate(let location):
+                Task {
+                    if let destination = await locationNavigator.destination(for: location) {
+                        coordinator.appendToSelectedPath(destination)
+                    }
+                }
+            }
+        default:
+            return
         }
     }
 }

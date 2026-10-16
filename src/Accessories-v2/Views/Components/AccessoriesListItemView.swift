@@ -85,14 +85,7 @@ struct AccessoriesListItemView: View {
     // MARK: TrailingContent
     private var TrailingContent: some View {
         HStack(spacing: 8) {
-            SmallCTA(
-                isButton: false,
-                type: accessories.location.status.isAvailable ? .outline : .red,
-                size: .small,
-                leadingIcon: accessories.location.status.icon,
-                text: accessories.location.status.displayTitle,
-                semibold: false
-            )
+            LocationStatusCTA(location: accessories.location)
 
             if let onRemove, style == .essentialsGroup {
                 Button(action: onRemove) {

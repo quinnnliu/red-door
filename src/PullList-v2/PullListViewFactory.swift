@@ -13,7 +13,7 @@ struct PullListViewFactory {
     private let essentialsRepo: EssentialsRepository = EssentialsRepository()
     private let accessoriesRepo: AccessoriesRepository = AccessoriesRepository()
 
-    func makeDetailsView(list: PullListV2) -> PullListDetailsViewV2 {
+    func makeDetailsView(list: PullListV2, essentialsGroupNavigable: Bool = true) -> PullListDetailsViewV2 {
         let vm = PullListDetailsViewModelV2(
             list: list,
             roomRepo: RoomRepository<PullListV2>(list: list),
@@ -22,7 +22,7 @@ struct PullListViewFactory {
             essentialsRepo: essentialsRepo,
             accessoriesRepo: accessoriesRepo
         )
-        return PullListDetailsViewV2(viewModel: vm)
+        return PullListDetailsViewV2(viewModel: vm, essentialsGroupNavigable: essentialsGroupNavigable)
     }
 
     func makeEditView(list: PullListV2) -> EditPullListSheet {
