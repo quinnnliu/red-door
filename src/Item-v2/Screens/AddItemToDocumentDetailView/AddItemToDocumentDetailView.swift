@@ -88,9 +88,11 @@ struct AddItemToDocumentDetailView: View {
                 BackButton()
             },
             header: {
-                HStack {
-                    Text("Name:")
-                        .font(.headline)
+                VStack(alignment: .center, spacing: 2) {
+                    Text("Item")
+                        .font(.caption)
+                        .bold()
+                        .foregroundStyle(.red)
                     Text(viewModel.item.displayName)
                 }
             },

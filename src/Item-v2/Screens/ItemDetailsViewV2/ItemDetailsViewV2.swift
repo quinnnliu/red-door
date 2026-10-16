@@ -71,11 +71,15 @@ struct ItemDetailsViewV2: View {
                 BackButton()
             },
             header: {
-                HStack {
-                    Text("Item:")
+                VStack(alignment: .center, spacing: 2) {
+                    Text("Item")
+                        .font(.footnote)
                         .bold()
                         .foregroundStyle(.red)
-                    Text(viewModel.itemState.baseName)
+                    if !viewModel.itemState.baseName.isEmpty {
+                        Text(viewModel.itemState.baseName)
+                            .bold()
+                    }
                 }
             },
             trailingView: {

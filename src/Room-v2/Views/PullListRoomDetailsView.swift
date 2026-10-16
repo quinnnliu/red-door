@@ -119,14 +119,14 @@ struct PullListRoomDetailsView: View {
             leadingView: {
                 BackButton()
             }, header: {
-                (
-                    Text("Room: ")
+                VStack(alignment: .center, spacing: 2) {
+                    Text("Room")
+                        .font(.caption)
                         .foregroundColor(.red)
                         .bold()
-                    +
                     Text(viewModel.roomState.displayName)
                         .bold()
-                )
+                }
             }, trailingView: {
                 RoomDetailsMenu
             }

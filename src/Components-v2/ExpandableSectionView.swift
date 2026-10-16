@@ -58,7 +58,7 @@ struct ExpandableSectionView<Content: View, Trailing: View>: View {
                 content()
             }
         }
-        .padding(hasCardChrome ? 12 : 0)
+        .padding(hasCardChrome ? 8 : 0)
         .background(hasCardChrome ? Color(.systemGray6) : Color.clear)
         .cornerRadius(hasCardChrome ? Constants.CornerRadius.medium : 0)
     }

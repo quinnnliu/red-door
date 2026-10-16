@@ -114,8 +114,9 @@ struct PullListItemDetailsView: View {
 		TopAppBar(leadingView: {
 			BackButton()
 		}, header: {
-			HStack(spacing: 0) {
-				Text("Item: ")
+			VStack(alignment: .center, spacing: 2) {
+				Text("Item")
+					.font(.caption)
 					.bold()
 					.foregroundColor(.red)
 

@@ -104,11 +104,17 @@ private extension InstalledListDetailsViewV2 {
                 BackButton()
             },
             header: {
-                HStack {
-                    Image(systemName: SFSymbols.mapPinAndEllipse)
+                VStack(alignment: .center, spacing: 2) {
+                    Text("Installed List")
+                        .font(.caption)
                         .bold()
                         .foregroundStyle(.red)
-                    Text(viewModel.installedListState.address.getStreetAddress() ?? viewModel.installedListState.address.formattedAddress)
+                    HStack(spacing: 4) {
+                        Image(systemName: SFSymbols.mapPinAndEllipse)
+                            .bold()
+                            .foregroundStyle(.red)
+                        Text(viewModel.installedListState.address.getStreetAddress() ?? viewModel.installedListState.address.formattedAddress)
+                    }
                 }
             },
             trailingView: {
