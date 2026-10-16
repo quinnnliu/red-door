@@ -12,7 +12,7 @@ enum Constants {
     
     enum Screen {
         // the width of the screen with padding removed
-        static let screenWidthPadding: CGFloat = UIScreen.width - 32
+        static let screenWidthPadding: CGFloat = UIScreen.width - 24
         static let screenWidth: CGFloat = UIScreen.width
     }
     

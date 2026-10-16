@@ -109,7 +109,7 @@ private extension AddItemToDocumentSheetV2 {
                 }
             }
             
-            if viewModel.showSelectedItems {
+            if viewModel.showSelectedItems && multiSelectEnabled {
                 SelectedItemsList
                     .padding(8)
                     .overlay(

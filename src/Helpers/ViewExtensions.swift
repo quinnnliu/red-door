@@ -44,19 +44,19 @@ extension View {
     }
 
     func frameHorizontalPadding() -> some View {
-        padding(.horizontal, 16)
+        padding(.horizontal, 12)
     }
 
     func frameVerticalPadding() -> some View {
-        padding(.vertical, 16)
+        padding(.vertical, 12)
     }
 
     func frameTopPadding() -> some View {
-        padding(.top, 16)
+        padding(.top, 12)
     }
 
     func frameBottomPadding() -> some View {
-        padding(.bottom, 16)
+        padding(.bottom, 12)
     }
 
     func frame(_ size: CGFloat) -> some View {
