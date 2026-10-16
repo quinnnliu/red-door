@@ -48,6 +48,13 @@ struct EditEssentialsGroupSheet: View {
 
                 Spacer()
                 
+                if let reason = originalGroup.deleteErrorReason?.errorDescription {
+                    Text(reason)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+
                 HStack(spacing: 12) {
                     RDButton(
                         style: .default,

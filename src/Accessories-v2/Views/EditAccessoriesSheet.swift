@@ -53,6 +53,13 @@ struct EditAccessoriesSheet: View {
 
                 Spacer()
 
+                if let reason = originalAccessories.deleteBlocker?.errorDescription {
+                    Text(reason)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+
                 HStack(spacing: 12) {
                     RDButton(
                         style: .default,
