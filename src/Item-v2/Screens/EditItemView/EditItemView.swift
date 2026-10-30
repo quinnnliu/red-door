@@ -145,6 +145,7 @@ struct EditItemView: View {
                 get: { viewModel.updatedItem.nickname ?? "" },
                 set: { viewModel.updatedItem.nickname = $0.isEmpty ? nil : $0 }
             ))
+            .multilineTextAlignment(.center)
         }
         .font(.caption)
         .foregroundStyle(.secondary)

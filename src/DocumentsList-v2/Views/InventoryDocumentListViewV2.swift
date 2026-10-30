@@ -346,17 +346,6 @@ private extension InventoryDocumentListViewV2 {
                 case .accessories: await accessoriesVM.handleSearchAction(searchAction)
                 }
             }
-        case let filterAction as ItemInventoryFilterViewAction:
-            switch filterAction {
-            case .selectItemType(let newType):
-                Task {
-                    if let newType {
-                        await itemsVM.updateFilter(key: "type", value: newType.rawValue)
-                    } else {
-                        await itemsVM.removeFilter(key: "type")
-                    }
-                }
-            }
         case let filterAction as DocumentFilterSheetAction:
             Task {
                 switch filterAction {
