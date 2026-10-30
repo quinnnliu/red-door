@@ -53,7 +53,7 @@ struct FilterDocumentPickerRow<T: RDDocument>: View {
                 documents: options,
                 action: handleAction,
                 footer: {
-                    RDButton(style: .red, label: "Any", fullWidth: true)
+                    RDButton(style: .red, label: "Any", fullWidth: true, isButton: false)
                 }
             )
         }
