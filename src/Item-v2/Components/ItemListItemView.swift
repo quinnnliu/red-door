@@ -90,7 +90,7 @@ private extension ItemListItemView {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 4) {
                 Text(item.displayName)
-                    .font(.callout)
+                    .font(.footnote)
                     .bold()
                     .foregroundStyle(.primary)
                 

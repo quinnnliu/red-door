@@ -15,6 +15,7 @@ enum AccessoriesListItemAction: Equatable {
 enum AccessoriesListItemStyle: Equatable {
     case navigate(Accessories)
     case essentialsGroup
+    case list
 }
 
 struct AccessoriesListItemView: View {
@@ -83,18 +84,27 @@ struct AccessoriesListItemView: View {
     }
 
     // MARK: TrailingContent
+    @ViewBuilder
     private var TrailingContent: some View {
-        HStack(spacing: 8) {
+        switch style {
+        case .navigate(let accessories):
             LocationStatusCTA(location: accessories.location)
-
-            if let onRemove, style == .essentialsGroup {
-                Button(action: onRemove) {
-                    Image(systemName: SFSymbols.xmark)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+        case .essentialsGroup:
+            HStack(spacing: 4) {
+                LocationStatusCTA(location: accessories.location)
+                
+                if let onRemove, style == .essentialsGroup {
+                    Button(action: onRemove) {
+                        Image(systemName: SFSymbols.xmark)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
                 }
-                .buttonStyle(.plain)
             }
+        case .list:
+            EmptyView()
         }
+        
     }
 }

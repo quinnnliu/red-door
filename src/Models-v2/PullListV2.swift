@@ -147,7 +147,7 @@ enum NewEnglandState: String, Filterable, CaseIterable, Codable {
 // MARK: - RDListDocument
 
 extension PullListV2: RDListDocument {
-    static let listKind: RDListKind = .pullList
+    static let listType: RDListType = .pullList
 }
 
 // MARK: - Delete

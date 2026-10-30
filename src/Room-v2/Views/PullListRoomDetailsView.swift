@@ -83,6 +83,7 @@ struct PullListRoomDetailsView: View {
         } message: {
             Text("This permanently deletes the room and its before and after images.")
         }
+        .staleWriteAlert($viewModel.staleWriteError)
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("OK", role: .cancel) { }
         }
@@ -188,7 +189,7 @@ struct PullListRoomDetailsView: View {
 private extension PullListRoomDetailsView {
     var AddItemsToRoomSheet: some View {
         AddItemToDocumentSheetV2(
-            destination: .room(viewModel.roomState, listKind: PullListV2.listKind),
+            destination: .room(viewModel.roomState, listType: PullListV2.listType),
             defaultFilters: [
                 "\(ItemV2.CodingKeys.location.rawValue).\(DocumentLocation.CodingKeys.status.rawValue)": LocationStatus.inStorage.rawValue,
                 ItemV2.CodingKeys.essentialGroupId.rawValue: NSNull() as AnyHashable

@@ -14,42 +14,40 @@ final class MoveItemV2RoomSheetViewModel {
 
     let room: RoomV2
     let item: ItemV2
-    /// Which collection `room` lives in. Without it this screen would read and
-    /// write the pull list subcollection for an installed list's rooms.
-    let listKind: RDListKind
+    let listType: RDListType
     var rooms: [RoomV2] = []
 
     var showAlert: Bool = false
     var alertMessage: String = ""
+    /// A write found the list or room gone, uninstalled or changed; the view presents it.
+    var staleWriteError: StaleWriteError? = nil
 
-    init(item: ItemV2, room: RoomV2, listKind: RDListKind) {
+    init(item: ItemV2, room: RoomV2, listType: RDListType) {
         self.itemRepo = ItemRepository()
         self.room = room
         self.item = item
-        self.listKind = listKind
+        self.listType = listType
     }
 
     @MainActor
     func moveItemToNewRoom(newRoom: RoomV2) async {
         do {
-            let outcome: MoveItemOutcome
-            switch listKind {
+            switch listType {
             case .pullList:
-                outcome = try await RoomRepository<PullListV2>(room: room)
+                try await RoomRepository<PullListV2>(room: room)
                     .moveItem(item.id, fromRoomId: room.id, toRoomId: newRoom.id, itemRepo: itemRepo)
             case .installedList:
-                outcome = try await RoomRepository<InstalledListV2>(room: room)
+                try await RoomRepository<InstalledListV2>(room: room)
                     .moveItem(item.id, fromRoomId: room.id, toRoomId: newRoom.id, itemRepo: itemRepo)
             }
 
-            switch outcome {
-            case .moved:
-                alertMessage = "Added \(item.displayName) to \(newRoom.displayName)"
-            case .stale:
-                alertMessage = "Couldn't move \(item.displayName) — it already moved. Reopen the room and try again."
-            }
+            alertMessage = "Added \(item.displayName) to \(newRoom.displayName)"
             showAlert = true
         } catch {
+            if let stale = StaleWriteError(error) {
+                staleWriteError = stale
+                return
+            }
             alertMessage = "Failed to add \(item.displayName) to \(newRoom.displayName)"
             showAlert = true
             print("[ERROR]: Failed to move \(item.displayName) to \(newRoom.displayName): \(error.localizedDescription)")
@@ -63,7 +61,7 @@ final class MoveItemV2RoomSheetViewModel {
     func fetchRoomsForMove() async {
         guard rooms.isEmpty else { return }
         do {
-            switch listKind {
+            switch listType {
             case .pullList:
                 rooms = try await RoomRepository<PullListV2>(room: room).getAll()
             case .installedList:

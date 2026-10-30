@@ -1,8 +1,5 @@
 enum AddItemsToListableDestination: Hashable {
-    /// `listKind` is what tells the add path which collection the room lives
-    /// in. Derive it from the list type (`InstalledListV2.listKind`) rather
-    /// than writing the case by hand.
-    case room(RoomV2, listKind: RDListKind)
+    case room(RoomV2, listType: RDListType)
     case essentialsGroup(EssentialsGroup)
 
     var document: any ItemsListableDocument {

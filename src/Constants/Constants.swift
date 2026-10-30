@@ -77,7 +77,8 @@ enum SFSymbols {
     static let deskFill = "table.furniture.fill"
     static let tableFill = "table.furniture.fill"
     static let couchFill = "sofa.fill"
-    static let lampFill = "lamp.floor.fill"
+    static let floorLampFill = "lamp.floor.fill"
+    static let tableLampFill = "lamp.table.fill"
     static let art = "photo.artframe"
     static let bedDoubleFill = "bed.double.fill"
     static let sunLefthalfFilled = "sun.lefthalf.filled"
@@ -105,4 +106,5 @@ enum SFSymbols {
     static let shippingboxFill = "shippingbox.fill"
     static let paintpaletteFill = "paintpalette.fill"
     static let squareFilledOnSquare = "square.filled.on.square"
+    static let rectangleFill = "rectangle.fill"
 }

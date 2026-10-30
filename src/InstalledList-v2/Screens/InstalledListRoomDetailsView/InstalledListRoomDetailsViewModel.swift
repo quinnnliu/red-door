@@ -19,6 +19,8 @@ final class InstalledListRoomDetailsViewModel {
     var availableStorageLocations: [StorageLocation] = []
     var isLoading: Bool = false
     var showAlert: Bool = false
+    /// A write found the list gone, uninstalled or changed; the view presents it.
+    var staleWriteError: StaleWriteError? = nil
     var alertMessage: String = ""
     var uninstalled: Bool
 
@@ -150,6 +152,10 @@ final class InstalledListRoomDetailsViewModel {
             loader.invalidate([item.id])
             roomState.itemIds.remove(item.id)
         } catch {
+            if let stale = StaleWriteError(error) {
+                staleWriteError = stale
+                return
+            }
             alertMessage = "Failed to remove item: \(error.localizedDescription)"
             showAlert = true
         }
@@ -181,13 +187,25 @@ final class InstalledListRoomDetailsViewModel {
                 type: imageType
             )
             let value: Any = try persisted.map { try Firestore.Encoder().encode($0) } ?? NSNull()
-            try await roomRepo.update(id: roomState.id, fields: [imageField: value])
+            do {
+                try await roomRepo.updateRoom(id: roomState.id, fields: [imageField: value])
+            } catch {
+                // The upload already happened and nothing points at it.
+                if let persisted {
+                    try? await FirebaseImageManager.shared.delete(persisted, type: imageType)
+                }
+                throw error
+            }
 
             // After the write, so a failed save never points the room at a deleted file.
             if let cleanup {
                 try? await FirebaseImageManager.shared.delete(cleanup, type: imageType)
             }
         } catch {
+            if let stale = StaleWriteError(error) {
+                staleWriteError = stale
+                return
+            }
             alertMessage = "Failed to update \(isBefore ? "before" : "after") image: \(error.localizedDescription)"
             showAlert = true
         }

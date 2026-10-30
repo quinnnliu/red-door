@@ -20,6 +20,8 @@ final class PullListRoomDetailsViewModel {
     var isLoading: Bool = false
     var isDeleting: Bool = false
     var showAlert: Bool = false
+    /// A write found the list or room gone or changed; the view presents it.
+    var staleWriteError: StaleWriteError? = nil
     var alertMessage: String = ""
 
     private var roomListener: ListenerRegistration? = nil
@@ -136,6 +138,10 @@ extension PullListRoomDetailsViewModel {
             loader.invalidate([item.id])
             roomState.itemIds.remove(item.id)
         } catch {
+            if let stale = StaleWriteError(error) {
+                staleWriteError = stale
+                return
+            }
             alertMessage = "Failed to remove item: \(error.localizedDescription)"
             showAlert = true
         }
@@ -154,6 +160,10 @@ extension PullListRoomDetailsViewModel {
             loader.invalidate([item.id])
             roomState.itemIds.remove(item.id)
         } catch {
+            if let stale = StaleWriteError(error) {
+                staleWriteError = stale
+                return
+            }
             alertMessage = "Failed to unassign item: \(error.localizedDescription)"
             showAlert = true
         }
@@ -176,6 +186,10 @@ extension PullListRoomDetailsViewModel {
             try await roomRepo.deleteRoom(id: roomState.id)
             return true
         } catch {
+            if let stale = StaleWriteError(error) {
+                staleWriteError = stale
+                return false
+            }
             alertMessage = "Failed to delete room: \(error.localizedDescription)"
             showAlert = true
             return false
@@ -186,7 +200,7 @@ extension PullListRoomDetailsViewModel {
     func updateRoomDetails(roomId: String, newRoomName: String, squareFootage: String?) async {
         do {
             let newNameId = RoomV2.nameToId(newRoomName)
-            try await roomRepo.update(id: roomId, fields: [
+            try await roomRepo.updateRoom(id: roomId, fields: [
                 RoomV2.CodingKeys.nameId.stringValue: newNameId,
                 RoomV2.CodingKeys.baseName.stringValue: newRoomName,
                 RoomV2.CodingKeys.squareFootage.stringValue: (squareFootage as Any?) ?? FieldValue.delete()
@@ -194,6 +208,10 @@ extension PullListRoomDetailsViewModel {
             roomState.baseName = newRoomName
             roomState.squareFootage = squareFootage
         } catch {
+            if let stale = StaleWriteError(error) {
+                staleWriteError = stale
+                return
+            }
             alertMessage = "Failed to update \(roomState.displayName)"
             showAlert = true
         }
@@ -226,13 +244,25 @@ extension PullListRoomDetailsViewModel {
                 type: imageType
             )
             let value: Any = try persisted.map { try Firestore.Encoder().encode($0) } ?? NSNull()
-            try await roomRepo.update(id: roomState.id, fields: [imageField: value])
+            do {
+                try await roomRepo.updateRoom(id: roomState.id, fields: [imageField: value])
+            } catch {
+                // The upload already happened and nothing points at it.
+                if let persisted {
+                    try? await FirebaseImageManager.shared.delete(persisted, type: imageType)
+                }
+                throw error
+            }
 
             // After the write, so a failed save never points the room at a deleted file.
             if let cleanup {
                 try? await FirebaseImageManager.shared.delete(cleanup, type: imageType)
             }
         } catch {
+            if let stale = StaleWriteError(error) {
+                staleWriteError = stale
+                return
+            }
             alertMessage = "Failed to update \(isBefore ? "before" : "after") image: \(error.localizedDescription)"
             showAlert = true
         }

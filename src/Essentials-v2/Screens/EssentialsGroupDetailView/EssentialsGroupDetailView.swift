@@ -72,6 +72,7 @@ struct EssentialsGroupDetailView: View {
         .sheet(isPresented: $showSelectAccessoriesSheet) {
             SelectAccessoriesSheet(action: handleAction(_:))
         }
+        .staleWriteAlert($viewModel.staleWriteError)
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("OK") { }
         }

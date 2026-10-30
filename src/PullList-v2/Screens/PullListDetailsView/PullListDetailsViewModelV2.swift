@@ -17,6 +17,9 @@ final class PullListDetailsViewModelV2 {
     var selectedUnassignedItems: Set<ItemV2> = []
     var isLoading: Bool = false
     var isDeleting: Bool = false
+    /// Set when a write found its list or room gone or changed; the view
+    /// presents it and, if the list is gone, resets navigation.
+    var staleWriteError: StaleWriteError? = nil
     private let loader: ItemsListLoader
 
     var essentialsGroupState: EssentialsGroup? = nil
@@ -259,49 +262,22 @@ final class PullListDetailsViewModelV2 {
     func removeEssentialsGroup(to storageLocation: StorageLocation) async {
         guard let group = essentialsGroupState else { return }
 
-        let batch = essentialsRepo.db.batch()
-
-        let storageFields: [String: Any] = DocumentLocation(
-            status: .inStorage,
-            locationId: storageLocation.id
-        ).firebaseUpdateFields
-
-        for itemId in group.itemIds {
-            itemRepo.update(id: itemId, fields: storageFields, inBatch: batch)
-        }
-
-        if let accessoriesId = group.accessoriesId {
-            accessoriesRepo.update(id: accessoriesId, fields: storageFields, inBatch: batch)
-        }
-
-        essentialsRepo.update(id: group.id, fields: storageFields, inBatch: batch)
-
-        pullListRepo.update(
-            id: pullListState.id,
-            fields: [
-                PullListV2.CodingKeys.essentialGroupId.stringValue: NSNull(),
-                PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayRemove(Array(group.itemIds))
-            ],
-            inBatch: batch
-        )
-
-        let essentialItemSet = Set(group.itemIds)
-        for room in rooms {
-            let overlap = room.itemIds.intersection(essentialItemSet)
-            if !overlap.isEmpty {
-                roomRepo.update(
-                    id: room.id,
-                    fields: [RoomV2.CodingKeys.itemIds.stringValue: FieldValue.arrayRemove(Array(overlap))],
-                    inBatch: batch
-                )
-            }
-        }
-
         do {
-            try await batch.commit()
+            // The group comes back as the transaction saw it, so local state is
+            // reconciled against what actually moved, not this screen's copy.
+            let removed = try await pullListRepo.removeEssentialsGroup(
+                listId: pullListState.id,
+                expectedGroupId: group.id,
+                toStorageId: storageLocation.id,
+                essentialsRepo: essentialsRepo,
+                accessoriesRepo: accessoriesRepo,
+                itemRepo: itemRepo
+            )
+
             // These items' locations just moved to storage; the cached copies
             // still say otherwise.
-            loader.invalidate(group.itemIds)
+            let essentialItemSet = removed.itemIds
+            loader.invalidate(Array(essentialItemSet))
             pullListState.essentialGroupId = nil
             pullListState.unassignedItemIds.removeAll { essentialItemSet.contains($0) }
             unassignedItems = unassignedItems.filter { !essentialItemSet.contains($0.id) }
@@ -310,8 +286,12 @@ final class PullListDetailsViewModelV2 {
             essentialsAccessories = nil
             availableStorageLocations = []
         } catch {
-            alertMessage = "Failed to remove essentials group: \(error.localizedDescription)"
-            showAlert = true
+            if let stale = StaleWriteError(error) {
+                staleWriteError = stale
+            } else {
+                alertMessage = "Failed to remove essentials group: \(error.localizedDescription)"
+                showAlert = true
+            }
         }
     }
 
@@ -332,6 +312,10 @@ final class PullListDetailsViewModelV2 {
             try await pullListRepo.delete(pullListState.id)
             return true
         } catch {
+            if let stale = StaleWriteError(error) {
+                staleWriteError = stale
+                return false
+            }
             alertMessage = "Failed to delete pull list: \(error.localizedDescription)"
             showAlert = true
             print("[ERROR]: Failed to delete pull list: \(error.localizedDescription)")
@@ -360,12 +344,12 @@ extension PullListDetailsViewModelV2 {
             squareFootage: squareFootage
         )
         do {
-            try roomRepo.set(document: newRoom)
-            try await pullListRepo.update(
-                id: pullListState.id,
-                fields: [PullListV2.CodingKeys.roomIds.stringValue: FieldValue.arrayUnion([newRoom.id])]
-            )
+            try await roomRepo.createRoom(newRoom)
         } catch {
+            if let stale = StaleWriteError(error) {
+                staleWriteError = stale
+                return
+            }
             alertMessage = "error adding \(newRoom.displayName): \(error.localizedDescription)"
             showAlert = true
             return
@@ -415,6 +399,10 @@ extension PullListDetailsViewModelV2 {
             pullListState.unassignedItemIds.removeAll { itemIds.contains($0) }
             selectedUnassignedItems.removeAll()
         } catch {
+            if let stale = StaleWriteError(error) {
+                staleWriteError = stale
+                return
+            }
             alertMessage = "Failed to assign items to \(room.displayName): \(error.localizedDescription)"
             showAlert = true
         }
@@ -444,6 +432,10 @@ extension PullListDetailsViewModelV2 {
             unassignedItems = unassignedItems.filter { $0.id != item.id }
             selectedUnassignedItems = selectedUnassignedItems.filter { $0.id != item.id }
         } catch {
+            if let stale = StaleWriteError(error) {
+                staleWriteError = stale
+                return
+            }
             alertMessage = "Failed to store \(item.displayName): \(error.localizedDescription)"
             showAlert = true
         }

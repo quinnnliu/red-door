@@ -73,6 +73,7 @@ struct PullListDetailsViewV2: View {
         .task {
             await viewModel.startListening()
         }
+        .staleWriteAlert($viewModel.staleWriteError)
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("Ok", role: .cancel) {}
         }
@@ -287,7 +288,8 @@ private extension PullListDetailsViewV2 {
                     EssentialsGroupListItemView(
                         group: group,
                         emoji: group.emoji,
-                        action: essentialsGroupNavigable ? handleAction(_:) : nil
+                        action: essentialsGroupNavigable ? handleAction(_:) : nil,
+                        style: .list
                     )
 
                     Button {
@@ -302,7 +304,10 @@ private extension PullListDetailsViewV2 {
                 if let accessories = viewModel.essentialsAccessories {
                     Text("Accessories")
                         .font(.callout)
-                    AccessoriesListItemView(accessories)
+                    AccessoriesListItemView(
+                        accessories,
+                        style: .list
+                    )
                 }
             }
         }
@@ -511,9 +516,8 @@ private extension PullListDetailsViewV2 {
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(.red, lineWidth: 4)
             )
-            .tint(.none)
+            .tint(.primary)
         }
-        
     }
     
     @ViewBuilder

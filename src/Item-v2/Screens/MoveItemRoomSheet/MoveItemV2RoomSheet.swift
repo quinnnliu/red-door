@@ -12,8 +12,8 @@ struct MoveItemV2RoomSheet: View {
     
     @State var viewModel: MoveItemV2RoomSheetViewModel
     
-    init(room: RoomV2, item: ItemV2, listKind: RDListKind) {
-        self.viewModel = MoveItemV2RoomSheetViewModel(item: item, room: room, listKind: listKind)
+    init(room: RoomV2, item: ItemV2, listType: RDListType) {
+        self.viewModel = MoveItemV2RoomSheetViewModel(item: item, room: room, listType: listType)
     }
     
     var body: some View {
@@ -54,6 +54,7 @@ struct MoveItemV2RoomSheet: View {
         .frameTop()
         .frameHorizontalPadding()
         .presentationDetents([.medium])
+        .staleWriteAlert($viewModel.staleWriteError)
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("Ok") { }
         }

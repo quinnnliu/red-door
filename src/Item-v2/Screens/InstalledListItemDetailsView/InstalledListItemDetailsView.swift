@@ -57,6 +57,7 @@ struct InstalledListItemDetailsView: View {
                 )
                 .task { await viewModel.fetchRoomsForMove() }
             }
+            .staleWriteAlert($viewModel.staleWriteError)
             .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
                 Button("OK", role: .cancel) {
                     viewModel.alertMessage = ""

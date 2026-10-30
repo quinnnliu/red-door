@@ -11,17 +11,30 @@ enum EssentialsGroupListItemAction {
     case navigate(EssentialsGroup)
 }
 
+enum EssentialsGroupListItemStyle {
+    case list
+    case inventory
+}
+
 struct EssentialsGroupListItemView: View {
     let group: EssentialsGroup
     var emoji: String? = "⭐️"
     var action: ((Any?) -> Void)?
     var actionType: EssentialsGroupListItemAction
+    let style: EssentialsGroupListItemStyle
 
-    init(group: EssentialsGroup, emoji: String? = "⭐️", action: ((Any?) -> Void)? = nil, actionType: EssentialsGroupListItemAction? = nil) {
+    init(
+        group: EssentialsGroup,
+        emoji: String? = "⭐️",
+        action: ((Any?) -> Void)? = nil,
+        actionType: EssentialsGroupListItemAction? = nil,
+        style: EssentialsGroupListItemStyle = .inventory
+    ) {
         self.group = group
         self.emoji = emoji
         self.action = action
         self.actionType = actionType ?? .navigate(group)
+        self.style = style
     }
 
     var body: some View {
@@ -86,7 +99,13 @@ struct EssentialsGroupListItemView: View {
     }
     
     // MARK: TrailingContent
+    @ViewBuilder
     private var TrailingContent: some View {
-        LocationStatusCTA(location: group.location)
+        switch style {
+        case .list:
+            EmptyView()
+        case .inventory:
+            LocationStatusCTA(location: group.location)
+        }
     }
 }

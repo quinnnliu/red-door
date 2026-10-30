@@ -16,6 +16,8 @@ final class AddItemToDocumentSheetViewModel {
     var isLoading: Bool = false
     var showAlert: Bool = false
     var alertText: String = ""
+    /// The destination list or room is gone or closed; the view presents it.
+    var staleWriteError: StaleWriteError? = nil
     var showSelectedItems: Bool = false
 
     init(destination: AddItemsToListableDestination) {
@@ -54,8 +56,8 @@ extension AddItemToDocumentSheetViewModel {
         defer { isLoading = false }
 
         switch destination {
-        case .room(let room, let listKind):
-            return await addItemsToRoom(items: selectedItems, room: room, listKind: listKind)
+        case .room(let room, let listType):
+            return await addItemsToRoom(items: selectedItems, room: room, listType: listType)
         case .essentialsGroup(let group):
             return await addItemsToEssentialsGroup(items: selectedItems, group: group)
         }
@@ -66,13 +68,13 @@ extension AddItemToDocumentSheetViewModel {
 
 private extension AddItemToDocumentSheetViewModel {
 
-    /// The switch erases `listKind` back into a concrete `RoomRepository`
+    /// The switch erases `listType` back into a concrete `RoomRepository`
     /// parameter. Both branches are the same call; only the parent type
     /// differs, and that's what picks the collection and the item's new status.
-    func addItemsToRoom(items: Set<ItemV2>, room: RoomV2, listKind: RDListKind) async -> Bool {
+    func addItemsToRoom(items: Set<ItemV2>, room: RoomV2, listType: RDListType) async -> Bool {
         let itemIds = items.map(\.id)
         do {
-            switch listKind {
+            switch listType {
             case .pullList:
                 try await RoomRepository<PullListV2>(room: room)
                     .addItems(itemIds, toRoomId: room.id, itemRepo: itemRepo)
@@ -85,7 +87,7 @@ private extension AddItemToDocumentSheetViewModel {
             handleError(error)
             return false
         } catch {
-            handleError(AddItemsError.transactionFailed(error))
+            handleTransactionFailure(error)
             return false
         }
     }
@@ -102,7 +104,7 @@ private extension AddItemToDocumentSheetViewModel {
             handleError(error)
             return false
         } catch {
-            handleError(AddItemsError.transactionFailed(error))
+            handleTransactionFailure(error)
             return false
         }
     }
@@ -113,8 +115,15 @@ private extension AddItemToDocumentSheetViewModel {
 private extension AddItemToDocumentSheetViewModel {
     enum AddItemsError: Error {
         case noValidItems(unavailable: [String], duplicates: [String])
-        case destinationClosed(name: String)
         case transactionFailed(Error)
+    }
+
+    func handleTransactionFailure(_ error: Error) {
+        if let stale = StaleWriteError(error) {
+            staleWriteError = stale
+        } else {
+            handleError(AddItemsError.transactionFailed(error))
+        }
     }
 
     /// Maps the repository's rejection onto this screen's grouped wording.
@@ -127,8 +136,6 @@ private extension AddItemToDocumentSheetViewModel {
                     duplicates: duplicates.map(\.displayName)
                 )
             )
-        case .destinationClosed(let name):
-            handleError(AddItemsError.destinationClosed(name: name))
         }
     }
 
@@ -143,9 +150,6 @@ private extension AddItemToDocumentSheetViewModel {
                 messages.append("Already added: \(duplicates.joined(separator: ", "))")
             }
             alertText = messages.joined(separator: "\n")
-            showAlert = true
-        case .destinationClosed(let name):
-            alertText = "\(name) was uninstalled and no longer accepts items."
             showAlert = true
         case .transactionFailed(let error):
             print("[FATAL ERROR]: Failed to add items to \(destination.document.displayName): \(error.localizedDescription)")

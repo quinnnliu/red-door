@@ -143,6 +143,7 @@ enum ItemType: String, Filterable, CaseIterable {
     case accentChair = "Accent Chair"
     case barCart = "Bar Cart"
     case bed = "Bed"
+    case bedding = "Bedding"
     case bench = "Bench"
     case boxspring = "Boxspring"
     case coffeeTable = "Coffee Table"
@@ -155,14 +156,16 @@ enum ItemType: String, Filterable, CaseIterable {
     case diningTable = "Dining Table"
     case dresser = "Dresser"
     case endTable = "End Table"
+    case floorLamp = "Floor Lamp"
     case framedArt = "Framed Art"
-    case lamp = "Lamp"
     case nightstand = "Nightstand"
     case ottoman = "Ottoman"
     case outdoorFurniture = "Outdoor Furniture"
     case rug = "Rug"
+    case sectionalSofa = "Sectional Sofa"
     case sofa = "Sofa"
     case stool = "Stool"
+    case tableLamp = "Table Lamp"
     case topper = "Topper"
     case unframedArt = "Unframed Art"
     case misc = "Miscellaneous"
@@ -174,14 +177,16 @@ enum ItemType: String, Filterable, CaseIterable {
             SFSymbols.cabinetFill
         case .diningTable, .coffeeTable, .console, .endTable, .nightstand, .barCart, .desk:
             SFSymbols.tableFill
-        case .sofa:
+        case .sofa, .sectionalSofa:
             SFSymbols.couchFill
         case .stool, .deskChair, .diningChair, .bench, .ottoman:
             SFSymbols.chairFill
         case .accentChair:
             SFSymbols.chairLoungeFill
-        case .lamp:
-            SFSymbols.lampFill
+        case .floorLamp:
+            SFSymbols.floorLampFill
+        case .tableLamp:
+            SFSymbols.tableLampFill
         case .framedArt:
             SFSymbols.art
         case .unframedArt:
@@ -194,6 +199,8 @@ enum ItemType: String, Filterable, CaseIterable {
             SFSymbols.sunLefthalfFilled
         case .rug, .topper:
             SFSymbols.rectangle
+        case .bedding:
+            SFSymbols.rectangleFill
         case .misc:
             nil
         }
@@ -216,6 +223,7 @@ enum ItemColor: String, Filterable {
     case pink = "Pink"
     case brown = "Brown"
     case brass = "Brass"
+    case gold = "Gold"
     case tan = "Tan"
     case white = "White"
     case clear = "Clear"
@@ -232,6 +240,7 @@ enum ItemColor: String, Filterable {
         case .brown: return .brown
         case .clear: return .clear
         case .cyan: return .cyan
+        case .gold: return Color(red: 0.83, green: 0.69, blue: 0.22)
         case .gray: return .gray
         case .green: return .green
         case .indigo: return .indigo
