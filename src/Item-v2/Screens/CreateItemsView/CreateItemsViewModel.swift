@@ -83,9 +83,25 @@ final class CreateItemsViewModel {
         itemState.primaryImage = .empty(for: itemState.id)
     }
 
+    func addSecondaryImage(_ uiImage: UIImage) {
+        var images = itemState.secondaryImages ?? []
+        guard images.count < Constants.Image.maxSecondaryImages else { return }
+        images.append(RDImage(uiImage: uiImage, documentId: itemState.id))
+        itemState.secondaryImages = images
+    }
+
+    func replaceSecondaryImage(id: String, with uiImage: UIImage) {
+        guard let index = itemState.secondaryImages?.firstIndex(where: { $0.id == id }) else { return }
+        itemState.secondaryImages?[index] = RDImage(uiImage: uiImage, documentId: itemState.id)
+    }
+
+    func removeSecondaryImage(id: String) {
+        itemState.secondaryImages?.removeAll { $0.id == id }
+    }
+
     func loadGroups() async {
         do {
-            availableGroups = try await essentialsRepo.getAll()
+            availableGroups = try await essentialsRepo.getAll().filter { $0.location.status.isAvailable }
             if let groupId = itemState.essentialGroupId {
                 selectedGroup = availableGroups.first { $0.id == groupId }
             }
@@ -141,17 +157,12 @@ final class CreateItemsViewModel {
                         // Each item uploads its own copy of the image.
                         var updated = item
                         let images = FirebaseImageManager.shared
-                        let primary = try await images.resolve(original: nil, updated: item.primaryImage, type: .item)
+                        let primary = try await images.resolveImage(original: nil, updated: item.primaryImage, type: .item)
                         updated.primaryImage = primary.persist ?? .empty(for: item.id)
 
                         if let secondaryImages = item.secondaryImages {
-                            var resolved: [RDImage] = []
-                            for image in secondaryImages {
-                                if let persisted = try await images.resolve(original: nil, updated: image, type: .item).persist {
-                                    resolved.append(persisted)
-                                }
-                            }
-                            updated.secondaryImages = resolved
+                            let secondary = try await images.resolveImages(original: [], updated: secondaryImages, type: .item)
+                            updated.secondaryImages = secondary.persist
                         }
                         return updated
                     }

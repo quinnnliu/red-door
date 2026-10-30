@@ -149,6 +149,7 @@ private extension EssentialsGroupDetailView {
             LocationStatusCTA(
                 location: viewModel.groupState.location,
                 isLoading: locationNavigator.isNavigating,
+                showCaret: true,
                 action: locationNavigable ? handleAction(_:) : nil
             )
         }

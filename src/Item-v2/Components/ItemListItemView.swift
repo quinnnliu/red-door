@@ -117,11 +117,12 @@ private extension ItemListItemView {
     }
     
     var ItemImage: some View {
-        PrimaryImageView(
+        ImageView(
             image: item.primaryImage,
-            size: Constants.Image.listItemDefault,
+            useThumbnail: true,
             isExpandable: false
         )
+        .frame(Constants.Image.listItemDefault)
     }
 }
 

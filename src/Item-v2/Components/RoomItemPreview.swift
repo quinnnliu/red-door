@@ -27,7 +27,8 @@ struct RoomItemPreview: View {
             action?(RoomItemPreviewAction.navigate(item: item))
         } label: {
             HStack(alignment: .center, spacing: 12) {
-                PrimaryImageView(image: item.primaryImage, size: Constants.Image.listItemMedium, isExpandable: false)
+                ImageView(image: item.primaryImage, useThumbnail: true, isExpandable: false)
+                    .frame(Constants.Image.listItemMedium)
 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(item.displayName)

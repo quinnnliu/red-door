@@ -28,7 +28,7 @@ final class FirebaseImageManager {
     ///   (replaced or cleared). Delete it with `delete(_:type:)` only *after* the
     ///   document write commits, so a failed write never leaves the document pointing
     ///   at a deleted file.
-    func resolve(
+    func resolveImage(
         original: RDImage?,
         updated: RDImage?,
         type: RDImageType
@@ -44,6 +44,26 @@ final class FirebaseImageManager {
         if let original, original.hasStoredFile, original.id != updated?.id {
             cleanup = original
         }
+
+        return (persist, cleanup)
+    }
+
+    /// Brings a list of images up to date for a save. Diffed by id: dirty images
+    /// are uploaded in order; originals whose id is no longer in `updated` are
+    /// returned as `cleanup`. Delete cleanup only after the document write commits.
+    /// If an upload throws, images already uploaded in this call are left in Storage.
+    func resolveImages(
+        original: [RDImage],
+        updated: [RDImage],
+        type: RDImageType
+    ) async throws -> (persist: [RDImage], cleanup: [RDImage]) {
+        var persist: [RDImage] = []
+        for image in updated {
+            persist.append(image.isDirty ? try await upload(image, type: type) : image)
+        }
+
+        let keptIds = Set(updated.map(\.id))
+        let cleanup = original.filter { $0.hasStoredFile && !keptIds.contains($0.id) }
 
         return (persist, cleanup)
     }
@@ -142,6 +162,13 @@ final class FirebaseImageManager {
             }
         } catch {
             print("Error deleting imageID: \(error)")
+        }
+    }
+
+    /// Deletes each image, ignoring failures so post-commit cleanup never fails a save.
+    func delete(_ rdImages: [RDImage], type: RDImageType) async {
+        for rdImage in rdImages {
+            try? await delete(rdImage, type: type)
         }
     }
 

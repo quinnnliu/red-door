@@ -1,5 +1,5 @@
 //
-//  PrimaryImageView.swift
+//  ImageView.swift
 //  RedDoor
 //
 //  Created by Quinn Liu on 6/10/26.
@@ -17,22 +17,23 @@ enum ImageSourceEnum: String, Identifiable {
     case library, camera
 }
 
-// MARK: - ItemImageView
+// MARK: - ImageView
 
-struct PrimaryImageView: View {
+struct ImageView: View {
     let image: RDImage?
-    let size: CGFloat
+    let useThumbnail: Bool
     let isExpandable: Bool
     
     @State private var expandedImage: RDImage? = nil
     
+    /// Fills a square from the width its parent proposes; size it at the call site.
     init(
         image: RDImage?,
-        size: CGFloat = Constants.Screen.screenWidthPadding / 2,
+        useThumbnail: Bool = false,
         isExpandable: Bool = true
     ) {
         self.image = image
-        self.size = size
+        self.useThumbnail = useThumbnail
         self.isExpandable = isExpandable
     }
 
@@ -44,17 +45,16 @@ struct PrimaryImageView: View {
                         expandedImage = image
                     }
                 } label: {
-                    PrimaryImageContent(image, editable: false, size: size)
+                    ImageContent(image, editable: false, useThumbnail: useThumbnail)
                 }
             } else {
-                PrimaryImageContent(image, editable: false, size: size)
+                ImageContent(image, editable: false, useThumbnail: useThumbnail)
             }
         }
-        .frame(size)
         .clipped()
         .expandImageOverlay(image, isEnabled: isExpandable)
         .sheet(item: $expandedImage) { image in
-            PrimaryImageOverlay(image)
+            ImageOverlay(image)
         }
         .contentShape(Rectangle())
         .cornerRadius(Constants.CornerRadius.large)
@@ -63,8 +63,6 @@ struct PrimaryImageView: View {
 
 // MARK: - ImageEditorAction
 
-/// The editor only reports what the user did. The screen's ViewModel decides what
-/// that means for its document, since it owns the image's `documentId`.
 enum ImageEditorAction {
     case newImage(_ image: UIImage)
     case deleteImage
@@ -72,19 +70,33 @@ enum ImageEditorAction {
 
 // MARK: - ItemImageEditor
 
-struct PrimaryImageEditor: View {
+struct ImageEditor: View {
     let image: RDImage?
+    let useThumbnail: Bool
+    let showsDelete: Bool
     let action: (Any?) -> ()
-    let size: CGFloat = Constants.Screen.screenWidthPadding / 2
 
     @State private var showEditAlert = false
     @State private var activeSheet: ImageSourceEnum?
+    
+    /// Fills a square from the width its parent proposes; size it at the call site.
+    init(
+        image: RDImage?,
+        useThumbnail: Bool = false,
+        showsDelete: Bool = true,
+        action: @escaping (Any?) -> ()
+    ) {
+        self.image = image
+        self.useThumbnail = useThumbnail
+        self.showsDelete = showsDelete
+        self.action = action
+    }
     
     var body: some View {
         Button {
             showEditAlert = true
         } label: {
-            PrimaryImageContent(image, editable: true, size: size)
+            ImageContent(image, editable: true, useThumbnail: useThumbnail)
         }
         .tint(.gray)
         .alert(
@@ -93,8 +105,10 @@ struct PrimaryImageEditor: View {
         ) {
             Button("Library") { activeSheet = .library }
             Button("Camera")  { activeSheet = .camera }
-            Button("Delete", role: .destructive) {
-                action(ImageEditorAction.deleteImage)
+            if showsDelete {
+                Button("Delete", role: .destructive) {
+                    action(ImageEditorAction.deleteImage)
+                }
             }
             Button("Cancel", role: .cancel) {}
         }
@@ -120,42 +134,39 @@ struct PrimaryImageEditor: View {
 
 // MARK: - ItemImageContent (shared rendering)
 
-private struct PrimaryImageContent: View {
+private struct ImageContent: View {
     let image: RDImage?
     let editable: Bool
-    let size: CGFloat
+    let useThumbnail: Bool
     
-    var isThumbnail: Bool {
-        size < Constants.Screen.screenWidthPadding / 2
-    }
-    
-    init(_ image: RDImage?, editable: Bool, size: CGFloat) {
+    init(_ image: RDImage?, editable: Bool, useThumbnail: Bool) {
         self.image = image
         self.editable = editable
-        self.size = size
+        self.useThumbnail = useThumbnail
     }
 
     var body: some View {
-        Group {
-            if let uiImage = image?.uiImage {
-                Image(uiImage: uiImage)
-                    .resizable()
-                    .scaledToFill()
-            } else if let thumbnailURL = image?.thumbnailURL, isThumbnail {
-                RDImageView(url: thumbnailURL)
-            } else if let imageUrl = image?.imageURL {
-                RDImageView(url: imageUrl)
-            } else {
-                RDImagePlaceholder(content: .empty(editable: editable), size: size)
+        Color.clear
+            .aspectRatio(1, contentMode: .fit)
+            .overlay {
+                if let uiImage = image?.uiImage {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                } else if let thumbnailURL = image?.thumbnailURL, useThumbnail {
+                    RDImageView(url: thumbnailURL)
+                } else if let imageUrl = image?.imageURL {
+                    RDImageView(url: imageUrl)
+                } else {
+                    RDImagePlaceholder(content: .empty(editable: editable))
+                }
             }
-        }
-        .frame(size)
-        .clipped()
-        .cornerRadius(Constants.CornerRadius.large)
-        .overlay(
-            RoundedRectangle(cornerRadius: Constants.CornerRadius.large, style: .continuous)
-                .stroke(.primary.opacity(0.2), lineWidth: 2)
-        )
+            .clipped()
+            .cornerRadius(Constants.CornerRadius.large)
+            .overlay(
+                RoundedRectangle(cornerRadius: Constants.CornerRadius.large, style: .continuous)
+                    .stroke(.primary.opacity(0.2), lineWidth: 2)
+            )
     }
 }
 
@@ -189,7 +200,7 @@ private struct ExpandImageOverlayModifier: ViewModifier {
                 }
             }
             .sheet(isPresented: $showImageOverlay) {
-                PrimaryImageOverlay(image)
+                ImageOverlay(image)
             }
     }
 }
@@ -200,7 +211,7 @@ private extension View {
     }
 }
 
-private struct PrimaryImageOverlay: View {
+private struct ImageOverlay: View {
     @Environment(\.dismiss) private var dismiss
     let image: RDImage?
     

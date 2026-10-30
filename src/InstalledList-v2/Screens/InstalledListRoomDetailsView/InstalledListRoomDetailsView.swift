@@ -121,11 +121,13 @@ struct InstalledListRoomDetailsView: View {
     @ViewBuilder
     private func RoomImage(_ image: RDImage?, isBefore: Bool) -> some View {
         if viewModel.uninstalled {
-            PrimaryImageView(image: image)
+            ImageView(image: image)
+                .frame(Constants.Image.detail)
         } else {
-            PrimaryImageEditor(image: image) { result in
+            ImageEditor(image: image) { result in
                 handleImageAction(result, isBefore: isBefore)
             }
+                .frame(Constants.Image.detail)
         }
     }
 

@@ -31,7 +31,8 @@ struct InstalledListDetailsViewV2: View {
 
             ScrollView {
                 LazyVStack(spacing: 16, pinnedViews: .sectionHeaders) {
-                    PrimaryImageView(image: viewModel.installedListState.image)
+                    ImageView(image: viewModel.installedListState.image)
+                        .frame(Constants.Image.detail)
 
                     Section {
                         RoomsListContent

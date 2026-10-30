@@ -15,11 +15,9 @@ struct RDImagePlaceholder: View {
     }
 
     let content: Content
-    let size: CGFloat
     
-    init(content: Content, size: CGFloat = Constants.Screen.screenWidth / 2) {
+    init(content: Content) {
         self.content = content
-        self.size = size
     }
 
     var body: some View {
@@ -30,7 +28,6 @@ struct RDImagePlaceholder: View {
                     ProgressView()
                 case .empty(let editable):
                     Image(systemName: editable ? SFSymbols.photoBadgePlus : SFSymbols.photoBadgeExclamationmarkFill)
-                        .frame(size)
                         .bold()
                         .tint(.gray)
                 case .error:

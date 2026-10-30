@@ -34,9 +34,7 @@ struct EditItemView: View {
                         NicknameEntry
                     }
 
-                    PrimaryImageEditor(image: viewModel.updatedItem.primaryImage) { action in
-                        handleImageAction(action)
-                    }
+                    ImageSection
 
                     EditItemDetailSection(
                         description: $viewModel.updatedItem.description,
@@ -150,7 +148,22 @@ struct EditItemView: View {
         }
         .font(.caption)
         .foregroundStyle(.secondary)
-        .multilineTextAlignment(.center)
+        .frame(maxWidth: Constants.Screen.screenWidth / 2, alignment: .center)
+    }
+
+    // MARK: - Image Section
+
+    private var ImageSection: some View {
+        HStack(spacing: Constants.Padding(1)) {
+            ImageEditor(image: viewModel.updatedItem.primaryImage) { action in
+                handleImageAction(action)
+            }
+            .frame(Constants.Image.detail - Constants.Padding(0.5))
+
+            ImageListEditor(viewModel.updatedItem.secondaryImages ?? []) { action in
+                handleSecondaryImageAction(action)
+            }
+        }
     }
 
     // MARK: - Helper Functions
@@ -162,6 +175,18 @@ struct EditItemView: View {
             viewModel.setPrimaryImage(image)
         case .deleteImage:
             viewModel.clearPrimaryImage()
+        }
+    }
+
+    private func handleSecondaryImageAction(_ actionArg: Any?) {
+        guard let action = actionArg as? ImageListEditorAction else { return }
+        switch action {
+        case .add(let image):
+            viewModel.addSecondaryImage(image)
+        case .replace(let id, let image):
+            viewModel.replaceSecondaryImage(id: id, with: image)
+        case .delete(let id):
+            viewModel.removeSecondaryImage(id: id)
         }
     }
 

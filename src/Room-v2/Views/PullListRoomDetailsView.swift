@@ -140,16 +140,18 @@ struct PullListRoomDetailsView: View {
             VStack(spacing: 8) {
                 Text("Before")
                     .font(.caption2)
-                PrimaryImageEditor(image: viewModel.roomState.beforeImage) { result in
+                ImageEditor(image: viewModel.roomState.beforeImage) { result in
                     handleImageAction(result, isBefore: true)
                 }
+                    .frame(Constants.Image.detail)
             }
             VStack(spacing: 8) {
                 Text("After")
                     .font(.caption2)
-                PrimaryImageEditor(image: viewModel.roomState.afterImage) { result in
+                ImageEditor(image: viewModel.roomState.afterImage) { result in
                     handleImageAction(result, isBefore: false)
                 }
+                    .frame(Constants.Image.detail)
             }
         }
     }

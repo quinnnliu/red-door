@@ -63,6 +63,22 @@ final class EditItemViewModel {
         updatedItem.primaryImage = .empty(for: originalItem.id)
     }
 
+    func addSecondaryImage(_ uiImage: UIImage) {
+        var images = updatedItem.secondaryImages ?? []
+        guard images.count < Constants.Image.maxSecondaryImages else { return }
+        images.append(RDImage(uiImage: uiImage, documentId: originalItem.id))
+        updatedItem.secondaryImages = images
+    }
+
+    func replaceSecondaryImage(id: String, with uiImage: UIImage) {
+        guard let index = updatedItem.secondaryImages?.firstIndex(where: { $0.id == id }) else { return }
+        updatedItem.secondaryImages?[index] = RDImage(uiImage: uiImage, documentId: originalItem.id)
+    }
+
+    func removeSecondaryImage(id: String) {
+        updatedItem.secondaryImages?.removeAll { $0.id == id }
+    }
+
     // MARK: - save
 
     /// Writes `updatedItem` to the original item's document. Returns `true` on success.
@@ -74,12 +90,19 @@ final class EditItemViewModel {
             item.essentialGroupId = selectedGroup?.id
             item.baseNameLowercased = item.baseName.lowercased()
 
-            let (persistedImage, cleanup) = try await FirebaseImageManager.shared.resolve(
+            let (persistedImage, cleanup) = try await FirebaseImageManager.shared.resolveImage(
                 original: originalItem.primaryImage,
                 updated: item.primaryImage,
                 type: .item
             )
             item.primaryImage = persistedImage ?? .empty(for: originalItem.id)
+
+            let secondary = try await FirebaseImageManager.shared.resolveImages(
+                original: originalItem.secondaryImages ?? [],
+                updated: item.secondaryImages ?? [],
+                type: .item
+            )
+            item.secondaryImages = secondary.persist.isEmpty ? nil : secondary.persist
 
             let batch = itemRepo.newBatch()
             try itemRepo.set(document: item, id: originalItem.id, inBatch: batch)
@@ -98,9 +121,9 @@ final class EditItemViewModel {
 
             updatedItem = item
 
-            if let cleanup, cleanup.documentId == originalItem.id {
-                try? await FirebaseImageManager.shared.delete(cleanup, type: .item)
-            }
+            let staleImages = ([cleanup].compactMap { $0 } + secondary.cleanup)
+                .filter { $0.documentId == originalItem.id }
+            await FirebaseImageManager.shared.delete(staleImages, type: .item)
             return true
         } catch {
             showError(error)

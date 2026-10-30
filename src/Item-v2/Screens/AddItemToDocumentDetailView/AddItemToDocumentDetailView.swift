@@ -29,7 +29,7 @@ struct AddItemToDocumentDetailView: View {
 
                 ScrollView {
                     VStack(spacing: 12) {
-                        PrimaryImageView(image: viewModel.item.primaryImage)
+                        ItemImagesView(item: viewModel.item)
 
                         ItemDetailSection(
                             item: viewModel.item,

@@ -129,7 +129,7 @@ final class CreateAccessoriesViewModel {
 
         do {
             let maxNumber = await accessoriesRepo.maxAccessoriesNumber(forTypeId: type.id)
-            let (persistedImage, _) = try await FirebaseImageManager.shared.resolve(
+            let (persistedImage, _) = try await FirebaseImageManager.shared.resolveImage(
                 original: nil,
                 updated: primaryImage,
                 type: .accessory

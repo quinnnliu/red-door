@@ -104,7 +104,8 @@ private extension AccessoriesDetailsView {
 
 private extension AccessoriesDetailsView {
     var ImageSection: some View {
-        PrimaryImageView(image: accessories.primaryImage)
+        ImageView(image: accessories.primaryImage)
+            .frame(Constants.Image.detail)
     }
 }
 
@@ -122,6 +123,7 @@ private extension AccessoriesDetailsView {
             LocationStatusCTA(
                 location: accessories.location,
                 isLoading: locationNavigator.isNavigating,
+                showCaret: true,
                 action: locationNavigable ? handleAction(_:) : nil
             )
         }
