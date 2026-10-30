@@ -140,10 +140,10 @@ struct EditItemView: View {
     
     var NicknameEntry: some View {
         HStack(spacing: 4) {
-            if viewModel.updatedItem.nickname == nil {
-                Text("Nickname (optional):")
+            if viewModel.updatedItem.nickname != nil {
+                Text("Nickname:")
             }
-            TextField("Enter nickname here", text: Binding(
+            TextField("Nickname (optional)", text: Binding(
                 get: { viewModel.updatedItem.nickname ?? "" },
                 set: { viewModel.updatedItem.nickname = $0.isEmpty ? nil : $0 }
             ))

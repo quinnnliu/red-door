@@ -57,6 +57,7 @@ struct PullListItemDetailsView: View {
                 SelectDocumentSheet(title: "Other Rooms", documents: viewModel.rooms.filter { $0.id != viewModel.room.id }, action: handleAction(_:))
                     .task { await viewModel.fetchRoomsForMove() }
 			}
+			.staleWriteAlert($viewModel.staleWriteError)
 			.alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
 				Button("OK", role: .cancel) {
 					viewModel.alertMessage = ""

@@ -23,6 +23,18 @@ enum EssentialsGroupDeleteError: LocalizedError {
     }
 }
 
+enum EssentialsAssignError: LocalizedError {
+    case notInStorage(names: [String])
+
+    var errorDescription: String? {
+        switch self {
+        case .notInStorage(let names):
+            "The following are not in storage and cannot be assigned:\n\n"
+                + names.map { "• \($0)" }.joined(separator: "\n")
+        }
+    }
+}
+
 final class EssentialsRepository: GenericRepository<EssentialsGroup> {
     func addItem(_ itemId: String, toGroup groupId: String) async throws {
         try await update(id: groupId, fields: [
@@ -108,6 +120,70 @@ extension EssentialsRepository {
                     )
                 }
 
+                return nil
+            } catch {
+                errorPointer?.pointee = error as NSError
+                return nil
+            }
+        }
+    }
+
+    // MARK: - Assign to pull list
+
+    /// Places a group, its items and its accessories into a pull list.
+    ///
+    /// Re-reads the list, the group, every item and the accessories inside the
+    /// transaction, so the "everything is in storage" check is made against
+    /// current locations, not the ones the screen loaded. Throws
+    /// `EssentialsAssignError.notInStorage` naming whatever is unavailable,
+    /// `StaleWriteError.stateChanged` when the group or the list was assigned
+    /// first, and `.documentGone` when the list was installed or deleted.
+    func assign(
+        groupId: String,
+        toPullListId listId: String,
+        itemRepo: ItemRepository,
+        accessoriesRepo: AccessoriesRepository,
+        pullListRepo: PullListRepository
+    ) async throws {
+        _ = try await db.runTransaction { transaction, errorPointer -> Any? in
+            do {
+                let list = try pullListRepo.get(id: listId, transaction: transaction)
+                let group = try self.get(id: groupId, transaction: transaction)
+                guard list.essentialGroupId == nil, group.location.status == .inStorage else {
+                    throw StaleWriteError.stateChanged
+                }
+
+                let items = try itemRepo.get(ids: Array(group.itemIds), transaction: transaction)
+                var accessories: Accessories? = nil
+                if let accessoriesId = group.accessoriesId {
+                    accessories = try accessoriesRepo.get(id: accessoriesId, transaction: transaction)
+                }
+
+                var unavailable = items
+                    .filter { $0.location.status != .inStorage }
+                    .map(\.displayName)
+                if let accessories, accessories.location.status != .inStorage {
+                    unavailable.append(accessories.displayName)
+                }
+                guard unavailable.isEmpty else { throw EssentialsAssignError.notInStorage(names: unavailable) }
+
+                let location = DocumentLocation(status: .inPullList, locationId: listId).firebaseUpdateFields
+                for item in items {
+                    itemRepo.update(id: item.id, fields: location, transaction: transaction)
+                }
+                if let accessories {
+                    accessoriesRepo.update(id: accessories.id, fields: location, transaction: transaction)
+                }
+                self.update(id: groupId, fields: location, transaction: transaction)
+
+                pullListRepo.update(
+                    id: listId,
+                    fields: [
+                        PullListV2.CodingKeys.essentialGroupId.stringValue: groupId,
+                        PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayUnion(Array(group.itemIds))
+                    ],
+                    transaction: transaction
+                )
                 return nil
             } catch {
                 errorPointer?.pointee = error as NSError

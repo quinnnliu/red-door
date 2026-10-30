@@ -72,6 +72,7 @@ private extension AddItemToDocumentSheetV2 {
                 lockedFilterKeys: documentListViewModel.defaultFilterKeys
             )
         }
+        .staleWriteAlert($viewModel.staleWriteError)
         .alert(viewModel.alertText, isPresented: $viewModel.showAlert) {
             Button("OK") { }
         }

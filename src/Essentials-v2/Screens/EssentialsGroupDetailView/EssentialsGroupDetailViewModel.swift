@@ -22,6 +22,8 @@ final class EssentialsGroupDetailViewModel {
     var isLoading: Bool = false
     var showAlert: Bool = false
     var alertMessage: String = ""
+    /// The pull list being assigned to is gone or changed; the view presents it.
+    var staleWriteError: StaleWriteError? = nil
 
     private var groupListener: ListenerRegistration? = nil
     private let itemsLoader = ItemsListLoader()
@@ -167,56 +169,26 @@ final class EssentialsGroupDetailViewModel {
             return
         }
 
-        let unavailable = unavailableNames()
-        if !unavailable.isEmpty {
-            let list = unavailable.map { "• \($0)" }.joined(separator: "\n")
-            alertMessage = "The following are not in storage and cannot be assigned:\n\n\(list)"
-            showAlert = true
-            return
-        }
-
-        let batch = essentialsRepo.db.batch()
-        let locationFields: [String: Any] = DocumentLocation(
-            status: .inPullList,
-            locationId: pullList.id
-        ).firebaseUpdateFields
-
-        for itemId in groupState.itemIds {
-            itemRepo.update(id: itemId, fields: locationFields, inBatch: batch)
-        }
-        itemsLoader.invalidate(groupState.itemIds)
-
-        if let accessoriesId = groupState.accessoriesId {
-            accessoriesRepo.update(id: accessoriesId, fields: locationFields, inBatch: batch)
-        }
-
-        essentialsRepo.update(id: groupState.id, fields: locationFields, inBatch: batch)
-
-        pullListRepo.update(
-            id: pullList.id,
-            fields: [
-                PullListV2.CodingKeys.essentialGroupId.stringValue: groupState.id,
-                PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayUnion(Array(groupState.itemIds))
-            ],
-            inBatch: batch
-        )
-
         do {
-            try await batch.commit()
+            try await essentialsRepo.assign(
+                groupId: groupState.id,
+                toPullListId: pullList.id,
+                itemRepo: itemRepo,
+                accessoriesRepo: accessoriesRepo,
+                pullListRepo: pullListRepo
+            )
+            itemsLoader.invalidate(groupState.itemIds)
         } catch {
-            alertMessage = "Failed to assign to pull list: \(error.localizedDescription)"
-            showAlert = true
+            if let stale = StaleWriteError(error) {
+                staleWriteError = stale
+            } else if let assignError = error as? EssentialsAssignError {
+                alertMessage = assignError.localizedDescription
+                showAlert = true
+            } else {
+                alertMessage = "Failed to assign to pull list: \(error.localizedDescription)"
+                showAlert = true
+            }
         }
-    }
-
-    private func unavailableNames() -> [String] {
-        var names: [String] = items
-            .filter { $0.location.status != .inStorage }
-            .map { $0.displayName }
-        if let accessories = accessoriesState, accessories.location.status != .inStorage {
-            names.append(accessories.displayName)
-        }
-        return names
     }
 
     // MARK: - Remove Item

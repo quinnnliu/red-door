@@ -135,7 +135,6 @@ struct SmallCTA: View {
 
     var fullWidth: Bool = false
     var semibold: Bool = true
-    /// Swaps the leading icon for a spinner and ignores taps.
     var isLoading: Bool = false
     var action: () -> Void = {}
     

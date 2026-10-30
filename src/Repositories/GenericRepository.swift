@@ -93,6 +93,7 @@ class GenericRepository<T: RDDocument> {
     func get(id: String, transaction: Transaction) throws -> T {
         let ref = collectionRef.document(id)
         let snapshot = try transaction.getDocument(ref)
+        guard snapshot.exists else { throw RepositoryError.documentNotFound }
         return try snapshot.data(as: T.self)
     }
     
@@ -101,6 +102,7 @@ class GenericRepository<T: RDDocument> {
         return try ids.map { id in
             let ref = collectionRef.document(id)
             let snapshot = try transaction.getDocument(ref)
+            guard snapshot.exists else { throw RepositoryError.documentNotFound }
             return try snapshot.data(as: T.self)
         }
     }

@@ -14,6 +14,8 @@ final class InstalledListItemDetailsViewModel {
 
     var showAlert = false
     var alertMessage = ""
+    /// A write found the list or room gone, uninstalled or changed; the view presents it.
+    var staleWriteError: StaleWriteError? = nil
     var showQRCode = false
     var showMoveItemSheet: Bool = false
 
@@ -105,6 +107,10 @@ final class InstalledListItemDetailsViewModel {
             )
             return true
         } catch {
+            if let stale = StaleWriteError(error) {
+                staleWriteError = stale
+                return false
+            }
             alertMessage = "Failed to remove item from room: \(error.localizedDescription)"
             showAlert = true
             return false
@@ -129,20 +135,19 @@ final class InstalledListItemDetailsViewModel {
     @MainActor
     func moveItemToNewRoom(newRoom: RoomV2) async {
         do {
-            let outcome = try await roomRepo.moveItem(
+            try await roomRepo.moveItem(
                 itemState.id,
                 fromRoomId: room.id,
                 toRoomId: newRoom.id,
                 itemRepo: itemRepo
             )
-            switch outcome {
-            case .moved:
-                alertMessage = "Moved \(itemState.displayName) to \(newRoom.displayName)"
-            case .stale:
-                alertMessage = "Couldn't move \(itemState.displayName) — it already moved. Reopen the room and try again."
-            }
+            alertMessage = "Moved \(itemState.displayName) to \(newRoom.displayName)"
             showAlert = true
         } catch {
+            if let stale = StaleWriteError(error) {
+                staleWriteError = stale
+                return
+            }
             alertMessage = "Failed to move item: \(error.localizedDescription)"
             showAlert = true
         }

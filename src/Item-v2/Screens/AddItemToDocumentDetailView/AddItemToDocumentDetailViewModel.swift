@@ -18,6 +18,8 @@ final class AddItemToDocumentDetailViewModel {
     var isLoading: Bool = false
     var showAlert: Bool = false
     var alertText: String = ""
+    /// The destination list or room is gone or closed; the view presents it.
+    var staleWriteError: StaleWriteError? = nil
 
     init(item: ItemV2, destination: AddItemsToListableDestination) {
         self.item = item
@@ -43,8 +45,8 @@ extension AddItemToDocumentDetailViewModel {
         defer { isLoading = false }
 
         switch destination {
-        case .room(let room, let listKind):
-            await addItemToRoom(item: item, room: room, listKind: listKind)
+        case .room(let room, let listType):
+            await addItemToRoom(item: item, room: room, listType: listType)
         case .essentialsGroup(let group):
             await addItemToEssentialsGroup(item: item, group: group)
         }
@@ -55,11 +57,11 @@ extension AddItemToDocumentDetailViewModel {
 
 private extension AddItemToDocumentDetailViewModel {
 
-    /// The switch erases `listKind` back into a concrete `RoomRepository`
+    /// The switch erases `listType` back into a concrete `RoomRepository`
     /// parameter, which is what picks the collection and the item's new status.
-    func addItemToRoom(item: ItemV2, room: RoomV2, listKind: RDListKind) async {
+    func addItemToRoom(item: ItemV2, room: RoomV2, listType: RDListType) async {
         do {
-            switch listKind {
+            switch listType {
             case .pullList:
                 try await RoomRepository<PullListV2>(room: room)
                     .addItems([item.id], toRoomId: room.id, itemRepo: itemRepo)
@@ -70,7 +72,7 @@ private extension AddItemToDocumentDetailViewModel {
         } catch let error as ItemAssignmentError {
             handleAssignmentError(error, destinationDocument: room)
         } catch {
-            handleAddItemError(.genericError(item: item, destinationDocument: room, error: error))
+            handleTransactionFailure(error, destinationDocument: room)
         }
     }
 
@@ -84,7 +86,7 @@ private extension AddItemToDocumentDetailViewModel {
         } catch let error as ItemAssignmentError {
             handleAssignmentError(error, destinationDocument: group)
         } catch {
-            handleAddItemError(.genericError(item: item, destinationDocument: group, error: error))
+            handleTransactionFailure(error, destinationDocument: group)
         }
     }
 }
@@ -95,7 +97,6 @@ private extension AddItemToDocumentDetailViewModel {
     enum AddItemError: Error {
         case itemUnavailable(_ item: ItemV2)
         case itemAlreadyInDestination(_ item: ItemV2, destinationDocument: any RDDocument)
-        case destinationClosed(name: String)
         case genericError(item: ItemV2, destinationDocument: any RDDocument, error: Error)
     }
     
@@ -110,8 +111,14 @@ private extension AddItemToDocumentDetailViewModel {
             } else {
                 handleAddItemError(.genericError(item: item, destinationDocument: destinationDocument, error: error))
             }
-        case .destinationClosed(let name):
-            handleAddItemError(.destinationClosed(name: name))
+        }
+    }
+
+    func handleTransactionFailure(_ error: Error, destinationDocument: any RDDocument) {
+        if let stale = StaleWriteError(error) {
+            staleWriteError = stale
+        } else {
+            handleAddItemError(.genericError(item: item, destinationDocument: destinationDocument, error: error))
         }
     }
 
@@ -122,9 +129,6 @@ private extension AddItemToDocumentDetailViewModel {
             showAlert = true
         case .itemUnavailable(let item):
             alertText = "[ERROR]: Item \(item.displayName) is not available to be added. It is currently \(item.location.status.displayTitle)."
-            showAlert = true
-        case .destinationClosed(let name):
-            alertText = "\(name) was uninstalled and no longer accepts items."
             showAlert = true
         case .genericError(let item, let destinationDocument, let error):
             print("[FATAL ERROR]: Failed to add \(item.displayName) to \(destinationDocument.displayName): \(error.localizedDescription)")

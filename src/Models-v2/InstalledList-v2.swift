@@ -66,8 +66,8 @@ struct InstalledListV2: RDDocument {
 // MARK: - RDListDocument
 
 extension InstalledListV2: RDListDocument {
-    static let listKind: RDListKind = .installedList
+    static let listType: RDListType = .installedList
 
     /// An uninstalled list is a record of what was there, not a live placement.
-    var acceptsNewItems: Bool { !uninstalled }
+    var acceptsChanges: Bool { !uninstalled }
 }

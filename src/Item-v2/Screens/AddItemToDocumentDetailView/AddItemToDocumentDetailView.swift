@@ -58,6 +58,7 @@ struct AddItemToDocumentDetailView: View {
             .frameBottomPadding()
             .frameHorizontalPadding()
             .toolbar(.hidden)
+            .staleWriteAlert($viewModel.staleWriteError)
             .alert(viewModel.alertText, isPresented: $viewModel.showAlert) {
                 Button("OK") { }
             }
@@ -65,8 +66,8 @@ struct AddItemToDocumentDetailView: View {
                 ItemViewFactory().makePDFView(item: viewModel.item)
             }
             .sheet(isPresented: $showMoveRoomSheet) {
-                if case .room(let room, let listKind) = viewModel.destination {
-                    MoveItemV2RoomSheet(room: room, item: viewModel.item, listKind: listKind)
+                if case .room(let room, let listType) = viewModel.destination {
+                    MoveItemV2RoomSheet(room: room, item: viewModel.item, listType: listType)
                 }
             }
 

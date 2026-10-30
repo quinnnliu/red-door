@@ -53,6 +53,7 @@ struct InstalledListRoomDetailsView: View {
         .sheet(isPresented: $showAddItemsSheet) {
             AddItemsToRoomSheet
         }
+        .staleWriteAlert($viewModel.staleWriteError)
         .alert(viewModel.alertMessage, isPresented: $viewModel.showAlert) {
             Button("OK", role: .cancel) { }
         }
@@ -106,16 +107,24 @@ struct InstalledListRoomDetailsView: View {
             VStack(spacing: 8) {
                 Text("Before")
                     .font(.caption2)
-                PrimaryImageEditor(image: viewModel.roomState.beforeImage) { result in
-                    handleImageAction(result, isBefore: true)
-                }
+                RoomImage(viewModel.roomState.beforeImage, isBefore: true)
             }
             VStack(spacing: 8) {
                 Text("After")
                     .font(.caption2)
-                PrimaryImageEditor(image: viewModel.roomState.afterImage) { result in
-                    handleImageAction(result, isBefore: false)
-                }
+                RoomImage(viewModel.roomState.afterImage, isBefore: false)
+            }
+        }
+    }
+
+    /// An uninstalled list is a record, so its photos can be viewed but not replaced.
+    @ViewBuilder
+    private func RoomImage(_ image: RDImage?, isBefore: Bool) -> some View {
+        if viewModel.uninstalled {
+            PrimaryImageView(image: image)
+        } else {
+            PrimaryImageEditor(image: image) { result in
+                handleImageAction(result, isBefore: isBefore)
             }
         }
     }
@@ -182,7 +191,7 @@ struct InstalledListRoomDetailsView: View {
 private extension InstalledListRoomDetailsView {
     var AddItemsToRoomSheet: some View {
         AddItemToDocumentSheetV2(
-            destination: .room(viewModel.roomState, listKind: InstalledListV2.listKind),
+            destination: .room(viewModel.roomState, listType: InstalledListV2.listType),
             defaultFilters: [
                 "\(ItemV2.CodingKeys.location.rawValue).\(DocumentLocation.CodingKeys.status.rawValue)": LocationStatus.inStorage.rawValue,
                 ItemV2.CodingKeys.essentialGroupId.rawValue: NSNull() as AnyHashable
