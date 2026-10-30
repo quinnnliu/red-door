@@ -86,7 +86,7 @@ final class EditPullListViewModel {
     /// `cleanup` is the replaced or removed image to delete once the write commits.
     @MainActor
     private func resolveImageField() async throws -> (field: Any?, cleanup: RDImage?) {
-        let (persisted, cleanup) = try await FirebaseImageManager.shared.resolve(
+        let (persisted, cleanup) = try await FirebaseImageManager.shared.resolveImage(
             original: original.image,
             updated: draft.image,
             type: .listV2

@@ -35,7 +35,7 @@ struct PullListItemDetailsView: View {
 
 				ScrollView {
 					VStack(spacing: 12) {
-                        PrimaryImageView(image: viewModel.itemState.primaryImage)
+                        ItemImagesView(item: viewModel.itemState)
 
                         ItemDetailSection(
                             item: viewModel.itemState,

@@ -26,13 +26,7 @@ struct CreateItemViewV2: View {
                 TopBar()
                 
                 ScrollView {
-                    if fromTemplate {
-                        PrimaryImageView(image: viewModel.itemState.primaryImage)
-                    } else {
-                        PrimaryImageEditor(image: viewModel.itemState.primaryImage) { action in
-                            handleImageAction(action)
-                        }
-                    }
+                    ImageSection
                     
                     ItemCountPicker
                         .padding(8)
@@ -183,10 +177,47 @@ struct CreateItemViewV2: View {
             viewModel.clearPrimaryImage()
         }
     }
+
+    private func handleSecondaryImageAction(_ actionArg: Any?) {
+        guard let action = actionArg as? ImageListEditorAction else { return }
+        switch action {
+        case .add(let image):
+            viewModel.addSecondaryImage(image)
+        case .replace(let id, let image):
+            viewModel.replaceSecondaryImage(id: id, with: image)
+        case .delete(let id):
+            viewModel.removeSecondaryImage(id: id)
+        }
+    }
 }
 
-
-#Preview {
-    CreateItemViewV2()
+private extension CreateItemViewV2 {
+    
+    @ViewBuilder
+    var ImageSection: some View {
+        if fromTemplate {
+            HStack(spacing: Constants.Padding(1)) {
+                ImageView(image: viewModel.itemState.primaryImage)
+                    .frame(Constants.Image.detail - Constants.Padding(0.5))
+                
+                if let secondaryImages = viewModel.itemState.secondaryImages {
+                    ImageListView(secondaryImages)
+                }
+            }
+            
+        } else {
+            HStack(spacing: Constants.Padding(1)) {
+                ImageEditor(
+                    image: viewModel.itemState.primaryImage,
+                    action: handleImageAction(_:)
+                )
+                    .frame(Constants.Image.detail)
+                
+                ImageListEditor(
+                    viewModel.itemState.secondaryImages ?? [],
+                    action: handleSecondaryImageAction(_:)
+                )
+            }
+        }
+    }
 }
-

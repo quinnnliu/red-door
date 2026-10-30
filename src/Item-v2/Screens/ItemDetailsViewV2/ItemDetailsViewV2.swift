@@ -34,7 +34,7 @@ struct ItemDetailsViewV2: View {
             
             ScrollView {
                 VStack(spacing: 12) {
-                    PrimaryImageView(image: viewModel.itemState.primaryImage)
+                    ItemImagesView(item: viewModel.itemState)
                     
                     ItemDetails
                 }

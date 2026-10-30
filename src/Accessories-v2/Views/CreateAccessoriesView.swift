@@ -198,9 +198,10 @@ private extension CreateAccessoriesView {
 
 private extension CreateAccessoriesView {
     var ImageSection: some View {
-        PrimaryImageEditor(image: viewModel.primaryImage) { result in
+        ImageEditor(image: viewModel.primaryImage) { result in
             handleAction(result)
         }
+            .frame(Constants.Image.detail)
     }
 }
 

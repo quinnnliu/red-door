@@ -112,7 +112,8 @@ private extension ExpandableSectionView {
         case .pullListRoom(let room, _), .copyRoom(let room, _, _):
             HStack(spacing: 6) {
                 ExpandToggle
-                PrimaryImageView(image: room.afterImage ?? room.beforeImage, size: Constants.Image.listItemDefault, isExpandable: false)
+                ImageView(image: room.afterImage ?? room.beforeImage, useThumbnail: true, isExpandable: false)
+                    .frame(Constants.Image.listItemDefault)
             }
         case .installingRoom, .uninstallingRoom:
             ExpandToggle

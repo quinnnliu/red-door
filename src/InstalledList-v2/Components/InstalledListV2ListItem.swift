@@ -58,7 +58,8 @@ struct InstalledListV2ListItem: View {
 private extension InstalledListV2ListItem {
     var LeadingContent: some View {
         HStack(spacing: Constants.Padding(1)) {
-            PrimaryImageView(image: list.image, size: Constants.Image.listItemLarge, isExpandable: false)
+            ImageView(image: list.image, useThumbnail: true, isExpandable: false)
+                .frame(Constants.Image.listItemLarge)
         }
     }
 

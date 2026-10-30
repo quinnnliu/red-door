@@ -19,10 +19,17 @@ struct LocationStatusCTA: View {
     private let location: DocumentLocation
     private let isLoading: Bool
     private let action: ((Any?) -> Void)?
+    private let showCaret: Bool
 
-    init(location: DocumentLocation, isLoading: Bool = false, action: ((Any?) -> Void)? = nil) {
+    init(
+        location: DocumentLocation,
+        isLoading: Bool = false,
+        showCaret: Bool = false,
+        action: ((Any?) -> Void)? = nil
+    ) {
         self.location = location
         self.isLoading = isLoading
+        self.showCaret = showCaret
         self.action = action
     }
 
@@ -32,6 +39,7 @@ struct LocationStatusCTA: View {
             type: location.status.isAvailable ? .outline : .red,
             size: .small,
             leadingIcon: location.status.icon,
+            trailingIcon: showCaret ? SFSymbols.chevronRight : nil,
             text: location.status.displayTitle,
             semibold: false,
             isLoading: isLoading,

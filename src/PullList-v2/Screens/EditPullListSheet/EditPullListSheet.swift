@@ -25,9 +25,10 @@ struct EditPullListSheet: View {
                 VStack(spacing: 12) {
                     AddressButton
 
-                    PrimaryImageEditor(image: viewModel.draft.image) { result in
+                    ImageEditor(image: viewModel.draft.image) { result in
                         handleImageAction(result)
                     }
+                        .frame(Constants.Image.detail)
 
                     DatePicker(
                         selection: $viewModel.draft.installDate,

@@ -127,6 +127,7 @@ struct SmallCTA: View {
 
     var leadingIcon: String?
     var leadingIconColor: Color?
+    var trailingIcon: String?
 
     var text: String = ""
     var textColor: Color?
@@ -137,6 +138,36 @@ struct SmallCTA: View {
     var semibold: Bool = true
     var isLoading: Bool = false
     var action: () -> Void = {}
+    
+    init(
+        isButton: Bool = true,
+        type: SmallCTAType,
+        size: SmallCTASize = .default,
+        leadingIcon: String? = nil,
+        leadingIconColor: Color? = nil,
+        trailingIcon: String? = nil,
+        text: String = "",
+        textColor: Color? = nil,
+        buttonColor: Color? = nil,
+        fullWidth: Bool = false,
+        semibold: Bool = true,
+        isLoading: Bool = false,
+        action: @escaping () -> Void = {}
+    ) {
+        self.isButton = isButton
+        self.type = type
+        self.size = size
+        self.leadingIcon = leadingIcon
+        self.leadingIconColor = leadingIconColor
+        self.trailingIcon = trailingIcon
+        self.text = text
+        self.textColor = textColor
+        self.buttonColor = buttonColor
+        self.fullWidth = fullWidth
+        self.semibold = semibold
+        self.isLoading = isLoading
+        self.action = action
+    }
     
 
     var body: some View {
@@ -152,17 +183,15 @@ struct SmallCTA: View {
 
     @ViewBuilder
     private func SmallCTAView() -> some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 4) {
             if isLoading {
                 ProgressView()
                     .controlSize(.mini)
                     .tint(leadingIconColor ?? textColor ?? type.foregroundColor)
-                    .padding(.trailing, 4)
             } else if let leadingIcon {
                 Image(systemName: leadingIcon)
                     .foregroundStyle(leadingIconColor ?? textColor ?? type.foregroundColor)
                     .font(size.iconFont)
-                    .padding(.trailing, 4)
             }
 
             if text != "" {
@@ -176,6 +205,12 @@ struct SmallCTA: View {
                     .if(fullWidth) { view in
                         view.frame(maxWidth: .infinity)
                     }
+            }
+            
+            if let trailingIcon {
+                Image(systemName: trailingIcon)
+                    .foregroundStyle(textColor ?? type.foregroundColor)
+                    .font(size.iconFont)
             }
         }
         .padding(.horizontal, size.horizontalPadding)

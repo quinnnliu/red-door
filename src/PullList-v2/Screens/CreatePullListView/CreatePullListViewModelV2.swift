@@ -51,7 +51,7 @@ final class CreatePullListViewModelV2 {
         isLoading = true
         defer { isLoading = false }
         do {
-            pullListState.image = try await FirebaseImageManager.shared.resolve(
+            pullListState.image = try await FirebaseImageManager.shared.resolveImage(
                 original: nil,
                 updated: pullListState.image,
                 type: .listV2

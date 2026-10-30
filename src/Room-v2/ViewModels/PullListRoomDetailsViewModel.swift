@@ -238,7 +238,7 @@ extension PullListRoomDetailsViewModel {
         let imageType: RDImageType = isBefore ? .roomBefore : .roomAfter
 
         do {
-            let (persisted, cleanup) = try await FirebaseImageManager.shared.resolve(
+            let (persisted, cleanup) = try await FirebaseImageManager.shared.resolveImage(
                 original: original,
                 updated: updated,
                 type: imageType

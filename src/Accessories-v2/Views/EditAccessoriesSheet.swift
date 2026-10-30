@@ -160,7 +160,7 @@ struct EditAccessoriesSheet: View {
             }
 
             do {
-                let (persistedImage, cleanup) = try await FirebaseImageManager.shared.resolve(
+                let (persistedImage, cleanup) = try await FirebaseImageManager.shared.resolveImage(
                     original: originalAccessories.primaryImage,
                     updated: accessoryToSave.primaryImage,
                     type: .accessory
@@ -296,9 +296,10 @@ private extension EditAccessoriesSheet {
 
 private extension EditAccessoriesSheet {
     var ImageSection: some View {
-        PrimaryImageEditor(image: editingAccessory.primaryImage) { result in
+        ImageEditor(image: editingAccessory.primaryImage) { result in
             handleAction(result)
         }
+            .frame(Constants.Image.detail)
     }
 }
 

@@ -75,7 +75,8 @@ struct AccessoriesListItemView: View {
     @ViewBuilder
     private var LeadingContent: some View {
         HStack(spacing: 8) {
-            PrimaryImageView(image: accessories.primaryImage, size: Constants.Image.listItemDefault, isExpandable: false)
+            ImageView(image: accessories.primaryImage, useThumbnail: true, isExpandable: false)
+                .frame(Constants.Image.listItemDefault)
 
             Text(accessories.displayName)
                 .font(.headline)

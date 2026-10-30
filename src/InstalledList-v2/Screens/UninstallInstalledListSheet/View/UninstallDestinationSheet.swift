@@ -128,11 +128,12 @@ private extension UninstallDestinationSheet {
             HStack(spacing: 8) {
                 ForEach(selectedItems, id: \.id) { item in
                     HStack(spacing: 6) {
-                        PrimaryImageView(
+                        ImageView(
                             image: item.primaryImage,
-                            size: Constants.Image.listItemDefault,
+                            useThumbnail: true,
                             isExpandable: false
                         )
+                        .frame(Constants.Image.listItemDefault)
 
                         Text(item.displayName)
                             .font(.caption)

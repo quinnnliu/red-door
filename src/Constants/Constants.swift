@@ -20,6 +20,8 @@ enum Constants {
         static let listItemDefault: CGFloat = 56
         static let listItemLarge: CGFloat = 80
         static let listItemMedium: CGFloat = 36
+        static let detail: CGFloat = Constants.Screen.screenWidthPadding / 2
+        static let maxSecondaryImages = 4
     }
 
     enum Animation {

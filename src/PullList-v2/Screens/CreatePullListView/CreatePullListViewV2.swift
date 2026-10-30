@@ -26,9 +26,10 @@ struct CreatePullListViewV2: View {
             VStack(spacing: 12) {
                 TopBar
 
-                PrimaryImageEditor(image: viewModel.pullListState.image) { result in
+                ImageEditor(image: viewModel.pullListState.image) { result in
                     handleImageAction(result)
                 }
+                    .frame(Constants.Image.detail)
 
                 DatePicker(
                     selection: $viewModel.pullListState.installDate,
