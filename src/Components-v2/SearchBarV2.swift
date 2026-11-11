@@ -54,6 +54,7 @@ struct SearchBarV2: View {
                 action(SearchBarAction.clear)
             }
         }
+        .dismissKeyboardButton(isFocused: $isFocused)
         .onAppear { isFocused = true }
     }
 }
