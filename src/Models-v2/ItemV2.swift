@@ -158,6 +158,7 @@ enum ItemType: String, Filterable, CaseIterable {
     case endTable = "End Table"
     case floorLamp = "Floor Lamp"
     case framedArt = "Framed Art"
+    case mirror = "Mirror"
     case nightstand = "Nightstand"
     case ottoman = "Ottoman"
     case outdoorFurniture = "Outdoor Furniture"
@@ -197,7 +198,7 @@ enum ItemType: String, Filterable, CaseIterable {
             SFSymbols.bedDoubleFill
         case .outdoorFurniture:
             SFSymbols.sunLefthalfFilled
-        case .rug, .topper:
+        case .rug, .topper, .mirror:
             SFSymbols.rectangle
         case .bedding:
             SFSymbols.rectangleFill
