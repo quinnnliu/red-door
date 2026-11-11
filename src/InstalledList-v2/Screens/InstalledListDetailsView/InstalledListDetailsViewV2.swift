@@ -16,6 +16,7 @@ struct InstalledListDetailsViewV2: View {
     @State private var showPDFSheet: Bool = false
     @State private var showUninstallListCover: Bool = false
     @State private var showUninstallRecordSheet: Bool = false
+    @State private var showDeleteConfirmation: Bool = false
     /// `false` when reached from an essentials group's location CTA, so the
     /// essentials row can't push that group again.
     private let essentialsGroupNavigable: Bool
@@ -26,29 +27,35 @@ struct InstalledListDetailsViewV2: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
-            TopBar
+        ZStack {
+            VStack(spacing: 16) {
+                TopBar
 
-            ScrollView {
-                LazyVStack(spacing: 16, pinnedViews: .sectionHeaders) {
-                    ImageView(image: viewModel.installedListState.image)
-                        .frame(Constants.Image.detail)
+                ScrollView {
+                    LazyVStack(spacing: 16, pinnedViews: .sectionHeaders) {
+                        ImageView(image: viewModel.installedListState.image)
+                            .frame(Constants.Image.detail)
 
-                    Section {
-                        RoomsListContent
-                    } header: {
-                        RoomsListHeader
+                        Section {
+                            RoomsListContent
+                        } header: {
+                            RoomsListHeader
+                        }
                     }
                 }
+
+                Spacer(minLength: 0)
+
+                FooterContent
             }
+            .frameTop()
+            .frameHorizontalPadding()
+            .frameBottomPadding()
 
-            Spacer(minLength: 0)
-
-            FooterContent
+            if viewModel.isDeleting {
+                FullScreenProgressView(label: "Deleting Installed List...")
+            }
         }
-        .frameTop()
-        .frameHorizontalPadding()
-        .frameBottomPadding()
         .toolbar(.hidden)
         .fullScreenCover(isPresented: $showUninstallListCover) {
             InstalledListViewFactory().makeUninstallSheet(list: viewModel.installedListState)
@@ -58,6 +65,19 @@ struct InstalledListDetailsViewV2: View {
         }
         .sheet(isPresented: $showUninstallRecordSheet) {
             InstalledListViewFactory().makeUninstallRecordSheet(list: viewModel.installedListState)
+        }
+        .alert(
+            "Delete this installed list?",
+            isPresented: $showDeleteConfirmation,
+        ) {
+            Button("Delete Installed List", role: .destructive) {
+                Task {
+                    if await viewModel.deleteInstalledList() { dismiss() }
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Are you sure you want to delete this installed list? All record of this list will be lost. The associated items will not be deleted")
         }
         .task {
             await viewModel.startListening()
@@ -131,6 +151,13 @@ private extension InstalledListDetailsViewV2 {
                 viewModel.refreshInstalledListAndRooms()
             }
             .tint(.red)
+
+            if viewModel.installedListState.uninstalled {
+                Button("Delete List", systemImage: SFSymbols.trash, role: .destructive) {
+                    showDeleteConfirmation = true
+                }
+                .tint(.red)
+            }
         } label: {
             RDButton(
                 style: .red,

@@ -14,6 +14,7 @@ final class InstalledListDetailsViewModelV2 {
     var rooms: [RoomV2] = []
     var itemsByRoom: [String: [ItemV2]] = [:]
     var isLoading: Bool = false
+    var isDeleting: Bool = false
     private let loader: ItemsListLoader
 
     var essentialsGroupState: EssentialsGroup? = nil
@@ -172,6 +173,27 @@ final class InstalledListDetailsViewModelV2 {
         } catch {
             alertMessage = "Error refreshing installed list, please try again"
             showAlert = true
+        }
+    }
+
+    // MARK: deleteInstalledList
+
+    @MainActor
+    func deleteInstalledList() async -> Bool {
+        guard installedListState.uninstalled, !isDeleting else { return false }
+
+        isDeleting = true
+        defer { isDeleting = false }
+        // Detach first so the listeners don't report the vanished document.
+        stopListening()
+        do {
+            try await installedListRepo.delete(installedListState.id)
+            return true
+        } catch {
+            alertMessage = "Failed to delete installed list: \(error.localizedDescription)"
+            showAlert = true
+            await startListening()
+            return false
         }
     }
 
