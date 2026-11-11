@@ -14,7 +14,19 @@ final class DocumentListViewModelV2<T: RDDocument> {
 
     // MARK: - Public State
 
+    /// Every loaded document, ignoring any local search.
     private(set) var documents: [T] = []
+    private(set) var localSearchText: String? = nil
+
+    /// What a list should render: `documents` narrowed by the local search, if one is active.
+    var visibleDocuments: [T] {
+        guard useLocalSearch, let text = localSearchText else { return documents }
+        return documents.filter { T.normalizeSearchText($0.displayName).contains(text) }
+    }
+
+    /// With user filters applied, every matching document is loaded at once and searched in memory.
+    var useLocalSearch: Bool { activeFiltersApplied }
+
     private(set) var hasMore: Bool = true
     private(set) var isLoading: Bool = false
 
@@ -36,7 +48,7 @@ final class DocumentListViewModelV2<T: RDDocument> {
     /// superseded and discards its results without touching shared state.
     private var fetchGeneration: Int = 0
 
-    init(pageSize: Int = 10, db: Firestore = Firestore.firestore(), defaultFilters: [String: AnyHashable]? = nil) {
+    init(pageSize: Int = 30, db: Firestore = Firestore.firestore(), defaultFilters: [String: AnyHashable]? = nil) {
         self.pageSize = pageSize
         self.collectionRef = db.collection(T.collectionName)
         self.defaultFilters = defaultFilters
@@ -69,12 +81,20 @@ final class DocumentListViewModelV2<T: RDDocument> {
         await updateFilter(key: T.searchField, value: T.normalizeSearchText(text))
     }
 
-    /// Handle a SearchBarAction by dispatching to search or refresh.
+    /// Search the already-loaded documents in memory. Use while `useLocalSearch` is true.
+    func localSearch(text: String) {
+        localSearchText = text.isEmpty ? nil : T.normalizeSearchText(text)
+    }
+
+    func clearLocalSearch() {
+        localSearchText = nil
+    }
+
     func handleSearchAction(_ action: SearchBarAction) async {
         switch action {
         case .search(let text):
             await search(text: text)
-        case .cancel:
+        case .clear:
             await removeFilter(key: T.searchField)
         }
     }
@@ -84,7 +104,6 @@ final class DocumentListViewModelV2<T: RDDocument> {
         await startReload(filters: filters)
     }
 
-    /// Append the next page. No-op if already loading or no more pages exist.
     func loadMore() async {
         guard hasMore, !isLoading else { return }
         await fetchPage(appending: true)
@@ -96,10 +115,16 @@ final class DocumentListViewModelV2<T: RDDocument> {
         // Bump the generation so any in-flight fetch discards its results.
         fetchGeneration += 1
         documents = []
+        // Only a filter change invalidates the local search. A plain refresh keeps it.
+        if filters != nil { localSearchText = nil }
         cursor = nil
         hasMore = true
         isLoading = false
-        if let filters {
+        if var filters {
+            // A server prefix search never combines with user filters (search is local then).
+            if filters.keys.contains(where: { $0 != T.searchField }) {
+                filters.removeValue(forKey: T.searchField)
+            }
             activeFilters = filters
         }
         await fetchPage(appending: false)
@@ -118,15 +143,18 @@ final class DocumentListViewModelV2<T: RDDocument> {
 
         // Capture generation before yielding so we can detect superseded fetches.
         let generation = fetchGeneration
+        let loadAll = useLocalSearch
 
         var query: Query = collectionRef
         query = applyFilters(to: query)
         if let sortField {
             query = query.order(by: sortField)
         }
-        query = query.limit(to: pageSize)
-        if appending, let cursor {
-            query = query.start(afterDocument: cursor)
+        if !loadAll {
+            query = query.limit(to: pageSize)
+            if appending, let cursor {
+                query = query.start(afterDocument: cursor)
+            }
         }
 
         do {
@@ -137,8 +165,8 @@ final class DocumentListViewModelV2<T: RDDocument> {
             guard fetchGeneration == generation else { return }
 
             cursor = snapshot.documents.last
-            hasMore = snapshot.documents.count == pageSize
-            let page: [T] = snapshot.documents.compactMap { doc in
+            hasMore = loadAll ? false : snapshot.documents.count == pageSize
+            var page: [T] = snapshot.documents.compactMap { doc in
                 do {
                     return try doc.data(as: T.self)
                 } catch {
@@ -146,6 +174,8 @@ final class DocumentListViewModelV2<T: RDDocument> {
                     return nil
                 }
             }
+
+            if loadAll { page.sort { $0.displayName.localizedCaseInsensitiveCompare($1.displayName) == .orderedAscending } }
 
             if appending {
                 documents.append(contentsOf: page)
@@ -166,6 +196,9 @@ final class DocumentListViewModelV2<T: RDDocument> {
         let allFilters = activeFilters.merging(defaultFilters ?? [:]) { (current, new) in return new }
 
         for (key, value) in allFilters {
+            // Local search handles text matching while user filters are applied.
+            if key == T.searchField, useLocalSearch { continue }
+
             if key == T.searchField, let text = value as? String {
                 q = q.whereField(key, isGreaterThanOrEqualTo: text)
                      .whereField(key, isLessThan: text + "\u{f8ff}")

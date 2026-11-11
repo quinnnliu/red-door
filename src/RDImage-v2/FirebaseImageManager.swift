@@ -8,6 +8,7 @@
 import Firebase
 import FirebaseStorage
 import Foundation
+import SwiftUI
 
 final class FirebaseImageManager {
     static let shared = FirebaseImageManager()

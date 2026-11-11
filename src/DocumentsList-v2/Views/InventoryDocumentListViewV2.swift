@@ -99,6 +99,18 @@ struct InventoryDocumentListViewV2: View {
                 guard let newValue else { return }
                 handleScannedItemId(newValue)
             }
+            .onChange(of: selectedSegment) { oldSegment, _ in
+                // The search bar belongs to one segment, so close it and cancel that segment's search.
+                guard searchFocused else { return }
+                withAnimation(Constants.Animation.snappy) { searchFocused = false }
+                Task {
+                    switch oldSegment {
+                    case .items:       await dispatchSearch(.clear, to: itemsVM)
+                    case .essentials:  await dispatchSearch(.clear, to: essentialsVM)
+                    case .accessories: await dispatchSearch(.clear, to: accessoriesVM)
+                    }
+                }
+            }
             .rootNavigationDestinationsV2(path: $path)
         }
     }
@@ -133,7 +145,7 @@ extension InventoryDocumentListViewV2 {
     private var TrailingIconGroup: some View {
         HStack(spacing: 8) {
             Group {
-                RDButton(style: .outline, size: .icon, leadingIcon: "magnifyingglass", fullWidth: false, disabled: filtersActive) {
+                RDButton(style: .outline, size: .icon, leadingIcon: "magnifyingglass", fullWidth: false) {
                     withAnimation(Constants.Animation.snappy) {
                         searchFocused = true
                     }
@@ -341,15 +353,17 @@ private extension InventoryDocumentListViewV2 {
         case let searchAction as SearchBarAction:
             Task {
                 switch selectedSegment {
-                case .items:       await itemsVM.handleSearchAction(searchAction)
-                case .essentials:  await essentialsVM.handleSearchAction(searchAction)
-                case .accessories: await accessoriesVM.handleSearchAction(searchAction)
+                case .items:       await dispatchSearch(searchAction, to: itemsVM)
+                case .essentials:  await dispatchSearch(searchAction, to: essentialsVM)
+                case .accessories: await dispatchSearch(searchAction, to: accessoriesVM)
                 }
             }
         case let filterAction as DocumentFilterSheetAction:
             Task {
                 switch filterAction {
                 case .applyFilters(let filters):
+                    // Applying filters clears any search, so close the search bar too.
+                    searchFocused = false
                     switch selectedSegment {
                     case .items:       await itemsVM.setFilters(filters)
                     case .essentials:  await essentialsVM.setFilters(filters)
@@ -359,6 +373,30 @@ private extension InventoryDocumentListViewV2 {
             }
         default:
             print("ERROR: Untracked action")
+        }
+    }
+
+    func dispatchSearch<D: RDDocument>(_ action: SearchBarAction, to vm: DocumentListViewModelV2<D>) async {
+        vm.useLocalSearch ? handleLocalSearchAction(action, to: vm) : await handleSearchAction(action, to: vm)
+    }
+    
+    func handleSearchAction<D: RDDocument>(_ action: SearchBarAction, to vm: DocumentListViewModelV2<D>) async {
+        switch action {
+        case .search(let text):
+            await vm.search(text: text)
+        case .clear:
+            // Nothing to cancel, so skip the reload.
+            guard vm.activeFilters[D.searchField] != nil else { return }
+            await vm.removeFilter(key: D.searchField)
+        }
+    }
+    
+    func handleLocalSearchAction<D: RDDocument>(_ action: SearchBarAction, to vm: DocumentListViewModelV2<D>) {
+        switch action {
+        case .search(let text):
+            vm.localSearch(text: text)
+        case .clear:
+            vm.clearLocalSearch()
         }
     }
 

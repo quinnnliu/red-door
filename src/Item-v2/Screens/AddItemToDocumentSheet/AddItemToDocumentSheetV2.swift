@@ -258,7 +258,7 @@ private extension AddItemToDocumentSheetV2 {
             switch searchAction {
             case .search(let text):
                 Task { await documentListViewModel.search(text: text) }
-            case .cancel:
+            case .clear:
                 Task { await documentListViewModel.removeFilter(key: ItemV2.searchField) }
             }
         case let filterAction as DocumentFilterSheetAction:

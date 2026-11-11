@@ -9,14 +9,12 @@
 /* Begin PBXBuildFile section */
 		4CA0966D3058D21A005DB9A3 /* Kingfisher in Frameworks */ = {isa = PBXBuildFile; productRef = 4CA0966C3058D21A005DB9A3 /* Kingfisher */; };
 		5011BBEC2C632FB400A82219 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 5011BBEB2C632FB400A82219 /* FirebaseAnalytics */; };
-		5011BBEE2C632FB400A82219 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */ = {isa = PBXBuildFile; productRef = 5011BBED2C632FB400A82219 /* FirebaseAnalyticsOnDeviceConversion */; };
 		5011BBF02C632FB400A82219 /* FirebaseAppCheck in Frameworks */ = {isa = PBXBuildFile; productRef = 5011BBEF2C632FB400A82219 /* FirebaseAppCheck */; };
 		5011BBF22C632FB400A82219 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 5011BBF12C632FB400A82219 /* FirebaseAuth */; };
 		5011BBF42C632FB400A82219 /* FirebaseCrashlytics in Frameworks */ = {isa = PBXBuildFile; productRef = 5011BBF32C632FB400A82219 /* FirebaseCrashlytics */; };
 		5011BBF62C632FB400A82219 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 5011BBF52C632FB400A82219 /* FirebaseFirestore */; };
 		5011BBF82C632FB500A82219 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 5011BBF72C632FB500A82219 /* FirebaseStorage */; };
 		5011BBFB2C632FE400A82219 /* CodeScanner in Frameworks */ = {isa = PBXBuildFile; productRef = 5011BBFA2C632FE400A82219 /* CodeScanner */; };
-		501B59AD2C7928690097A966 /* CachedAsyncImage in Frameworks */ = {isa = PBXBuildFile; productRef = 501B59AC2C7928690097A966 /* CachedAsyncImage */; };
 		503CF03F2F9B22B20088DB8C /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 503CF03E2F9B22B20088DB8C /* README.md */; };
 /* End PBXBuildFile section */
 
@@ -37,10 +35,8 @@
 				5011BBFB2C632FE400A82219 /* CodeScanner in Frameworks */,
 				5011BBEC2C632FB400A82219 /* FirebaseAnalytics in Frameworks */,
 				5011BBF02C632FB400A82219 /* FirebaseAppCheck in Frameworks */,
-				501B59AD2C7928690097A966 /* CachedAsyncImage in Frameworks */,
 				4CA0966D3058D21A005DB9A3 /* Kingfisher in Frameworks */,
 				5011BBF42C632FB400A82219 /* FirebaseCrashlytics in Frameworks */,
-				5011BBEE2C632FB400A82219 /* FirebaseAnalyticsOnDeviceConversion in Frameworks */,
 				5011BBF82C632FB500A82219 /* FirebaseStorage in Frameworks */,
 				5011BBF22C632FB400A82219 /* FirebaseAuth in Frameworks */,
 				5011BBF62C632FB400A82219 /* FirebaseFirestore in Frameworks */,
@@ -89,14 +85,12 @@
 			name = RedDoor;
 			packageProductDependencies = (
 				5011BBEB2C632FB400A82219 /* FirebaseAnalytics */,
-				5011BBED2C632FB400A82219 /* FirebaseAnalyticsOnDeviceConversion */,
 				5011BBEF2C632FB400A82219 /* FirebaseAppCheck */,
 				5011BBF12C632FB400A82219 /* FirebaseAuth */,
 				5011BBF32C632FB400A82219 /* FirebaseCrashlytics */,
 				5011BBF52C632FB400A82219 /* FirebaseFirestore */,
 				5011BBF72C632FB500A82219 /* FirebaseStorage */,
 				5011BBFA2C632FE400A82219 /* CodeScanner */,
-				501B59AC2C7928690097A966 /* CachedAsyncImage */,
 				4CA0966C3058D21A005DB9A3 /* Kingfisher */,
 			);
 			productName = RedDoor;
@@ -130,7 +124,6 @@
 			packageReferences = (
 				5011BBEA2C632FB400A82219 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
 				5011BBF92C632FE400A82219 /* XCRemoteSwiftPackageReference "codeScanner" */,
-				501B59AB2C7928690097A966 /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */,
 				4CA0966B3058D21A005DB9A3 /* XCRemoteSwiftPackageReference "Kingfisher" */,
 			);
 			productRefGroup = 5011BBB92C63159200A82219 /* Products */;
@@ -423,7 +416,7 @@
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 11.0.0;
+				minimumVersion = 13.1.1;
 			};
 		};
 		5011BBF92C632FE400A82219 /* XCRemoteSwiftPackageReference "codeScanner" */ = {
@@ -432,14 +425,6 @@
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 2.5.0;
-			};
-		};
-		501B59AB2C7928690097A966 /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/lorenzofiamingo/swiftui-cached-async-image";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 2.1.1;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -454,11 +439,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 5011BBEA2C632FB400A82219 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
 			productName = FirebaseAnalytics;
-		};
-		5011BBED2C632FB400A82219 /* FirebaseAnalyticsOnDeviceConversion */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 5011BBEA2C632FB400A82219 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
-			productName = FirebaseAnalyticsOnDeviceConversion;
 		};
 		5011BBEF2C632FB400A82219 /* FirebaseAppCheck */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -489,11 +469,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 5011BBF92C632FE400A82219 /* XCRemoteSwiftPackageReference "codeScanner" */;
 			productName = CodeScanner;
-		};
-		501B59AC2C7928690097A966 /* CachedAsyncImage */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 501B59AB2C7928690097A966 /* XCRemoteSwiftPackageReference "swiftui-cached-async-image" */;
-			productName = CachedAsyncImage;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

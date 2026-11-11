@@ -20,7 +20,7 @@ struct DocumentListSection<T: RDDocument, RowContent: View>: View {
     var body: some View {
         ScrollView {
             LazyVStack(spacing: .zero) {
-                ForEach(viewModel.documents, id: \.id) { document in
+                ForEach(viewModel.visibleDocuments, id: \.id) { document in
                     rowContent(document)
                         .padding(4)
                 }

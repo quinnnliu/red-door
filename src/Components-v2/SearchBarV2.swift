@@ -9,12 +9,13 @@ import SwiftUI
 
 struct SearchBarV2: View {
     @Binding var isActive: Bool
-    @State private var searchText: String = ""
+    @State private var searchText: String
     @FocusState private var isFocused: Bool
 
     private let action: (Any) -> Void
 
-    init(isActive: Binding<Bool>, action: @escaping (Any) -> Void = { _ in }) {
+    init(isActive: Binding<Bool>, searchText: String = "", action: @escaping (Any) -> Void = { _ in }) {
+        self._searchText = State(initialValue: searchText)
         self._isActive = isActive
         self.action = action
     }
@@ -30,8 +31,12 @@ struct SearchBarV2: View {
                     .submitLabel(.search)
                     .focused($isFocused)
                     .onSubmit {
-                        guard !searchText.isEmpty else { return }
-                        action(SearchBarAction.search(text: searchText))
+                        // Searching empty text clears the applied search but keeps the bar open.
+                        if searchText.trimmingCharacters(in: .whitespaces).isEmpty {
+                            action(SearchBarAction.clear)
+                        } else {
+                            action(SearchBarAction.search(text: searchText))
+                        }
                         isFocused = false
                     }
             }
@@ -46,7 +51,7 @@ struct SearchBarV2: View {
                     isFocused = false
                     isActive = false
                 }
-                action(SearchBarAction.cancel)
+                action(SearchBarAction.clear)
             }
         }
         .onAppear { isFocused = true }
@@ -55,5 +60,5 @@ struct SearchBarV2: View {
 
 enum SearchBarAction {
     case search(text: String)
-    case cancel
+    case clear
 }
