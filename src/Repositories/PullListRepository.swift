@@ -73,7 +73,7 @@ extension PullListRepository {
     func storeUnassignedItems(
         _ itemIds: [String],
         fromListId listId: String,
-        toStorageId storageLocationId: String,
+        toStorage storageLocation: StorageLocation,
         itemRepo: ItemRepository
     ) async throws {
         guard !itemIds.isEmpty else { return }
@@ -84,7 +84,7 @@ extension PullListRepository {
                 let pending = itemIds.filter { list.unassignedItemIds.contains($0) }
                 guard !pending.isEmpty else { throw StaleWriteError.stateChanged }
 
-                let location = DocumentLocation(status: .inStorage, locationId: storageLocationId).firebaseUpdateFields
+                let location = try ItemV2.locationUpdateFields(DocumentLocation(storageLocation: storageLocation))
                 for itemId in pending {
                     itemRepo.update(id: itemId, fields: location, transaction: transaction)
                 }
@@ -112,7 +112,7 @@ extension PullListRepository {
     func removeEssentialsGroup(
         listId: String,
         expectedGroupId: String,
-        toStorageId storageLocationId: String,
+        toStorage storageLocation: StorageLocation,
         essentialsRepo: EssentialsRepository,
         accessoriesRepo: AccessoriesRepository,
         itemRepo: ItemRepository
@@ -126,13 +126,11 @@ extension PullListRepository {
                 let group = try essentialsRepo.get(id: expectedGroupId, transaction: transaction)
                 let rooms = try roomRepo.get(ids: list.roomIds, transaction: transaction)
 
-                let storageFields = DocumentLocation(
-                    status: .inStorage,
-                    locationId: storageLocationId
-                ).firebaseUpdateFields
+                let storageDocumentLocation = DocumentLocation(storageLocation: storageLocation)
+                let storageFields = storageDocumentLocation.firebaseUpdateFields
 
                 for itemId in group.itemIds {
-                    itemRepo.update(id: itemId, fields: storageFields, transaction: transaction)
+                    itemRepo.update(id: itemId, fields: try ItemV2.locationUpdateFields(storageDocumentLocation), transaction: transaction)
                 }
                 if let accessoriesId = group.accessoriesId {
                     accessoriesRepo.update(id: accessoriesId, fields: storageFields, transaction: transaction)

@@ -139,7 +139,7 @@ final class CreateAccessoriesViewModel {
                 baseName: type.displayName,
                 accessoriesTypeId: type.id,
                 primaryImage: persistedImage ?? .empty(for: accessoryId),
-                location: DocumentLocation(status: .inStorage, locationId: storageLocation.id),
+                location: DocumentLocation(storageLocation: storageLocation),
                 description: description,
                 accessoriesNumber: maxNumber + 1,
                 nickname: nickname.isEmpty ? nil : nickname

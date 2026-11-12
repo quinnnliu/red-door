@@ -143,7 +143,7 @@ final class CreateEssentialsGroupViewModel {
             let maxNumber =  await essentialsRepo.maxGroupNumber(forTypeId: groupType.id)
             let group = EssentialsGroup(
                 baseName: groupType.displayName,
-                location: DocumentLocation(status: .inStorage, locationId: storageLocation.id),
+                location: DocumentLocation(storageLocation: storageLocation),
                 essentialsTypeId: groupType.id,
                 emoji: groupType.emoji,
                 accessoriesId: selectedAccessory?.id,

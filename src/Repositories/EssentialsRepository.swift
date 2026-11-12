@@ -167,9 +167,10 @@ extension EssentialsRepository {
                 }
                 guard unavailable.isEmpty else { throw EssentialsAssignError.notInStorage(names: unavailable) }
 
-                let location = DocumentLocation(status: .inPullList, locationId: listId).firebaseUpdateFields
+                let pullLocation = DocumentLocation(status: .inPullList, locationId: listId, locationName: list.displayName)
+                let location = pullLocation.firebaseUpdateFields
                 for item in items {
-                    itemRepo.update(id: item.id, fields: location, transaction: transaction)
+                    itemRepo.update(id: item.id, fields: try ItemV2.locationUpdateFields(pullLocation), transaction: transaction)
                 }
                 if let accessories {
                     accessoriesRepo.update(id: accessories.id, fields: location, transaction: transaction)

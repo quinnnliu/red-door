@@ -32,7 +32,7 @@ struct InstallPullListStoragePicker: View {
         .sheet(isPresented: $showStorageLocationSheet) {
             SelectDocumentSheet(title: "Select Storage", documents: storageLocations) { a in
                 if case .selected(let wh) = a as? SelectDocumentSheetAction<StorageLocation> {
-                    action(InstallPullListRoomAction.storeItem(itemId: item.id, storageLocationId: wh.id))
+                    action(InstallPullListRoomAction.storeItem(itemId: item.id, storageLocation: wh))
                 }
             }
         }

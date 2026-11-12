@@ -19,13 +19,13 @@ extension InstallPullListSheetViewModel {
     }
 
     @MainActor
-    func storeItem(itemId: String, storageLocationId: String) async {
+    func storeItem(itemId: String, storageLocation: StorageLocation) async {
         guard isOwner, let session = sessionState else { return }
         do {
             try await sessionRepo.assign(
                 sessionId: session.id,
                 itemIds: [itemId],
-                destination: DocumentLocation(status: .inStorage, locationId: storageLocationId)
+                destination: DocumentLocation(storageLocation: storageLocation)
             )
         } catch {
             present(error)

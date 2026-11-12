@@ -57,7 +57,11 @@ extension RoomRepository where Parent == PullListV2 {
                     transaction: transaction
                 )
 
-                let location = DocumentLocation(status: .inPullList, locationId: self.listId).firebaseUpdateFields
+                let location = try ItemV2.locationUpdateFields(DocumentLocation(
+                    status: .inPullList,
+                    locationId: self.listId,
+                    locationName: list.displayName
+                ))
                 for itemId in pending {
                     itemRepo.update(id: itemId, fields: location, transaction: transaction)
                 }

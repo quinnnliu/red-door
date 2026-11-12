@@ -113,9 +113,9 @@ extension PullListRepository {
                     try copyRoomRepo.set(document: copyRoom, id: copyRoom.id, transaction: transaction)
                 }
 
-                let location = DocumentLocation(status: .inPullList, locationId: newListId)
+                let location = DocumentLocation(status: .inPullList, locationId: newListId, locationName: copyList.displayName)
                 for itemId in claimedItemIds {
-                    itemRepo.update(id: itemId, fields: location.firebaseUpdateFields, transaction: transaction)
+                    itemRepo.update(id: itemId, fields: try ItemV2.locationUpdateFields(location), transaction: transaction)
                 }
 
                 if let group = qualifyingGroup {

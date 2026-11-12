@@ -146,7 +146,7 @@ final class InstalledListRoomDetailsViewModel {
             try await roomRepo.removeItem(
                 item.id,
                 fromRoomId: roomState.id,
-                toStorageLocationId: storageLocation.id,
+                toStorageLocation: storageLocation,
                 itemRepo: itemRepo
             )
             loader.invalidate([item.id])

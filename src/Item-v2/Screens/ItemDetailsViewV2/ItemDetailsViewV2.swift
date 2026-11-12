@@ -12,6 +12,7 @@ struct ItemDetailsViewV2: View {
     @State private var viewModel: ItemDetailViewModel
     @State private var showEditItem: Bool = false
     @State private var showQRCodeLabel: Bool = false
+    @State private var showLocationHistory: Bool = false
     @State private var locationNavigator = LocationNavigator()
 
 
@@ -57,6 +58,9 @@ struct ItemDetailsViewV2: View {
         .fullScreenCover(isPresented: $showQRCodeLabel) {
             ItemViewFactory().makePDFView(item: viewModel.itemState)
         }
+        .sheet(isPresented: $showLocationHistory) {
+            ItemLocationHistorySheet(history: viewModel.itemState.sortedLocationHistory)
+        }
         .alert(locationNavigator.alertMessage, isPresented: $locationNavigator.showAlert) {
             Button("OK") { }
         }
@@ -101,6 +105,12 @@ private extension ItemDetailsViewV2 {
 
             Button("Label", systemImage: SFSymbols.qrcode) {
                 showQRCodeLabel = true
+            }
+
+            if viewModel.itemState.locationHistory != nil {
+                Button("Location History", systemImage: SFSymbols.clockArrowCirclepath) {
+                    showLocationHistory = true
+                }
             }
         } label: {
             RDButton(

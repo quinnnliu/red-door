@@ -102,7 +102,7 @@ final class InstalledListItemDetailsViewModel {
             try await roomRepo.removeItem(
                 itemState.id,
                 fromRoomId: room.id,
-                toStorageLocationId: storageLocation.id,
+                toStorageLocation: storageLocation,
                 itemRepo: itemRepo
             )
             return true

@@ -104,10 +104,14 @@ extension UninstallInstalledListSheetViewModel {
         guard isOwner,
               let session = sessionState,
               let copyId = session.copyPullListId,
-              session.copyListAddress != nil
+              let copyAddress = session.copyListAddress
         else { return nil }
 
-        return UninstallDestination(type: .copy, locationId: copyId)
+        return UninstallDestination(
+            type: .copy,
+            locationId: copyId,
+            locationName: copyAddress.getStreetAddress() ?? copyAddress.formattedAddress
+        )
     }
 
     @MainActor
@@ -127,7 +131,7 @@ extension UninstallInstalledListSheetViewModel {
         do {
             try await sessionRepo.setExistingPullListId(sessionId: session.id, list.id)
             existingPullList = list
-            return UninstallDestination(type: .existingList, locationId: list.id)
+            return UninstallDestination(type: .existingList, locationId: list.id, locationName: list.displayName)
         } catch {
             present(error)
             return nil

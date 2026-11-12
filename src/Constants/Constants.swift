@@ -41,6 +41,8 @@ enum Constants {
 
 enum SFSymbols {
     static let docFill = "doc.fill"
+    static let clockArrowCirclepath = "clock.arrow.circlepath"
+    static let arrowUp = "arrow.up"
     static let squareAndArrowUp = "square.and.arrow.up"
     static let qrcode = "qrcode"
     static let magnifyingglass = "magnifyingglass"

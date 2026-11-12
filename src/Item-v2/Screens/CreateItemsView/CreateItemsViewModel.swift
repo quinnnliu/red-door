@@ -135,7 +135,7 @@ final class CreateItemsViewModel {
         itemState.baseNameLowercased = itemState.baseName.lowercased()
 
         itemState.essentialGroupId = selectedGroup?.id
-        itemState.location = DocumentLocation(status: .inStorage, locationId: storageLocation.id)
+        itemState.location = DocumentLocation(storageLocation: storageLocation)
 
         do {
             let startingNumber = try await itemRepo.maxItemNumber(forModelId: resolvedModelId)

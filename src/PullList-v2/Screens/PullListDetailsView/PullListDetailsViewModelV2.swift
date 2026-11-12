@@ -268,7 +268,7 @@ final class PullListDetailsViewModelV2 {
             let removed = try await pullListRepo.removeEssentialsGroup(
                 listId: pullListState.id,
                 expectedGroupId: group.id,
-                toStorageId: storageLocation.id,
+                toStorage: storageLocation,
                 essentialsRepo: essentialsRepo,
                 accessoriesRepo: accessoriesRepo,
                 itemRepo: itemRepo
@@ -423,7 +423,7 @@ extension PullListDetailsViewModelV2 {
             try await pullListRepo.storeUnassignedItems(
                 [item.id],
                 fromListId: pullListState.id,
-                toStorageId: storageLocation.id,
+                toStorage: storageLocation,
                 itemRepo: itemRepo
             )
 
