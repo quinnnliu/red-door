@@ -11,34 +11,36 @@ struct ItemLocationHistorySheet: View {
     let history: [DocumentLocation]
 
     var body: some View {
-        VStack(spacing: 4) {
-            DragIndicator()
-            
-            ScrollView {
-                VStack(spacing: 4) {
-                    ForEach(Array(history.enumerated()), id: \.offset) { index, entry in
-                        if index == 0 {
-                            Text("Current")
-                                .font(.title3.bold())
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                        } else {
-                            Image(systemName: SFSymbols.arrowUp)
-                                .foregroundStyle(.red)
-                        }
-                        row(entry, isCurrent: index == 0)
+        ScrollView {
+            VStack(spacing: 8) {
+                ForEach(Array(history.enumerated()), id: \.offset) { index, entry in
+                    if index == 0 {
+                        Text("Current")
+                            .font(.title3.bold())
+                            .foregroundStyle(.red)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                    } else {
+                        Image(systemName: SFSymbols.arrowUp)
+                            .foregroundStyle(.red)
                     }
+                    row(entry)
                 }
-                .padding()
-
             }
-            .presentationDetents([.medium, .large])
         }
+        .padding(.top, 16)
+        .padding(.horizontal, 16)
+        .presentationDetents([.medium, .large])
     }
 
-    private func row(_ entry: DocumentLocation, isCurrent: Bool) -> some View {
-        VStack(spacing: 2) {
-            Text(entry.locationName ?? entry.status.rawValue)
-                .bold(isCurrent)
+    private func row(_ entry: DocumentLocation) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            
+            HStack(alignment: .top) {
+                Text(entry.locationName ?? entry.status.rawValue)
+
+                LocationStatusCTA(location: entry, useStatusTypeString: true)
+            }
+                
             if let assignedAt = entry.assignedAt {
                 Text(assignedAt, style: .date)
                     .font(.caption)
@@ -49,9 +51,9 @@ struct ItemLocationHistorySheet: View {
                     .foregroundStyle(.secondary)
             }
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Constants.Padding(1))
-        .background(isCurrent ? Color.red.opacity(0.25) : Color(.systemGray5))
+        .background(Color(.systemGray5))
         .clipShape(.rect(cornerRadius: 8))
     }
 }

@@ -390,7 +390,6 @@ extension PullListDetailsViewModelV2 {
             try await roomRepo.assignUnassignedItems(
                 itemIds,
                 toRoomId: room.id,
-                itemRepo: itemRepo,
                 pullListRepo: pullListRepo
             )
 
