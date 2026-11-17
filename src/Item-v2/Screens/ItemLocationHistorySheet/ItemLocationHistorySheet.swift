@@ -7,23 +7,31 @@
 
 import SwiftUI
 
-/// Minimal placeholder layout: newest first, current location highlighted,
-/// arrows pointing from each previous location up to the one that followed it.
-/// Restyle freely; `history` is expected newest first (`ItemV2.sortedLocationHistory`).
 struct ItemLocationHistorySheet: View {
     let history: [DocumentLocation]
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 8) {
-                ForEach(Array(history.enumerated()), id: \.offset) { index, entry in
-                    if index > 0 {
-                        Image(systemName: SFSymbols.arrowUp)
+        VStack(spacing: 4) {
+            DragIndicator()
+            
+            ScrollView {
+                VStack(spacing: 4) {
+                    ForEach(Array(history.enumerated()), id: \.offset) { index, entry in
+                        if index == 0 {
+                            Text("Current")
+                                .font(.title3.bold())
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        } else {
+                            Image(systemName: SFSymbols.arrowUp)
+                                .foregroundStyle(.red)
+                        }
+                        row(entry, isCurrent: index == 0)
                     }
-                    row(entry, isCurrent: index == 0)
                 }
+                .padding()
+
             }
-            .padding()
+            .presentationDetents([.medium, .large])
         }
     }
 
@@ -42,8 +50,8 @@ struct ItemLocationHistorySheet: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(8)
-        .background(isCurrent ? Color.red.opacity(0.15) : Color.clear)
+        .padding(Constants.Padding(1))
+        .background(isCurrent ? Color.red.opacity(0.25) : Color(.systemGray5))
         .clipShape(.rect(cornerRadius: 8))
     }
 }

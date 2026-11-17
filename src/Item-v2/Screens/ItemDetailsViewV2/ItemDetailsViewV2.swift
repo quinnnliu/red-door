@@ -38,6 +38,10 @@ struct ItemDetailsViewV2: View {
                     ItemImagesView(item: viewModel.itemState)
                     
                     ItemDetails
+                    
+                    if viewModel.itemState.locationHistory != nil {
+                        ItemLocationSheetButton
+                    }
                 }
                 .padding(.top, 4)
             }
@@ -106,12 +110,6 @@ private extension ItemDetailsViewV2 {
             Button("Label", systemImage: SFSymbols.qrcode) {
                 showQRCodeLabel = true
             }
-
-            if viewModel.itemState.locationHistory != nil {
-                Button("Location History", systemImage: SFSymbols.clockArrowCirclepath) {
-                    showLocationHistory = true
-                }
-            }
         } label: {
             RDButton(
                 style: .red,
@@ -130,6 +128,12 @@ private extension ItemDetailsViewV2 {
                 isNavigatingToLocation: locationNavigator.isNavigating,
                 locationAction: handleAction(_:)
             )
+        }
+    }
+    
+    var ItemLocationSheetButton: some View {
+        RDButton(style: .outline, leadingIcon: SFSymbols.clockArrowCirclepath, label: "Item Location History", fullWidth: true) {
+            showLocationHistory = true
         }
     }
 }
