@@ -43,4 +43,16 @@ enum LocationStatus: String, Codable, Filterable {
             return true
         }
     }
+    
+    var statusTypeString: String {
+        switch self {
+        case .inPullList:
+            return "Pull List"
+        case .inStorage:
+            return "Storage"
+        case .inInstalledList:
+                return "Installed List"
+        }
+    
+    }
 }

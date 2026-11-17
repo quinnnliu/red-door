@@ -38,7 +38,6 @@ extension RoomRepository where Parent == PullListV2 {
     func assignUnassignedItems(
         _ itemIds: [String],
         toRoomId roomId: String,
-        itemRepo: ItemRepository,
         pullListRepo: PullListRepository
     ) async throws {
         guard !itemIds.isEmpty else { return }
@@ -57,11 +56,8 @@ extension RoomRepository where Parent == PullListV2 {
                     transaction: transaction
                 )
 
-                let location = DocumentLocation(status: .inPullList, locationId: self.listId).firebaseUpdateFields
-                for itemId in pending {
-                    itemRepo.update(id: itemId, fields: location, transaction: transaction)
-                }
-
+                // The items are already in this list, so their location (and
+                // location history) is deliberately left untouched.
                 pullListRepo.update(
                     id: self.listId,
                     fields: [PullListV2.CodingKeys.unassignedItemIds.stringValue: FieldValue.arrayRemove(pending)],

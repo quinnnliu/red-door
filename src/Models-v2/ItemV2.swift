@@ -4,6 +4,7 @@
 //
 //  Created by Quinn Liu on 4/25/26.
 //
+import FirebaseFirestore
 import SwiftUI
 
 
@@ -28,6 +29,7 @@ struct ItemV2: RDDocument {
     var purchaseLocation: String?
     var datePurchased: String?
     var location: DocumentLocation
+    var locationHistory: [DocumentLocation]?
     var attention: Bool
     var attentionDescription: String?
     var description: String
@@ -51,6 +53,7 @@ struct ItemV2: RDDocument {
         purchaseLocation: String? = nil,
         datePurchased: String? = nil,
         location: DocumentLocation,
+        locationHistory: [DocumentLocation]? = nil,
         attention: Bool,
         attentionDescription: String? = nil,
         description: String,
@@ -74,6 +77,7 @@ struct ItemV2: RDDocument {
         self.purchaseLocation = purchaseLocation
         self.datePurchased = datePurchased
         self.location = location
+        self.locationHistory = locationHistory
         self.attention = attention
         self.attentionDescription = attentionDescription
         self.description = description
@@ -100,7 +104,11 @@ struct ItemV2: RDDocument {
         self.brand = item.brand
         self.purchaseLocation = item.purchaseLocation
         self.datePurchased = item.datePurchased
-        self.location = item.location
+        // The copy is newly assigned, so it gets its own stamp and a fresh history.
+        var copiedLocation = item.location
+        copiedLocation.assignedAt = .now
+        self.location = copiedLocation
+        self.locationHistory = [copiedLocation]
         self.attention = item.attention
         self.attentionDescription = item.attentionDescription
         self.description = item.description
@@ -113,6 +121,7 @@ struct ItemV2: RDDocument {
     enum CodingKeys: String, CodingKey {
         case modelId = "model_id"
         case location
+        case locationHistory = "location_history"
         case id, attention, type, color, material, value, brand, description
         case attentionDescription = "attention_description"
         case baseNameLowercased = "base_name_lowercased"
@@ -124,6 +133,23 @@ struct ItemV2: RDDocument {
         case primaryImage = "primary_image"
         case secondaryImages = "secondary_images"
         case baseName = "base_name"
+    }
+}
+
+// MARK: - Location history
+
+extension ItemV2 {
+    /// History newest first; entries without a timestamp sort last.
+    var sortedLocationHistory: [DocumentLocation] {
+        (locationHistory ?? []).sorted {
+            ($0.assignedAt ?? .distantPast) > ($1.assignedAt ?? .distantPast)
+        }
+    }
+
+    static func locationUpdateFields(_ location: DocumentLocation) throws -> [String: Any] {
+        var fields = location.firebaseUpdateFields
+        fields[CodingKeys.locationHistory.stringValue] = FieldValue.arrayUnion([try location.toFirebaseMap()])
+        return fields
     }
 }
 

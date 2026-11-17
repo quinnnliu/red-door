@@ -66,7 +66,7 @@ extension RoomRepository {
         _ = try await db.runTransaction { transaction, errorPointer -> Any? in
             do {
                 // Reads first — Firestore requires every read to precede every write.
-                _ = try self.openParent(in: transaction)
+                let list = try self.openParent(in: transaction)
 
                 let room = try self.get(id: roomId, transaction: transaction)
                 let items = try itemRepo.get(ids: itemIds, transaction: transaction)
@@ -78,10 +78,11 @@ extension RoomRepository {
                     transaction: transaction
                 )
 
-                let location = DocumentLocation(
+                let location = try ItemV2.locationUpdateFields(DocumentLocation(
                     status: Parent.itemLocationStatus,
-                    locationId: self.listId
-                ).firebaseUpdateFields
+                    locationId: self.listId,
+                    locationName: list.displayName
+                ))
                 for item in eligible {
                     itemRepo.update(id: item.id, fields: location, transaction: transaction)
                 }
@@ -103,7 +104,7 @@ extension RoomRepository {
     func removeItem(
         _ itemId: String,
         fromRoomId roomId: String,
-        toStorageLocationId storageLocationId: String,
+        toStorageLocation storageLocation: StorageLocation,
         itemRepo: ItemRepository
     ) async throws {
         _ = try await db.runTransaction { transaction, errorPointer -> Any? in
@@ -119,7 +120,7 @@ extension RoomRepository {
 
                 itemRepo.update(
                     id: itemId,
-                    fields: DocumentLocation(status: .inStorage, locationId: storageLocationId).firebaseUpdateFields,
+                    fields: try ItemV2.locationUpdateFields(DocumentLocation(storageLocation: storageLocation)),
                     transaction: transaction
                 )
                 self.update(

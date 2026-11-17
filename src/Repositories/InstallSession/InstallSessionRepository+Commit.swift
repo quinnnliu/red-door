@@ -77,13 +77,15 @@ extension InstallSessionRepository {
                 //    into the list, which is the default.
                 var installedItemIds: Set<String> = []
                 for itemId in rooms.flatMap(\.itemIds) {
-                    let destination = session.destination(for: itemId, installedListId: installedList.id)
+                    var destination = session.destination(for: itemId, installedListId: installedList.id)
+                    destination.assignedAt = .now
                     if destination.status == .inInstalledList {
+                        destination.locationName = installedList.displayName
                         installedItemIds.insert(itemId)
                     }
                     itemRepo.update(
                         id: itemId,
-                        fields: destination.firebaseUpdateFields,
+                        fields: try ItemV2.locationUpdateFields(destination),
                         transaction: transaction
                     )
                 }
@@ -104,7 +106,7 @@ extension InstallSessionRepository {
 
                 // 3. The essentials group follows the list it belongs to.
                 if let group {
-                    let location = DocumentLocation(status: .inInstalledList, locationId: installedList.id)
+                    let location = DocumentLocation(status: .inInstalledList, locationId: installedList.id, locationName: installedList.displayName)
                     essentialsRepo.update(id: group.id, fields: location.firebaseUpdateFields, transaction: transaction)
                     if let accessoriesId = group.accessoriesId {
                         accessoriesRepo.update(id: accessoriesId, fields: location.firebaseUpdateFields, transaction: transaction)

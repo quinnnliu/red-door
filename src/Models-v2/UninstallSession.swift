@@ -99,10 +99,12 @@ struct UninstallSession: ListSessionDocument {
 struct UninstallDestination: Codable, Hashable {
     var type: UninstallDestinationType
     var locationId: String
+    var locationName: String?
 
     enum CodingKeys: String, CodingKey {
         case type
         case locationId = "location_id"
+        case locationName = "location_name"
     }
 }
 
@@ -129,14 +131,18 @@ extension UninstallSession {
 }
 
 extension UninstallDestination {
+    static func storage(_ storageLocation: StorageLocation) -> UninstallDestination {
+        UninstallDestination(type: .storage, locationId: storageLocation.id, locationName: storageLocation.displayName)
+    }
+
     /// Bridge to the shared location model so commits reuse
     /// `DocumentLocation.firebaseUpdateFields` dot-notation.
     var documentLocation: DocumentLocation {
         switch type {
         case .storage:
-            DocumentLocation(status: .inStorage, locationId: locationId)
+            DocumentLocation(status: .inStorage, locationId: locationId, locationName: locationName)
         case .copy, .existingList:
-            DocumentLocation(status: .inPullList, locationId: locationId)
+            DocumentLocation(status: .inPullList, locationId: locationId, locationName: locationName)
         }
     }
 }

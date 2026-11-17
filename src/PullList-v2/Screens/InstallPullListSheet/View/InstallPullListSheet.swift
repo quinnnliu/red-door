@@ -168,7 +168,7 @@ extension InstallPullListSheet {
 // MARK: InstallPullListRoomAction
 
 enum InstallPullListRoomAction {
-    case storeItem(itemId: String, storageLocationId: String)
+    case storeItem(itemId: String, storageLocation: StorageLocation)
     case installItem(itemId: String)
 }
 
@@ -190,8 +190,8 @@ extension InstallPullListSheet {
             switch roomAction {
             case .installItem(let itemId):
                 Task { await viewModel.installItem(itemId: itemId) }
-            case .storeItem(let itemId, let storageLocationId):
-                Task { await viewModel.storeItem(itemId: itemId, storageLocationId: storageLocationId) }
+            case .storeItem(let itemId, let storageLocation):
+                Task { await viewModel.storeItem(itemId: itemId, storageLocation: storageLocation) }
             }
         case let confirmAction as ConfirmInstallSheetAction:
             switch confirmAction {

@@ -109,7 +109,7 @@ extension UninstallSessionRepository {
                 for (itemId, destination) in session.itemDestinations where roomItemIds.contains(itemId) {
                     itemRepo.update(
                         id: itemId,
-                        fields: destination.documentLocation.firebaseUpdateFields,
+                        fields: try ItemV2.locationUpdateFields(destination.documentLocation),
                         transaction: transaction
                     )
                 }
@@ -119,7 +119,7 @@ extension UninstallSessionRepository {
                 if let group = essentialsGroup, let destination = session.essentialsDestination {
                     let fields = destination.documentLocation.firebaseUpdateFields
                     for itemId in group.itemIds {
-                        itemRepo.update(id: itemId, fields: fields, transaction: transaction)
+                        itemRepo.update(id: itemId, fields: try ItemV2.locationUpdateFields(destination.documentLocation), transaction: transaction)
                     }
                     essentialsRepo.update(id: group.id, fields: fields, transaction: transaction)
                     if let accessoriesId = group.accessoriesId {

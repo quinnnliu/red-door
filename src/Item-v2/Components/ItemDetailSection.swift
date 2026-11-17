@@ -179,6 +179,7 @@ struct ItemDetailSection: View {
             LocationStatusCTA(
                 location: item.location,
                 isLoading: isNavigatingToLocation,
+                showCaret: item.location.status.isAvailable ? false : true,
                 action: locationAction
             )
         }

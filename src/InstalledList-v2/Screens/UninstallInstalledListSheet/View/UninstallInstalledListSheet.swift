@@ -397,10 +397,10 @@ private extension UninstallInstalledListSheet {
 
         case let action as UninstallDestinationSheetAction:
             switch action {
-            case .chooseStorage(let storageLocationId):
+            case .chooseStorage(let storageLocation):
                 Task { @MainActor in
                     await viewModel.assignSelection(
-                        to: UninstallDestination(type: .storage, locationId: storageLocationId)
+                        to: .storage(storageLocation)
                     )
                     viewModel.showDestinationSheet = false
                 }

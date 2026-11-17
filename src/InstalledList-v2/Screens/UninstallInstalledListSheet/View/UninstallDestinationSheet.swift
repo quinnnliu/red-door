@@ -8,7 +8,7 @@
 import SwiftUI
 
 enum UninstallDestinationSheetAction {
-    case chooseStorage(storageLocationId: String)
+    case chooseStorage(storageLocation: StorageLocation)
     case selectCopyAddress(Address)
     case chooseCopy
     case chooseExistingList(PullListV2)
@@ -161,7 +161,7 @@ private extension UninstallDestinationSheet {
         LazyVStack(spacing: 8) {
             ForEach(storageLocations, id: \.id) { storageLocation in
                 Button {
-                    action(UninstallDestinationSheetAction.chooseStorage(storageLocationId: storageLocation.id))
+                    action(UninstallDestinationSheetAction.chooseStorage(storageLocation: storageLocation))
                 } label: {
                     HStack(spacing: 12) {
                         Image(systemName: SFSymbols.shippingbox)
