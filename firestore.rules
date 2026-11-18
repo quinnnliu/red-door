@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null && request.auth.token.email != null; }
+    function userDoc() { return /databases/$(database)/documents/users/$(request.auth.token.email.lower()); }
+    function isAllowed() { return signedIn() && exists(userDoc()); }
+    function isAdmin() { return isAllowed() && get(userDoc()).data.is_admin == true; }
+
+    // Anyone may check their own allowlist entry (needed before sign-up / sign-in).
+    match /users/{email} {
+      allow get: if request.auth == null ? true : (isAdmin() || request.auth.token.email.lower() == email);
+      allow list: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Rules are OR'd, so exclude `users` here or any allowed user could edit the allowlist.
+    match /{document=**} {
+      allow read: if isAllowed();
+      allow write: if isAllowed() && request.path[3] != 'users';
+    }
+  }
+}
