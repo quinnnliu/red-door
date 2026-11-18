@@ -9,6 +9,7 @@ import SwiftUI
 
 struct OptionsViewV2: View {
     @Environment(NavigationCoordinator.self) var coordinator
+    @Environment(AuthSession.self) private var authSession
 
     @State private var showProfileSheet: Bool = false
     #if DEBUG
@@ -20,6 +21,12 @@ struct OptionsViewV2: View {
             TopBar()
 
             StorageLocationOptionsView()
+
+            if authSession.currentUser?.isAdmin == true {
+                UserManagementSection()
+            }
+
+            AccountSection()
 
             #if DEBUG
             Spacer()
@@ -61,6 +68,22 @@ struct OptionsViewV2: View {
         }, trailingView: {
             ProfileImage()
         })
+    }
+
+    // MARK: Account Section
+    @ViewBuilder
+    private func AccountSection() -> some View {
+        HStack {
+            Text(authSession.currentUser?.email ?? "")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+            Spacer()
+            Button("Log Out", role: .destructive) {
+                authSession.signOut()
+            }
+            .buttonStyle(.bordered)
+        }
     }
 
     // MARK: Profile Image

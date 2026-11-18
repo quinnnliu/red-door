@@ -22,6 +22,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 struct RedDoorApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
     @State private var isReady = false
+    @State private var authSession: AuthSession
 
     init() {
         #if DEBUG
@@ -29,6 +30,7 @@ struct RedDoorApp: App {
         #else
         FirebaseApp.configure()
         #endif
+        _authSession = State(initialValue: AuthSession())
         UITabBar.appearance().tintColor = UIColor.red
         configureImageCache()
     }
@@ -40,22 +42,32 @@ struct RedDoorApp: App {
         cache.diskStorage.config.expiration = .never
     }
 
+    @ViewBuilder
+    private func Splash() -> some View {
+        Image("RedDoor")
+            .resizable()
+            .scaledToFit()
+            .frame(Constants.Screen.screenWidth / 4)
+    }
+
     var body: some Scene {
         WindowGroup {
             NavigationView {
-                if isReady {
+                if authSession.isLoading {
+                    Splash()
+                } else if authSession.currentUser == nil {
+                    LoginView()
+                } else if isReady {
                     ContentView()
                 } else {
-                    Image("RedDoor")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(Constants.Screen.screenWidth / 4)
+                    Splash()
                         .task {
                             await ConfigurationService.shared.preload()
                             isReady = true
                         }
                 }
             }
+            .environment(authSession)
         }
     }
 }
