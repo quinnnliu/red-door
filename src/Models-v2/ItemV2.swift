@@ -15,7 +15,6 @@ struct ItemV2: RDDocument {
 
     var id: String
     var modelId: String
-    var groupId: String?
 
     var baseName: String
     var baseNameLowercased: String // for search
@@ -41,7 +40,6 @@ struct ItemV2: RDDocument {
     init(
         id: String,
         modelId: String,
-        groupId: String? = nil,
         baseName: String,
         primaryImage: RDImage,
         secondaryImages: [RDImage]? = nil,
@@ -64,7 +62,6 @@ struct ItemV2: RDDocument {
     ) {
         self.id = id
         self.modelId = modelId
-        self.groupId = groupId
         self.baseName = baseName
         self.baseNameLowercased = baseName.lowercased()
         self.primaryImage = primaryImage
@@ -92,7 +89,6 @@ struct ItemV2: RDDocument {
         let newId = UUID().uuidString
         self.id = newId
         self.modelId = item.modelId
-        self.groupId = item.groupId
         self.baseName = item.baseName
         self.baseNameLowercased = item.baseNameLowercased
         self.primaryImage = item.primaryImage.copy(to: newId) ?? .empty(for: newId)
@@ -133,6 +129,7 @@ struct ItemV2: RDDocument {
         case primaryImage = "primary_image"
         case secondaryImages = "secondary_images"
         case baseName = "base_name"
+        case dimensions
     }
 }
 

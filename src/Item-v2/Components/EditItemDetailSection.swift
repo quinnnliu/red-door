@@ -25,26 +25,32 @@ struct EditItemDetailSection: View {
     @Binding var dimensions: ItemDimensions?
     @State private var showDimensionsSection: Bool = true
 
+    /// Locks description, color, material, and type. Purchase info and dimensions stay editable.
+    var lockCoreDetails: Bool = false
+
     // MARK: Body
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                SectionTitle("Description:")
-                
-                TextField("A brief description about these items...", text: $description)
-                    .font(.footnote)
-                    .lineLimit(2...5)
-                    .submitLabel(.done)
-                    .disabled(description.count > 100)
-                    .padding(8)
-                    .background(Color(.systemGray5))
-                    .cornerRadius(Constants.CornerRadius.medium)
+            Group {
+                VStack(alignment: .leading, spacing: 4) {
+                    SectionTitle("Description:")
+
+                    TextField("A brief description about these items...", text: $description)
+                        .font(.footnote)
+                        .lineLimit(2...5)
+                        .submitLabel(.done)
+                        .disabled(description.count > 100)
+                        .padding(8)
+                        .background(Color(.systemGray5))
+                        .cornerRadius(Constants.CornerRadius.medium)
+                }
+
+                ColorMaterialRow
+
+                TypeRow
             }
-
-            ColorMaterialRow
-
-            TypeRow
+            .disabled(lockCoreDetails)
             
             PurchaseInfoSection
             
