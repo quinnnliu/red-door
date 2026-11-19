@@ -391,7 +391,7 @@ struct EditItemDetailSection: View {
             set: { newValue in
                 var current = dimensions ?? ItemDimensions(length: "", width: "", height: "", unit: .imperial)
                 current[keyPath: keyPath] = newValue
-                dimensions = current
+                dimensions = current.isEmpty ? nil : current
             }
         )
     }
@@ -403,7 +403,7 @@ struct EditItemDetailSection: View {
             set: { newValue in
                 var current = dimensions ?? ItemDimensions(length: "", width: "", height: "", unit: .imperial)
                 current.depth = newValue.isEmpty ? nil : newValue
-                dimensions = current
+                dimensions = current.isEmpty ? nil : current
             }
         )
     }

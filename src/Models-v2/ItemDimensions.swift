@@ -26,6 +26,10 @@ struct ItemDimensions: Codable, Hashable {
 }
 
 extension ItemDimensions {
+    var isEmpty: Bool {
+        [length, width, height, depth ?? ""].allSatisfy { $0.isEmpty }
+    }
+
     /// "L × W × H × D in", skipping any empty measurement. Nil when all are empty.
     var summary: String? {
         let parts = [length, width, height, depth ?? ""].filter { !$0.isEmpty }

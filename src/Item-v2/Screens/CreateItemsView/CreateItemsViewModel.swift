@@ -133,6 +133,7 @@ final class CreateItemsViewModel {
         let resolvedModelId = modelId
         var items: [ItemV2] = []
         itemState.baseNameLowercased = itemState.baseName.lowercased()
+        if itemState.dimensions?.isEmpty == true { itemState.dimensions = nil }
 
         itemState.essentialGroupId = selectedGroup?.id
         itemState.location = DocumentLocation(storageLocation: storageLocation)

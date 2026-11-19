@@ -89,6 +89,7 @@ final class EditItemViewModel {
             var item = updatedItem
             item.essentialGroupId = selectedGroup?.id
             item.baseNameLowercased = item.baseName.lowercased()
+            if item.dimensions?.isEmpty == true { item.dimensions = nil }
 
             let (persistedImage, cleanup) = try await FirebaseImageManager.shared.resolveImage(
                 original: originalItem.primaryImage,
