@@ -124,7 +124,7 @@ struct CreateItemViewV2: View {
             if fromTemplate {
                 HStack {
                     Image(systemName: SFSymbols.lockFill)
-                    Text("Details Locked")
+                    Text("Description, color, material, and type are locked")
                 }
                 .font(.caption)
             }
@@ -138,9 +138,9 @@ struct CreateItemViewV2: View {
                 brand: $viewModel.itemState.brand,
                 purchaseLocation: $viewModel.itemState.purchaseLocation,
                 datePurchased: $viewModel.itemState.datePurchased,
-                dimensions: $viewModel.itemState.dimensions
+                dimensions: $viewModel.itemState.dimensions,
+                lockCoreDetails: viewModel.templateState != nil
             )
-            .disabled(viewModel.templateState != nil)
         }
         .padding(fromTemplate ? 8 : .zero)
         .background(fromTemplate ? .gray.opacity(0.2) : .clear)
